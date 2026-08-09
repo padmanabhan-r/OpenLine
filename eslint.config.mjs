@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored CALL-E reference repos — upstream code, not ours to lint.
+    "docs/calle-docs/**",
+    "misc/**",
+    ".remember/**",
   ]),
 ]);
 
