@@ -1,24 +1,43 @@
 /**
  * One dot per shortlisted candidate.
  *
- * A handful start aqua — the ones a recruiter gets through by hand on a good
- * day. The rest sit waiting. On load the whole band fills in, which is the
- * argument the product makes, made without a sentence.
+ * A few start aqua — the ones a recruiter gets through by hand in a day. The
+ * rest sit waiting until the band fills in, which is the argument the product
+ * makes without a sentence.
  *
- * Wide and short on purpose: it should read as a workload, not a mosaic.
+ * Wide and short on purpose: it should read as a workload, not a mosaic. Every
+ * number in the caption is derived from the constants below, so the words can
+ * never drift from what is actually on screen.
  */
 
 const TOTAL = 320;
 const COLUMNS = 40;
-/** The few a person actually got through today. Scattered, so it reads as arbitrary. */
+
+/** The few a person actually gets through in a day. Scattered, so it reads as arbitrary. */
 const CALLED_BY_HAND = new Set([23, 91, 146, 208, 262, 297]);
+const BY_HAND = CALLED_BY_HAND.size;
+
+function Swatch({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: 9,
+        height: 9,
+        borderRadius: "50%",
+        background: color,
+        flexShrink: 0,
+      }}
+    />
+  );
+}
 
 export default function QueueStage() {
   return (
     <div
       style={{
         position: "relative",
-        margin: "44px auto 0",
+        margin: "40px auto 0",
         width: "min(1180px, 96vw)",
       }}
     >
@@ -35,9 +54,17 @@ export default function QueueStage() {
         }}
       />
 
+      {/* Say what a dot is, before showing 320 of them. */}
+      <p
+        className="eyebrow"
+        style={{ position: "relative", zIndex: 1, marginBottom: 12 }}
+      >
+        One dot = one shortlisted candidate
+      </p>
+
       <div
         role="img"
-        aria-label="Three hundred and twenty shortlisted candidates. Six were reached by hand today; OpenLine calls all of them."
+        aria-label={`${TOTAL} shortlisted candidates. ${BY_HAND} were reached by hand today; OpenLine calls all ${TOTAL}.`}
         style={{
           position: "relative",
           zIndex: 1,
@@ -71,26 +98,37 @@ export default function QueueStage() {
         })}
       </div>
 
+      {/* The punch, then the legend that makes the colours mean something. */}
+      <p
+        style={{
+          fontSize: "clamp(16px, 1.9vw, 19px)",
+          fontWeight: 600,
+          color: "var(--ink)",
+          letterSpacing: "-.015em",
+          marginTop: 20,
+        }}
+      >
+        {BY_HAND} calls a day by hand. Or all {TOTAL} by tonight.
+      </p>
+
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          gap: 16,
-          marginTop: 16,
+          gap: 22,
+          justifyContent: "center",
           flexWrap: "wrap",
+          marginTop: 10,
+          fontSize: 13,
+          color: "var(--ink-3)",
         }}
       >
-        <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>
-          <strong style={{ color: "var(--ink-2)", fontWeight: 600 }}>
-            320 shortlisted.
-          </strong>{" "}
-          Dialing them by hand takes weeks.
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <Swatch color="var(--accent)" />
+          {BY_HAND} reached by hand
         </span>
-        <span
-          style={{ fontSize: 13.5, color: "var(--accent-deep)", fontWeight: 600 }}
-        >
-          OpenLine calls every one of them.
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <Swatch color="var(--cta)" />
+          {TOTAL - BY_HAND} still waiting — OpenLine calls them
         </span>
       </div>
     </div>
