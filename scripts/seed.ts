@@ -18,24 +18,29 @@ import { normalizePhone } from "../lib/phone/normalize";
 /**
  * The demo shortlist.
  *
- * Numbers are US fiction-reserved (555-01xx), which validate but can never
- * connect — so seeding this repo can never dial a real person. The one number
- * that must actually ring comes from OPENLINE_DEMO_PHONE, so a real line is
- * never committed to source.
+ * Exactly one entry is a real person — the maintainer, who consented to be
+ * called on camera. Everyone else is invented, and their numbers are US
+ * fiction-reserved (555-01xx): they pass E.164 validation but can never
+ * connect, so seeding this repo cannot dial anybody.
+ *
+ * The real line comes from OPENLINE_DEMO_PHONE and is never committed to
+ * source. Without it, the demo candidate falls back to a fiction number too and
+ * the whole roster is inert.
  *
  * Two entries are deliberately unusable, because a shortlist worked by hand is
  * exactly where people fall off the end of the list.
  */
 const DEMO_PHONE = process.env.OPENLINE_DEMO_PHONE?.trim();
+const DEMO_NAME = process.env.OPENLINE_DEMO_NAME?.trim() || "Padmanabhan Rajendrakumar";
 
 const ROSTER = [
   {
-    name: "Priya Raman",
-    // Replaced by OPENLINE_DEMO_PHONE when set — this is the one we ring live.
+    // The only real person on this list. Rings OPENLINE_DEMO_PHONE when set.
+    name: DEMO_NAME,
     rawPhone: DEMO_PHONE || "+1 415 555 0101",
-    email: "priya.raman@example.com",
+    email: "demo@example.com",
     summary:
-      "6 years backend. Owned the payments ledger and settlement reconciliation at a Series B fintech. Go and TypeScript, Postgres, event-driven services.",
+      "7 years backend and platform. Built the settlement reconciliation service at a payments company and owns it in production. TypeScript and Python, Postgres, event-driven services.",
   },
   {
     name: "Arjun Mehta",
@@ -146,7 +151,10 @@ The team is eight engineers. You would be the fourth on the ledger squad.`,
     `Created ${rows.length} candidates — ${callable} callable, ${rows.length - callable} needing a human to fix the number.`,
   );
   if (DEMO_PHONE) {
-    console.log(`\nPriya Raman is set to your demo number, so she is the one who will actually ring.`);
+    console.log(
+      `\n${DEMO_NAME} is set to your demo number — the one candidate who will actually ring.`,
+    );
+    console.log("Everyone else is fictional and cannot connect.");
   } else {
     console.log(
       "\nOPENLINE_DEMO_PHONE is not set, so every number is fiction-reserved and none can connect.",
