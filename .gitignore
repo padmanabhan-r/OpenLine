@@ -4,3 +4,8 @@ node_modules/
 .env*.local
 *.tsbuildinfo
 .DS_Store
+
+# Vendored CALL-E reference repos (cloned separately, each has its own .git)
+docs/calle-docs/
+misc/call-e-resources/awesome-phone-call-agents/
+misc/call-e-resources/call-e-integrations/
