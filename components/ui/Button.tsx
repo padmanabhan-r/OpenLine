@@ -22,18 +22,22 @@ const base: CSSProperties = {
   cursor: "pointer",
   transition: "transform .12s ease, background .18s ease, border-color .18s",
   borderRadius: "var(--radius-pill)",
-  fontFamily: "inherit",
+  // The brand speaks in mono uppercase — every action reads like START CALLING.
+  fontFamily: "var(--mono), ui-monospace, monospace",
+  textTransform: "uppercase",
+  letterSpacing: ".06em",
 };
 
 const variants: Record<Variant, CSSProperties> = {
+  // Black pill, like the brand's LOGIN / START CALLING buttons.
   primary: {
-    background: "var(--red)",
-    color: "#fff",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,.15)",
+    background: "var(--cta)",
+    color: "var(--cta-text)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,.10)",
   },
-  dark: { background: "var(--ink)", color: "var(--bg-2)" },
+  dark: { background: "var(--cta)", color: "var(--cta-text)" },
   ghost: {
-    background: "transparent",
+    background: "rgba(255,252,220,0.35)",
     color: "var(--ink)",
     borderColor: "var(--line)",
   },
@@ -45,10 +49,11 @@ const variants: Record<Variant, CSSProperties> = {
   },
 };
 
+// Mono uppercase runs wide, so sizes drop a step from the sans equivalents.
 const sizes: Record<Size, CSSProperties> = {
-  sm: { height: 38, padding: "0 16px", fontSize: 14 },
-  default: { height: 46, padding: "0 22px", fontSize: 15 },
-  lg: { height: 54, padding: "0 30px", fontSize: 16 },
+  sm: { height: 38, padding: "0 16px", fontSize: 12.5 },
+  default: { height: 46, padding: "0 22px", fontSize: 13.5 },
+  lg: { height: 54, padding: "0 30px", fontSize: 14.5 },
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -69,8 +74,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       onMouseEnter={(e) => {
         if (disabled) return;
         const el = e.currentTarget;
-        if (variant === "primary") el.style.background = "var(--red-deep)";
-        if (variant === "dark") el.style.background = "#36281d";
+        if (variant === "primary" || variant === "dark")
+          el.style.background = "var(--cta-hover)";
         if (variant === "ghost") {
           el.style.background = "var(--surface)";
           el.style.borderColor = "var(--ink-3)";

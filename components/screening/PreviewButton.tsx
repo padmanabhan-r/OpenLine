@@ -29,7 +29,7 @@ export default function PreviewButton({ jobId }: { jobId: string }) {
         {pending ? "Building scripts…" : "Build call scripts"}
       </Button>
       {error && (
-        <span style={{ fontSize: 12, color: "var(--red)", maxWidth: 280, textAlign: "right" }}>
+        <span style={{ fontSize: 12, color: "var(--danger)", maxWidth: 280, textAlign: "right" }}>
           {error}
         </span>
       )}

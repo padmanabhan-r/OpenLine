@@ -9,12 +9,13 @@ export type BadgeTone =
   | "danger";
 
 const tones: Record<BadgeTone, CSSProperties> = {
-  accent: { color: "var(--red)", background: "var(--red-tint)", borderColor: "#F0D6CC" },
-  good: { color: "var(--green)", background: "var(--green-wash)", borderColor: "#D7DEC6" },
-  warn: { color: "var(--amber)", background: "var(--amber-wash)", borderColor: "#E6D3AC" },
-  info: { color: "var(--blue)", background: "var(--blue-wash)", borderColor: "#CDD6E0" },
+  accent: { color: "var(--accent-deep)", background: "var(--accent-tint)", borderColor: "#B9DFD6" },
+  good: { color: "var(--green)", background: "var(--green-wash)", borderColor: "#CBD7A4" },
+  warn: { color: "var(--amber)", background: "var(--amber-wash)", borderColor: "#DCC787" },
+  info: { color: "var(--blue)", background: "var(--blue-wash)", borderColor: "#BFD2C6" },
   neutral: { color: "var(--ink-3)", background: "var(--bg-2)", borderColor: "var(--line)" },
-  danger: { color: "var(--red-deep)", background: "var(--red-wash)", borderColor: "#EFCBBD" },
+  // Danger stays red. A guard violation in cheerful aqua would be a lie.
+  danger: { color: "var(--danger-deep)", background: "var(--danger-wash)", borderColor: "#E5BEA8" },
 };
 
 export default function Badge({
@@ -78,9 +79,9 @@ export function Chip({
         fontWeight: 500,
         border: "1px solid",
         whiteSpace: "nowrap",
-        color: accent ? "var(--red-deep)" : "var(--ink-2)",
-        background: accent ? "var(--red-tint)" : "var(--surface)",
-        borderColor: accent ? "#F0D6CC" : "var(--line)",
+        color: accent ? "var(--accent-deep)" : "var(--ink-2)",
+        background: accent ? "var(--accent-tint)" : "var(--surface)",
+        borderColor: accent ? "#B9DFD6" : "var(--line)",
         ...style,
       }}
     >

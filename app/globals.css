@@ -1,59 +1,73 @@
 @import "tailwindcss";
 
 /*
- * OpenLine design tokens.
+ * OpenLine design tokens — "Open Sky" theme.
  *
- * Light Linen: warm paper surfaces, terracotta accent, glass panels floating
- * over a drifting blob field. Carried over from HireSphere so the two products
- * read as siblings.
+ * Matched to CALL-E's brand language: a saturated butter-yellow ground, near
+ * black ink, mono uppercase labels, black pill CTAs, and one aqua accent used
+ * the way their site uses it — a patch of sky in the field and a thin gradient
+ * underline beneath the words that matter.
+ *
+ * Red is deliberately demoted to a danger color. On this ground it appears
+ * only where something is actually wrong: a guard violation, or live dialing.
  */
 :root {
-  /* Surfaces */
-  --bg: #F1E7D6;
-  --bg-2: #F7EFE2;
-  --surface: #FBF6EC;
-  --surface-2: #FFFCF6;
+  /* Ground */
+  --bg: #F2D845;
+  --bg-2: #F6E36F;
+  --surface: #F9EFB4;
+  --surface-2: #FCF6D5;
 
-  /* Typography */
-  --ink: #241B14;
-  --ink-2: #5C5046;
-  --ink-3: #8C7E70;
+  /* Ink */
+  --ink: #1D1B10;
+  --ink-2: #57522F;
+  --ink-3: #857C4E;
 
   /* Borders */
-  --line: #E2D4BF;
-  --line-2: #EDE2D0;
+  --line: rgba(29, 27, 16, 0.18);
+  --line-2: rgba(29, 27, 16, 0.10);
 
-  /* Accent — terracotta */
-  --red: #C5341B;
-  --red-deep: #9E2814;
-  --red-soft: #E8654A;
-  --red-wash: #F7E3DA;
-  --red-tint: #FBEDE7;
+  /* Accent — aqua, the patch of sky */
+  --accent: #1E8F98;
+  --accent-deep: #14717A;
+  --accent-soft: #7FD3D8;
+  --accent-wash: #DDF0E9;
+  --accent-tint: #EAF6F1;
+
+  /* CTA — black pills, like the brand's */
+  --cta: #17160F;
+  --cta-hover: #2C2A1B;
+  --cta-text: #FFF9E3;
+
+  /* Danger — guard violations and live dialing only */
+  --danger: #C22F1E;
+  --danger-deep: #97220F;
+  --danger-wash: #F6DCCB;
 
   /* Status */
-  --green: #5C7A4A;
-  --green-wash: #E7EBDD;
-  --amber: #C28A2E;
-  --amber-wash: #F3E8D0;
-  --blue: #4A6480;
-  --blue-wash: #E0E5EC;
+  --green: #55793B;
+  --green-wash: #E9EFC8;
+  --amber: #A87A1D;
+  --amber-wash: #F3E7B5;
+  --blue: #3E6E8C;
+  --blue-wash: #DFEAE3;
 
   /* Layout */
   --radius: 18px;
   --radius-sm: 12px;
   --radius-lg: 26px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(60,40,20,.05), 0 4px 12px rgba(60,40,20,.04);
-  --shadow: 0 4px 16px rgba(70,45,20,.08), 0 12px 40px rgba(70,45,20,.07);
-  --shadow-lg: 0 8px 32px rgba(70,45,20,.10), 0 24px 80px rgba(70,45,20,.10);
+  --shadow-sm: 0 1px 2px rgba(95, 80, 8, .06), 0 4px 12px rgba(95, 80, 8, .05);
+  --shadow: 0 4px 16px rgba(95, 80, 8, .09), 0 12px 40px rgba(95, 80, 8, .08);
+  --shadow-lg: 0 8px 32px rgba(95, 80, 8, .11), 0 24px 80px rgba(95, 80, 8, .10);
   --maxw: 1180px;
 
   /* Glass */
-  --bg-glass:       rgba(255, 253, 248, 0.52);
-  --bg-glass-hover: rgba(255, 255, 255, 0.68);
-  --glass-edge:     rgba(255, 255, 255, 0.55);
-  --blur:           blur(22px) saturate(170%);
-  --blur-strong:    blur(32px) saturate(190%);
+  --bg-glass:       rgba(252, 246, 210, 0.55);
+  --bg-glass-hover: rgba(255, 252, 228, 0.72);
+  --glass-edge:     rgba(255, 253, 235, 0.60);
+  --blur:           blur(22px) saturate(160%);
+  --blur-strong:    blur(32px) saturate(180%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -76,27 +90,30 @@ a { color: inherit; text-decoration: none; }
 button, input, textarea { font-family: inherit; }
 
 :focus-visible {
-  outline: 2px solid var(--red);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar { width: 11px; height: 11px; }
 ::-webkit-scrollbar-thumb {
-  background: #D9C9B2;
+  background: #D5C25E;
   border-radius: 8px;
   border: 3px solid transparent;
   background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { background: #C9B69A; }
+::-webkit-scrollbar-thumb:hover { background: #C4B04A; }
 
 /* ── Utility typography ── */
+
+/* Mono uppercase labels are the brand's structural voice. */
 .eyebrow {
+  font-family: var(--mono), ui-monospace, 'SF Mono', monospace;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .18em;
+  font-weight: 600;
+  letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--red);
+  color: var(--ink-2);
 }
 .eyebrow.muted { color: var(--ink-3); }
 
@@ -105,6 +122,20 @@ button, input, textarea { font-family: inherit; }
   letter-spacing: -0.03em;
   line-height: 0.98;
   text-wrap: balance;
+}
+
+/*
+ * The brand's highlight: ink stays ink, and a thin aqua-to-green gradient
+ * runs underneath the words that matter.
+ */
+.hl {
+  font-style: normal;
+  color: inherit;
+  background-image: linear-gradient(90deg, #35B5C2, #63CBA8, #4A9FD8);
+  background-repeat: no-repeat;
+  background-size: 100% 0.08em;
+  background-position: 0 97%;
+  padding-bottom: 0.06em;
 }
 
 .mono { font-family: var(--mono), ui-monospace, 'SF Mono', monospace; }
@@ -138,13 +169,12 @@ button, input, textarea { font-family: inherit; }
 /*
  * The hero signature: one dot per applicant.
  *
- * A handful start terracotta — the few a recruiter has time to phone. The rest
- * are the ones who hear nothing. On load they all fill in, which is the whole
- * argument the product makes, made without a sentence.
+ * A handful start filled — the few a recruiter has time to phone. The rest
+ * fill in on load. Ink on yellow, like everything else the brand says plainly.
  */
 @keyframes dotFill {
   to {
-    background: var(--red);
+    background: var(--cta);
     transform: scale(1);
     opacity: 1;
   }
@@ -159,8 +189,8 @@ button, input, textarea { font-family: inherit; }
   width: 100%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--line);
-  opacity: 0.55;
+  background: rgba(29, 27, 16, 0.16);
+  opacity: 0.6;
   transform: scale(0.82);
 }
 
@@ -173,14 +203,15 @@ button, input, textarea { font-family: inherit; }
 /* Without motion, show the end state rather than a frozen half-empty grid. */
 @media (prefers-reduced-motion: reduce) {
   .queue-dot.pending {
-    background: var(--red);
+    background: var(--cta);
     opacity: 1;
     transform: scale(1);
   }
 }
 
+/* The five a recruiter already reached — aqua, so the story reads at a glance. */
 .queue-dot.called {
-  background: var(--red);
+  background: var(--accent);
   opacity: 1;
   transform: scale(1);
 }
@@ -195,11 +226,11 @@ button, input, textarea { font-family: inherit; }
   color: var(--ink-2);
 }
 
-/* A guard violation, highlighted in place inside the script. */
+/* A guard violation, highlighted in place inside the script. Danger stays red. */
 .violation {
-  background: var(--red-tint);
-  border-bottom: 2px solid var(--red);
-  color: var(--red-deep);
+  background: var(--danger-wash);
+  border-bottom: 2px solid var(--danger);
+  color: var(--danger-deep);
   font-weight: 600;
   border-radius: 3px;
   padding: 1px 2px;

@@ -51,7 +51,7 @@ export default async function CallPage({
                 name={blocked ? "ban" : "check-circle"}
                 size={22}
                 style={{
-                  color: blocked ? "var(--red)" : "var(--green)",
+                  color: blocked ? "var(--danger)" : "var(--green)",
                   flexShrink: 0,
                   marginTop: 1,
                 }}
@@ -77,7 +77,7 @@ export default async function CallPage({
                 </p>
               </div>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <Badge tone={call.mode === "live" ? "accent" : "neutral"}>
+                <Badge tone={call.mode === "live" ? "danger" : "neutral"}>
                   {call.mode === "live" ? "Live" : "Dry run"}
                 </Badge>
               </div>
@@ -93,8 +93,8 @@ export default async function CallPage({
                       gap: 11,
                       padding: "11px 13px",
                       borderRadius: "var(--radius-sm)",
-                      background: "var(--red-tint)",
-                      border: "1px solid #F0D6CC",
+                      background: "var(--danger-wash)",
+                      border: "1px solid #E5BEA8",
                     }}
                   >
                     <span
@@ -102,7 +102,7 @@ export default async function CallPage({
                       style={{
                         fontSize: 11.5,
                         fontWeight: 700,
-                        color: "var(--red-deep)",
+                        color: "var(--danger-deep)",
                         textTransform: "uppercase",
                         letterSpacing: ".06em",
                         flexShrink: 0,
@@ -141,7 +141,7 @@ export default async function CallPage({
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "var(--red)",
+                      color: "var(--accent)",
                       flexShrink: 0,
                       paddingTop: 2,
                     }}

@@ -26,7 +26,7 @@ export default async function JobsPage() {
         {error && (
           <Panel>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <Icon name="alert" size={20} style={{ color: "var(--red)", flexShrink: 0, marginTop: 2 }} />
+              <Icon name="alert" size={20} style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Could not load jobs</p>
                 <p style={{ fontSize: 13.5, color: "var(--ink-2)", marginTop: 4 }}>{error}</p>
@@ -58,7 +58,7 @@ export default async function JobsPage() {
                     background: "var(--bg-glass)",
                     backdropFilter: "var(--blur)",
                     WebkitBackdropFilter: "var(--blur)",
-                    border: "1px solid rgba(50,30,5,0.10)",
+                    border: "1px solid rgba(29,27,16,0.14)",
                     borderRadius: "var(--radius)",
                     boxShadow: "var(--shadow-sm), inset 0 1px 0 var(--glass-edge)",
                     padding: "20px 22px",

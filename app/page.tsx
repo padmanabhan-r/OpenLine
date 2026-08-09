@@ -91,7 +91,7 @@ export default function LandingPage() {
           >
             Everyone applied.
             <br />
-            <em style={{ color: "var(--red)", fontStyle: "normal" }}>
+            <em className="hl">
               Almost no one heard back.
             </em>
           </h1>
@@ -160,7 +160,7 @@ export default function LandingPage() {
         >
           Read the script
           <br />
-          <em style={{ color: "var(--red)", fontStyle: "normal" }}>
+          <em className="hl">
             before anyone hears it.
           </em>
         </h2>
@@ -199,8 +199,8 @@ export default function LandingPage() {
                   width: 46,
                   height: 46,
                   borderRadius: 13,
-                  background: "var(--red-tint)",
-                  color: "var(--red)",
+                  background: "var(--accent-tint)",
+                  color: "var(--accent)",
                   display: "grid",
                   placeItems: "center",
                   marginBottom: 18,
@@ -212,7 +212,7 @@ export default function LandingPage() {
                 className="mono"
                 style={{
                   fontSize: 13,
-                  color: "var(--red)",
+                  color: "var(--accent)",
                   fontWeight: 700,
                   marginBottom: 8,
                 }}
@@ -250,7 +250,7 @@ export default function LandingPage() {
             textAlign: "center",
           }}
         >
-          <span className="eyebrow" style={{ color: "var(--red-soft)" }}>
+          <span className="eyebrow" style={{ color: "var(--accent-soft)" }}>
             The promise
           </span>
           <p
@@ -269,7 +269,7 @@ export default function LandingPage() {
           <p
             style={{
               fontSize: 15.5,
-              color: "#C9BBA9",
+              color: "#D8D2A4",
               maxWidth: 620,
               margin: "26px auto 0",
               lineHeight: 1.6,
@@ -294,7 +294,7 @@ export default function LandingPage() {
           >
             What the assistant
             <br />
-            <em style={{ color: "var(--red)", fontStyle: "normal" }}>
+            <em className="hl">
               is not allowed to do.
             </em>
           </h2>
@@ -335,7 +335,7 @@ export default function LandingPage() {
               <Icon
                 name="ban"
                 size={18}
-                style={{ color: "var(--red)", flexShrink: 0, marginTop: 1 }}
+                style={{ color: "var(--accent)", flexShrink: 0, marginTop: 1 }}
               />
               <span style={{ fontSize: 14.5, color: "var(--ink)" }}>{item}</span>
             </li>
@@ -356,7 +356,7 @@ export default function LandingPage() {
           >
             Built so a candidate
             <br />
-            <em style={{ color: "var(--red)", fontStyle: "normal" }}>
+            <em className="hl">
               would agree to the call.
             </em>
           </h2>
@@ -387,7 +387,7 @@ export default function LandingPage() {
                   borderRadius: 11,
                   background: "var(--surface-2)",
                   border: "1px solid var(--line)",
-                  color: "var(--red)",
+                  color: "var(--accent)",
                   display: "grid",
                   placeItems: "center",
                   marginBottom: 18,
@@ -421,7 +421,7 @@ export default function LandingPage() {
         >
           The queue is already there.
           <br />
-          <em style={{ color: "var(--red)", fontStyle: "normal" }}>
+          <em className="hl">
             Call all of it.
           </em>
         </h2>

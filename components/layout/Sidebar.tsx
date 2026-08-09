@@ -36,10 +36,10 @@ function NavItem({
         borderRadius: "var(--radius-sm)",
         fontSize: 14,
         fontWeight: active ? 600 : 500,
-        color: active ? "var(--red)" : "var(--ink-2)",
-        background: active ? "rgba(197,52,27,0.10)" : "transparent",
+        color: active ? "var(--accent-deep)" : "var(--ink-2)",
+        background: active ? "rgba(30,143,152,0.12)" : "transparent",
         border: active
-          ? "1px solid rgba(197,52,27,0.20)"
+          ? "1px solid rgba(30,143,152,0.30)"
           : "1px solid transparent",
         boxShadow: active ? "inset 0 1px 0 rgba(255,255,255,0.40)" : "none",
         transition: "background .15s, color .15s, border-color .15s",
@@ -95,9 +95,9 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
         background: "var(--bg-glass)",
         backdropFilter: "var(--blur)",
         WebkitBackdropFilter: "var(--blur)",
-        borderRight: "1px solid rgba(50,30,5,0.10)",
+        borderRight: "1px solid rgba(29,27,16,0.14)",
         boxShadow:
-          "2px 0 24px rgba(70,45,20,.06), inset -1px 0 0 var(--glass-edge)",
+          "2px 0 24px rgba(95,80,8,.07), inset -1px 0 0 var(--glass-edge)",
         padding: "22px 16px",
         display: "flex",
         flexDirection: "column",
@@ -133,10 +133,10 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
           gap: 10,
           padding: "11px 12px",
           borderRadius: 14,
-          border: `1px solid ${liveCalls ? "rgba(197,52,27,0.28)" : "rgba(50,30,5,0.10)"}`,
+          border: `1px solid ${liveCalls ? "rgba(194,47,30,0.30)" : "rgba(29,27,16,0.14)"}`,
           background: liveCalls
-            ? "var(--red-tint)"
-            : "rgba(255,253,248,0.45)",
+            ? "var(--danger-wash)"
+            : "rgba(255,252,220,0.45)",
           boxShadow: "inset 0 1px 0 var(--glass-edge)",
         }}
       >
@@ -146,7 +146,7 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
             height: 8,
             borderRadius: "50%",
             flexShrink: 0,
-            background: liveCalls ? "var(--red)" : "var(--green)",
+            background: liveCalls ? "var(--danger)" : "var(--green)",
           }}
         />
         <div style={{ minWidth: 0 }}>

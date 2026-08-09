@@ -47,7 +47,7 @@ export default async function CallsPage() {
                 marginTop: 14,
                 fontSize: 13.5,
                 fontWeight: 600,
-                color: "var(--red)",
+                color: "var(--accent)",
               }}
             >
               Go to jobs <Icon name="arrow-right" size={15} />
@@ -77,7 +77,7 @@ export default async function CallsPage() {
                         {jobTitle}
                       </div>
                     </div>
-                    <Badge tone={call.mode === "live" ? "accent" : "neutral"}>
+                    <Badge tone={call.mode === "live" ? "danger" : "neutral"}>
                       {call.mode === "live" ? "Live" : "Dry run"}
                     </Badge>
                     {blocked ? (

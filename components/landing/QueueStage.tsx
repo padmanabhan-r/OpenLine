@@ -28,7 +28,7 @@ export default function QueueStage() {
           inset: "-14% -8%",
           borderRadius: "50%",
           background:
-            "radial-gradient(ellipse, rgba(197,52,27,.16), transparent 70%)",
+            "radial-gradient(ellipse, rgba(47,182,188,.22), transparent 70%)",
           filter: "blur(38px)",
           zIndex: 0,
         }}
@@ -47,7 +47,7 @@ export default function QueueStage() {
           background: "var(--bg-glass)",
           backdropFilter: "var(--blur)",
           WebkitBackdropFilter: "var(--blur)",
-          border: "1px solid rgba(50,30,5,0.10)",
+          border: "1px solid rgba(29,27,16,0.14)",
           borderRadius: "var(--radius-lg)",
           boxShadow: "var(--shadow), inset 0 1px 0 var(--glass-edge)",
         }}
@@ -86,7 +86,7 @@ export default function QueueStage() {
           </strong>{" "}
           A recruiter had time for five.
         </span>
-        <span style={{ fontSize: 13.5, color: "var(--red)", fontWeight: 600 }}>
+        <span style={{ fontSize: 13.5, color: "var(--accent-deep)", fontWeight: 600 }}>
           OpenLine calls all of them.
         </span>
       </div>

@@ -156,7 +156,7 @@ export default async function JobPage({
                         style={{
                           fontSize: 13,
                           fontWeight: 600,
-                          color: "var(--red)",
+                          color: "var(--accent)",
                           display: "inline-flex",
                           alignItems: "center",
                           gap: 5,

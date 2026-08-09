@@ -51,7 +51,7 @@ export default function SafetyPage() {
                 name={canDial ? "phone" : "shield"}
                 size={22}
                 style={{
-                  color: canDial ? "var(--red)" : "var(--green)",
+                  color: canDial ? "var(--danger)" : "var(--green)",
                   flexShrink: 0,
                   marginTop: 2,
                 }}
@@ -104,7 +104,7 @@ export default function SafetyPage() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "var(--red)",
+                      color: "var(--accent)",
                       flexShrink: 0,
                       paddingTop: 2,
                     }}
