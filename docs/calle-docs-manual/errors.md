@@ -1,0 +1,86 @@
+# Errors
+
+CALL-E returns stable error envelopes for Developer API request failures.
+
+## Error envelope
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The request body is invalid.",
+    "details": {}
+  }
+}
+```
+
+SDK methods raise typed SDK errors while preserving the stable API error code and response details.
+
+## Stable error codes
+
+- `invalid_request`
+- `unauthorized`
+- `forbidden`
+- `rate_limit_exceeded`
+- `insufficient_balance`
+- `unsupported_region`
+- `unsupported_language`
+- `recipient_blocked`
+- `policy_violation`
+- `call_not_ready`
+- `no_recipients`
+- `invalid_recipient`
+- `invalid_phone`
+- `result_schema_invalid`
+- `recipient_result_schema_invalid`
+- `idempotency_conflict`
+- `goal_not_published`
+- `goal_not_executable`
+- `goal_not_ready`
+- `schema_override_not_allowed`
+- `variables_invalid`
+- `provider_unavailable`
+- `internal_error`
+- `not_found`
+
+## Recovery guidance
+
+`unauthorized` means the API key is missing or invalid. Check the `Authorization: Bearer` header.
+
+`forbidden` means the key is valid but not allowed to use this resource or capability.
+
+See [Authentication](/authentication) for API key setup, server-only usage, and environment separation.
+
+`rate_limit_exceeded` means the caller should retry after backoff.
+
+`insufficient_balance` means the project cannot start more calls until billing is resolved.
+
+`unsupported_region` or `unsupported_language` means CALL-E could not resolve a supported calling configuration for the request.
+
+`no_recipients` means CALL-E could not infer any recipients from the task and no explicit `recipients` were provided.
+
+`invalid_recipient` means a recipient entry is malformed. Check that each explicit recipient includes a non-empty `phones` array.
+
+`invalid_phone` means a phone number is not valid E.164 format. Replace placeholders such as `<E164_PHONE>` with a phone number you own or are authorized to call.
+
+`result_schema_invalid` means the whole call task `result_schema` is not a valid supported JSON Schema object.
+
+`recipient_result_schema_invalid` means the per-recipient `recipient_result_schema` is not a valid supported JSON Schema object.
+
+`idempotency_conflict` means the same idempotency key was reused with a different request body. Reuse keys only for the same external workflow operation.
+
+`not_found` means a call, Goal, or Goal Run does not exist or is not visible to the current API key. Owner mismatch and hidden Goals use the same code.
+
+`goal_not_published` means an active Goal has no published RunSpec. `goal_not_executable` means the Goal is draft, paused, or retired. Existing Goal Run ids remain readable after a lifecycle change.
+
+`goal_not_ready` means the exact published RunSpec or provider contract does not currently pass the execution gate.
+
+`schema_override_not_allowed` means the Goal Run request attempted to supply a task, RunSpec selector, schema, materialization setting, or provider configuration owned by the published Goal.
+
+`variables_invalid` means the scalar variables do not satisfy the input schema of the RunSpec pinned by the Goal Run.
+
+`call_not_ready` means the call task has not reached a terminal state.
+
+`provider_unavailable` applies only before durable Goal Run acceptance. After acceptance, dispatch, call, or result-processing failures are reported in the existing Goal Run resource's top-level `error` field. Retry transport failures only when the workflow can preserve the same idempotency key and request.
+
+`internal_error` is retryable only when the workflow can safely tolerate retry.

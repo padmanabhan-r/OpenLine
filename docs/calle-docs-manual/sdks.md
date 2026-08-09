@@ -1,0 +1,209 @@
+# SDKs
+
+CALL-E provides server SDKs for trusted backend services, workers, and automation systems that create and monitor call tasks.
+
+## Packages
+
+TypeScript package name:
+
+```text
+@call-e/calle
+```
+
+Python distribution name:
+
+```text
+calle-ai
+```
+
+Python imports the package as `calle`:
+
+```python
+from calle import CalleClient
+```
+
+## Package status
+
+The current stable server SDK packages are:
+
+- TypeScript: `@call-e/calle@0.2.2`
+- Python: `calle-ai==0.2.0`
+
+These stable packages support the request-scoped Calls API. The Goal Runs
+API and both SDK source candidates are aligned on `0.6.0`; the registry
+packages remain Calls-only until that matching SDK release is published.
+
+## Goal Runs preview
+
+The Goal-based SDK surface keeps published contracts separate from the
+one-shot Calls API:
+
+- TypeScript: `client.goals.list(...)`, `get(...)`, `run(...)`, `getRun(...)`,
+  `waitForResult(...)`, and `runAndWait(...)`
+- Python: `client.goals.list(...)`, `get(...)`, `run(...)`, `get_run(...)`,
+  `wait_for_result(...)`, and `run_and_wait(...)`
+
+Run requests contain Goal identity, one phone number, per-Run variables, and an
+idempotency key. They do not accept request-scoped task text, prompts,
+`input_schema`, or `result_schema`; those fields are owned by the published
+RunSpec. See the [Goal Runs guide](/goal-runs) for the API contract and SDK
+examples.
+
+## Source repositories
+
+The SDKs are maintained as separate repositories so they can have independent release cadence, CI, package metadata, and language-specific examples.
+
+| Runtime | Package | Repository |
+| --- | --- | --- |
+| TypeScript | `@call-e/calle` | [CALLE-AI/server-sdk-typescript](https://github.com/CALLE-AI/server-sdk-typescript) |
+| Python | `calle-ai` | [CALLE-AI/server-sdk-python](https://github.com/CALLE-AI/server-sdk-python) |
+
+Each repository includes public source code, examples, and security guidance:
+
+- [TypeScript security policy](https://github.com/CALLE-AI/server-sdk-typescript/blob/main/SECURITY.md)
+- [Python security policy](https://github.com/CALLE-AI/server-sdk-python/blob/main/SECURITY.md)
+
+## Local examples
+
+Each SDK repository currently includes runnable examples for the server-side
+one-shot call task flow.
+
+TypeScript:
+
+```bash
+git clone https://github.com/CALLE-AI/server-sdk-typescript.git
+cd server-sdk-typescript
+pnpm install
+pnpm run example:create-and-wait
+```
+
+Python:
+
+```bash
+git clone https://github.com/CALLE-AI/server-sdk-python.git
+cd server-sdk-python
+uv sync --all-groups
+uv run python examples/create_and_wait.py
+```
+
+## Stable 0.2 methods
+
+The SDKs expose `context` as a reserved input for future SDK-side workflow data. The current SDKs do not send `context` to the API.
+
+Examples use phone placeholders such as `<E164_PHONE>` and `<RECIPIENT_1_E164_PHONE>`. Replace them with phone numbers you own or are authorized to call.
+
+The SDKs accept structured result schemas as plain JSON objects. Use field `description` values to explain how CALL-E should interpret enum values, and use `type`, `required`, `enum`, and `additionalProperties` for hard validation. See the Calls guide for structured result design patterns and examples.
+
+TypeScript:
+
+```ts
+const created = await client.calls.create(
+  {
+    task: "Call each recipient and ask whether they can attend Friday lunch in San Francisco.",
+    recipients: [
+      { phones: ["<RECIPIENT_1_E164_PHONE>"] },
+      { phones: ["<RECIPIENT_2_E164_PHONE>"] },
+    ],
+    resultSchema: {
+      type: "object",
+      required: ["attending_count"],
+      properties: {
+        attending_count: { type: "integer" },
+      },
+    },
+    recipientResultSchema: {
+      type: "object",
+      required: ["can_attend"],
+      properties: {
+        can_attend: { type: "string", enum: ["yes", "no", "unknown"] },
+      },
+    },
+  },
+  { idempotencyKey: "wf_123_friday_lunch" },
+);
+
+const fetched = await client.calls.get(created.id);
+const completed = await client.calls.waitForResult(fetched.id);
+const createdAndCompleted = await client.calls.createAndWait(
+  {
+    task: "Call <E164_PHONE> and confirm their preferred appointment time.",
+    resultSchema: {
+      type: "object",
+      required: ["preferred_time"],
+      properties: {
+        preferred_time: { type: "string" },
+      },
+    },
+  },
+  { timeoutMs: 120_000, intervalMs: 2_000 },
+);
+const events = await client.calls.listEvents(createdAndCompleted.id, {
+  limit: 50,
+});
+```
+
+Python:
+
+```python
+created = client.calls.create(
+    task="Call each recipient and ask whether they can attend Friday lunch in San Francisco.",
+    recipients=[
+        {"phones": ["<RECIPIENT_1_E164_PHONE>"]},
+        {"phones": ["<RECIPIENT_2_E164_PHONE>"]},
+    ],
+    result_schema={
+        "type": "object",
+        "required": ["attending_count"],
+        "properties": {"attending_count": {"type": "integer"}},
+    },
+    recipient_result_schema={
+        "type": "object",
+        "required": ["can_attend"],
+        "properties": {
+            "can_attend": {"type": "string", "enum": ["yes", "no", "unknown"]},
+        },
+    },
+    idempotency_key="wf_123_friday_lunch",
+)
+
+fetched = client.calls.get(created["id"])
+completed = client.calls.wait_for_result(fetched["id"])
+created_and_completed = client.calls.create_and_wait(
+    task="Call <E164_PHONE> and confirm their preferred appointment time.",
+    result_schema={
+        "type": "object",
+        "required": ["preferred_time"],
+        "properties": {"preferred_time": {"type": "string"}},
+    },
+    timeout_seconds=120,
+    interval_seconds=2,
+)
+events = client.calls.list_events(created_and_completed["id"], limit=50)
+```
+
+## Availability
+
+Install the stable server SDK package for your runtime:
+
+```bash
+pnpm add @call-e/calle
+pip install calle-ai
+```
+
+Use pinned versions when your deployment process requires exact package reproducibility:
+
+```bash
+pnpm add @call-e/calle@0.2.2
+pip install calle-ai==0.2.0
+```
+
+## Supported scope
+
+This release does not include:
+
+- Python async client support
+- Project-level webhook management
+- Client-initiated cancellation of in-flight calls
+- Recurring or scheduled calls
+- Zod result schema helpers
+- Pydantic result schema helpers
