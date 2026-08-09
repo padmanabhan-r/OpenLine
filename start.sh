@@ -128,7 +128,7 @@ env_value() {
 
 DATABASE_URL_VALUE="$(env_value DATABASE_URL)"
 CALLE_KEY_VALUE="$(env_value CALLE_API_KEY)"
-ANTHROPIC_KEY_VALUE="$(env_value ANTHROPIC_API_KEY)"
+OPENAI_KEY_VALUE="$(env_value OPENAI_API_KEY)"
 LIVE_CALLS_VALUE="$(env_value OPENLINE_LIVE_CALLS)"
 ALLOWLIST_VALUE="$(env_value OPENLINE_CALL_ALLOWLIST)"
 
@@ -186,7 +186,7 @@ fi
 
 printf '  %s\n' "${DIM}Database:${RESET}  $([ -n "$DATABASE_URL_VALUE" ] && echo "${GREEN}configured${RESET}" || echo "${RED}missing — set DATABASE_URL${RESET}")"
 printf '  %s\n' "${DIM}CALL-E:${RESET}    $([ -n "$CALLE_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (dry run only)${RESET}")"
-printf '  %s\n' "${DIM}Claude:${RESET}    $([ -n "$ANTHROPIC_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (question generation unavailable)${RESET}")"
+printf '  %s\n' "${DIM}OpenAI:${RESET}    $([ -n "$OPENAI_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (default questions will be used)${RESET}")"
 printf '%s\n\n' "${DIM}────────────────────────────────────────────────────────${RESET}"
 
 [ -n "$DATABASE_URL_VALUE" ] || warn "Without DATABASE_URL the app will start but cannot load jobs or candidates."

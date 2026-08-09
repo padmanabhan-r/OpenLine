@@ -1,9 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
-import { assembleTask, createClaudeQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
+import { assembleTask, createOpenAIQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
 import { callePortFromEnv } from "@/lib/calle/port";
@@ -18,33 +18,51 @@ import { callePortFromEnv } from "@/lib/calle/port";
  */
 
 /**
- * Used when no Anthropic key is configured.
+ * Used when no OpenAI key is configured.
  *
  * Deliberately generic and deliberately lawful: these are the questions any
  * screening call needs, and they let the whole pipeline be exercised without a
  * second API dependency.
  */
-export function defaultQuestions(roleTitle: string): string[] {
+const REGION_NAMES: Record<string, string> = {
+  IN: "India",
+  US: "the United States",
+  GB: "the United Kingdom",
+  SG: "Singapore",
+  AU: "Australia",
+  AE: "the United Arab Emirates",
+  MY: "Malaysia",
+  MX: "Mexico",
+  BR: "Brazil",
+};
+
+export function defaultQuestions(roleTitle: string, region?: string | null): string[] {
+  // Work authorisation is lawful to ask; it has to name the right country to be
+  // a sensible question, so it follows the job's region.
+  const country = region ? REGION_NAMES[region] : null;
+
   return [
     `What drew you to apply for the ${roleTitle} role?`,
     "Walk me through a system you owned end to end. What was your part in it?",
     "What is your notice period, and when could you realistically start?",
     "What are your salary expectations for this role?",
-    "Are you authorised to work in India?",
+    country
+      ? `Are you authorised to work in ${country}?`
+      : "Are you authorised to work in the country this role is based in?",
   ];
 }
 
 async function questionsFor(job: Job, candidate: Candidate): Promise<ScriptQuestion[]> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
 
   const raw = apiKey
-    ? await createClaudeQuestionGenerator(new Anthropic({ apiKey })).generate({
+    ? await createOpenAIQuestionGenerator(new OpenAI({ apiKey })).generate({
         roleTitle: job.title,
         jobDescription: job.description,
         candidateSummary: candidate.summary ?? "No background summary available.",
         count: 5,
       })
-    : defaultQuestions(job.title);
+    : defaultQuestions(job.title, job.defaultRegion);
 
   // Questions are filtered individually, so one bad suggestion costs a question
   // rather than the whole call. The assembled script is checked again below.

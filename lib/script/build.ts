@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { inspectScript, type GuardResult } from "./guard";
 
 /**
@@ -6,7 +6,7 @@ import { inspectScript, type GuardResult } from "./guard";
  *
  * Two stages, deliberately separated:
  *
- *   `generateQuestions` asks Claude for role-specific questions. It is the
+ *   `generateQuestions` asks a model for role-specific questions. It is the
  *   non-deterministic part, and its output is untrusted.
  *
  *   `assembleTask` turns questions plus a fact sheet into the exact string
@@ -116,18 +116,24 @@ export interface QuestionGenerator {
   generate(input: GenerateQuestionsInput): Promise<string[]>;
 }
 
-/** Claude-backed question generator. */
-export function createClaudeQuestionGenerator(
-  client: Anthropic,
+/**
+ * OpenAI-backed question generator.
+ *
+ * The model is read from OPENAI_MODEL so it can be changed without a code
+ * change, since which models a given key can reach varies by account.
+ */
+export function createOpenAIQuestionGenerator(
+  client: OpenAI,
+  model = process.env.OPENAI_MODEL || "gpt-4o-mini",
 ): QuestionGenerator {
   return {
     async generate(input: GenerateQuestionsInput): Promise<string[]> {
       const count = input.count ?? 5;
-      const message = await client.messages.create({
-        model: "claude-sonnet-5",
-        max_tokens: 1024,
-        system: QUESTION_SYSTEM_PROMPT,
+      const response = await client.chat.completions.create({
+        model,
+        temperature: 0.4,
         messages: [
+          { role: "system", content: QUESTION_SYSTEM_PROMPT },
           {
             role: "user",
             content: `Role: ${input.roleTitle}
@@ -143,12 +149,7 @@ Write exactly ${count} screening questions.`,
         ],
       });
 
-      const text = message.content
-        .filter((block): block is Anthropic.TextBlock => block.type === "text")
-        .map((block) => block.text)
-        .join("");
-
-      return parseQuestionList(text);
+      return parseQuestionList(response.choices[0]?.message?.content ?? "");
     },
   };
 }
