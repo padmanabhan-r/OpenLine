@@ -8,6 +8,7 @@
 #   ./start.sh --migrate    apply pending database migrations first
 #   ./start.sh --test       run the full verification gate and exit
 #   ./start.sh --stop       stop a running dev server and exit
+#   ./start.sh --clean      discard the build cache first, then start
 #
 # The banner it prints before starting is the point: this application can place
 # real phone calls that cost money and reach real people, so whether *this*
@@ -28,6 +29,7 @@ die()   { printf '%s\n' "${RED}✗${RESET} $*" >&2; exit 1; }
 MODE="dev"
 RUN_MIGRATIONS=false
 RESTART=false
+CLEAN=false
 PORT="${PORT:-3000}"
 
 while [ $# -gt 0 ]; do
@@ -37,6 +39,7 @@ while [ $# -gt 0 ]; do
     --test)              MODE="test" ;;
     --restart)           RESTART=true ;;
     --stop)              MODE="stop" ;;
+    --clean)             CLEAN=true ;;
     --port)              shift; PORT="${1:?--port needs a number}" ;;
     -h|--help)
       sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
@@ -140,6 +143,18 @@ if [ ! -d node_modules ]; then
 elif [ pnpm-lock.yaml -nt node_modules ]; then
   info "Lockfile changed — reinstalling dependencies…"
   pnpm install
+fi
+
+# ── Build cache ──────────────────────────────────────────────────────────────
+#
+# Editing files while the dev server runs can leave Turbopack holding a compiled
+# graph that references a package you have since removed, which then fails to
+# resolve on every request. Clearing .next resolves it.
+
+if [ "$CLEAN" = true ]; then
+  info "Discarding the build cache…"
+  rm -rf .next
+  ok "Build cache cleared."
 fi
 
 # ── Test mode exits here ─────────────────────────────────────────────────────
