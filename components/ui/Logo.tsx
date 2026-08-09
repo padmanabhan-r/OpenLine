@@ -1,6 +1,8 @@
 interface LogoProps {
   size?: number;
   word?: boolean;
+  /** Release stage, set superscript on the wordmark. Pass null to omit. */
+  stage?: string | null;
 }
 
 /**
@@ -9,8 +11,16 @@ interface LogoProps {
  * Black on yellow is CALL-E's own voice, so the mark reads as family. The line
  * through the orb is the whole idea — the channel is open, and it runs both
  * ways.
+ *
+ * The ALPHA superscript follows CALL-E's own BETA treatment, and is honest:
+ * this places real phone calls to real people, so nobody should be in doubt
+ * about how finished it is.
  */
-export default function Logo({ size = 32, word = false }: LogoProps) {
+export default function Logo({
+  size = 32,
+  word = false,
+  stage = "ALPHA",
+}: LogoProps) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: word ? 10 : 0 }}>
       <div
@@ -41,14 +51,39 @@ export default function Logo({ size = 32, word = false }: LogoProps) {
       {word && (
         <span
           style={{
-            fontSize: size * 0.72,
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
-            color: "var(--ink)",
+            display: "inline-flex",
+            alignItems: "flex-start",
+            gap: size * 0.09,
             lineHeight: 1,
           }}
         >
-          OpenLine
+          <span
+            style={{
+              fontSize: size * 0.72,
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              color: "var(--ink)",
+              lineHeight: 1,
+            }}
+          >
+            OpenLine
+          </span>
+          {stage && (
+            <span
+              className="mono"
+              style={{
+                fontSize: Math.max(7.5, size * 0.26),
+                fontWeight: 600,
+                letterSpacing: ".08em",
+                color: "var(--ink-3)",
+                lineHeight: 1,
+                // Sits against the cap line, like CALL-E's BETA.
+                marginTop: size * 0.02,
+              }}
+            >
+              {stage}
+            </span>
+          )}
         </span>
       )}
     </div>

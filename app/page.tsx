@@ -508,6 +508,20 @@ export default function LandingPage() {
             <span style={{ fontWeight: 800, fontSize: 16, color: "var(--ink)" }}>
               OpenLine
             </span>
+            <span
+              className="mono"
+              style={{
+                fontSize: 10,
+                letterSpacing: ".1em",
+                padding: "3px 7px",
+                borderRadius: "var(--radius-pill)",
+                background: "var(--surface-2)",
+                border: "1px solid var(--line)",
+                color: "var(--ink-2)",
+              }}
+            >
+              ALPHA
+            </span>
             <span>· the screening call that goes both ways</span>
           </div>
           <span>Built for &ldquo;CALL-E: Your Code Is Calling&rdquo;</span>

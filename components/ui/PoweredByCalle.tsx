@@ -111,7 +111,8 @@ export function CalleCredit() {
           <strong style={{ color: "var(--ink)", fontWeight: 600 }}>
             CALL-E: Your Code Is Calling
           </strong>
-          .
+          . OpenLine is an alpha — it places real phone calls, so it runs in dry
+          run until you explicitly turn dialing on.
         </p>
       </div>
     </div>
