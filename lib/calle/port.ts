@@ -72,6 +72,11 @@ export interface CallePort {
    * authenticated API before acting on anything a webhook claims.
    */
   fetchCall(callId: string): Promise<Call>;
+  /** Poll until the call reaches a terminal state. */
+  waitForCall(
+    callId: string,
+    options?: { timeoutMs?: number; intervalMs?: number },
+  ): Promise<Call>;
   readonly mode: DialMode;
 }
 
@@ -169,6 +174,18 @@ export function createCallePort(config: CallePortConfig): CallePort {
 
     async fetchCall(callId: string): Promise<Call> {
       return client().calls.get(callId);
+    },
+
+    async waitForCall(
+      callId: string,
+      options: { timeoutMs?: number; intervalMs?: number } = {},
+    ): Promise<Call> {
+      // A screening call runs a few minutes; the SDK's default timeout is
+      // shorter than that, so it is raised deliberately here.
+      return client().calls.waitForResult(callId, {
+        timeoutMs: options.timeoutMs ?? 10 * 60_000,
+        intervalMs: options.intervalMs ?? 4_000,
+      });
     },
   };
 }

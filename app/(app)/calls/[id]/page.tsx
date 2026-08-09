@@ -4,6 +4,8 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import ScriptView from "@/components/screening/ScriptView";
+import CallButton from "@/components/screening/CallButton";
+import CallResult from "@/components/screening/CallResult";
 import { getCall } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
@@ -21,13 +23,43 @@ export default async function CallPage({
   const findings = call.guardFindings;
   const blocked = findings.length > 0 || call.status === "refused";
 
+  const liveEnabled = process.env.OPENLINE_LIVE_CALLS === "true";
+  const allowlist = (process.env.OPENLINE_CALL_ALLOWLIST ?? "")
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean);
+  const allowlisted = Boolean(
+    candidate.phoneE164 && allowlist.includes(candidate.phoneE164),
+  );
+  const alreadyCalled = Boolean(call.calleCallId);
+  const result = call.structuredResult;
+
+  const cannotCall = blocked
+    ? "The script is blocked, so it cannot dial."
+    : alreadyCalled
+      ? "This candidate has already been called."
+      : !candidate.phoneE164
+        ? "This candidate has no callable number."
+        : !liveEnabled
+          ? "Dry run — set OPENLINE_LIVE_CALLS=true to dial."
+          : !allowlisted
+            ? "This number is not on the call allowlist."
+            : null;
+
   return (
     <>
       <TopBar
         title={candidate.name}
         subtitle={`${job.title} · ${job.companyName}`}
         actions={
-          <Link
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <CallButton
+              screeningCallId={call.id}
+              candidateName={candidate.name}
+              disabled={Boolean(cannotCall)}
+              {...(cannotCall ? { disabledReason: cannotCall } : {})}
+            />
+            <Link
             href={`/jobs/${job.id}`}
             style={{
               display: "inline-flex",
@@ -39,7 +71,8 @@ export default async function CallPage({
             }}
           >
             <Icon name="arrow-left" size={15} /> Back to queue
-          </Link>
+            </Link>
+          </div>
         }
       />
       <Page>
@@ -124,6 +157,124 @@ export default async function CallPage({
               </ul>
             )}
           </Panel>
+
+          {/* Once the call has happened, its outcome leads. */}
+          {result && (
+            <Panel>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                  marginBottom: 18,
+                }}
+              >
+                <h2 style={{ fontSize: 15, fontWeight: 700 }}>What came back</h2>
+                {call.completionConfidence && (
+                  <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                    CALL-E confidence: {call.completionConfidence.label} (
+                    {call.completionConfidence.score})
+                  </span>
+                )}
+              </div>
+              <CallResult result={result} questions={call.questions} />
+            </Panel>
+          )}
+
+          {alreadyCalled && !result && call.status !== "dialing" && (
+            <Panel>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <Icon
+                  name="alert"
+                  size={19}
+                  style={{ color: "var(--amber)", flexShrink: 0, marginTop: 2 }}
+                />
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600 }}>
+                    The call happened, but no structured result came back
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "var(--ink-2)",
+                      marginTop: 5,
+                      maxWidth: 620,
+                    }}
+                  >
+                    CALL-E returns nothing rather than inventing an answer it
+                    cannot ground in the transcript. Read the transcript below
+                    and record the outcome yourself.
+                  </p>
+                </div>
+              </div>
+            </Panel>
+          )}
+
+          {/* The transcript, once there is one. */}
+          {call.transcript.length > 0 && (
+            <Panel>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                  marginBottom: 16,
+                }}
+              >
+                <h2 style={{ fontSize: 15, fontWeight: 700 }}>Transcript</h2>
+                <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                  what was actually said
+                </span>
+              </div>
+              <div style={{ display: "grid", gap: 10, maxHeight: 520, overflowY: "auto" }}>
+                {call.transcript.map((turn, i) => {
+                  const isAgent = turn.speaker === "bot";
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: isAgent ? "flex-start" : "flex-end",
+                      }}
+                    >
+                      <div
+                        style={{
+                          maxWidth: "76%",
+                          padding: "10px 14px",
+                          borderRadius: 14,
+                          background: isAgent
+                            ? "var(--surface-2)"
+                            : "var(--accent-tint)",
+                          border: `1px solid ${isAgent ? "var(--line-2)" : "#B9DFD6"}`,
+                        }}
+                      >
+                        <div
+                          className="mono"
+                          style={{
+                            fontSize: 10,
+                            letterSpacing: ".1em",
+                            textTransform: "uppercase",
+                            color: "var(--ink-3)",
+                            marginBottom: 4,
+                          }}
+                        >
+                          {isAgent ? "OpenLine" : candidate.name.split(" ")[0]}
+                          {turn.offsetSeconds !== null &&
+                            ` · ${Math.floor(turn.offsetSeconds / 60)}:${String(
+                              turn.offsetSeconds % 60,
+                            ).padStart(2, "0")}`}
+                        </div>
+                        <div style={{ fontSize: 14, lineHeight: 1.5 }}>
+                          {turn.text}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+          )}
 
           {/* The questions, as a list, before the full script. */}
           <Panel>

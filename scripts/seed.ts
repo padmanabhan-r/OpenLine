@@ -15,24 +15,38 @@ import { getDb } from "../lib/db";
 import { candidates, jobs, screeningCalls } from "../lib/db/schema";
 import { normalizePhone } from "../lib/phone/normalize";
 
+/**
+ * The demo shortlist.
+ *
+ * Numbers are US fiction-reserved (555-01xx), which validate but can never
+ * connect — so seeding this repo can never dial a real person. The one number
+ * that must actually ring comes from OPENLINE_DEMO_PHONE, so a real line is
+ * never committed to source.
+ *
+ * Two entries are deliberately unusable, because a shortlist worked by hand is
+ * exactly where people fall off the end of the list.
+ */
+const DEMO_PHONE = process.env.OPENLINE_DEMO_PHONE?.trim();
+
 const ROSTER = [
   {
     name: "Priya Raman",
-    rawPhone: "+91 98765 43210",
+    // Replaced by OPENLINE_DEMO_PHONE when set — this is the one we ring live.
+    rawPhone: DEMO_PHONE || "+1 415 555 0101",
     email: "priya.raman@example.com",
     summary:
       "6 years backend. Owned the payments ledger and settlement reconciliation at a Series B fintech. Go and TypeScript, Postgres, event-driven services.",
   },
   {
     name: "Arjun Mehta",
-    rawPhone: "09876543211",
+    rawPhone: "+1 415 555 0114",
     email: "arjun.mehta@example.com",
     summary:
       "8 years, currently staff engineer. Led a monolith-to-services migration and owns their internal API gateway. Strong on observability.",
   },
   {
     name: "Sana Qureshi",
-    rawPhone: "+91-9876543212",
+    rawPhone: "+1 415 555 0127",
     email: "sana.qureshi@example.com",
     summary:
       "4 years. Built the refunds and chargeback pipeline at a payments processor. Python and TypeScript, heavy Postgres.",
@@ -46,15 +60,12 @@ const ROSTER = [
   },
   {
     name: "Meera Iyer",
-    rawPhone: "9876543213",
+    rawPhone: "+1 415 555 0143",
     email: "meera.iyer@example.com",
     summary:
-      "5 years. Payments integrations — UPI, cards, and wallet rails. Wrote the reconciliation service still in production.",
+      "5 years. Payments integrations — cards, wallets, and bank rails. Wrote the reconciliation service still in production.",
   },
   {
-    // Note: the UK's reserved drama range (+44 7700 900xxx) is deliberately
-    // unassigned, so libphonenumber correctly reports it invalid. The US
-    // 555-01xx fiction range validates, so we use that for overseas applicants.
     name: "Tom Whitfield",
     rawPhone: "+1 415 555 0148",
     email: "tom.whitfield@example.com",
@@ -90,7 +101,7 @@ async function main() {
       title: "Senior Backend Engineer",
       companyName: "Northwind Payments",
       recruiterName: "Sam Oyelaran",
-      defaultRegion: "IN",
+      defaultRegion: "US",
       description: `We are hiring a Senior Backend Engineer to work on the payments ledger.
 
 You will own settlement reconciliation end to end: the service that matches what we think happened against what the banks say happened, and explains the difference. It is the system everything else trusts.
@@ -103,8 +114,8 @@ What we look for:
 
 The team is eight engineers. You would be the fourth on the ledger squad.`,
       factSheet: [
-        { label: "Salary band", value: "₹45–60 lakh per annum, depending on experience" },
-        { label: "Location policy", value: "Hybrid — two days a week in the Bangalore office" },
+        { label: "Salary band", value: "$150,000–$185,000, depending on experience" },
+        { label: "Location policy", value: "Hybrid — two days a week in the San Francisco office" },
         { label: "Team size", value: "Eight engineers; four on the ledger squad" },
         { label: "Interview process", value: "This screening call, then a technical conversation, then a system design session with the team. Three stages total." },
         { label: "Timeline", value: "Aiming to make a decision within three weeks of the screening call" },
@@ -116,7 +127,7 @@ The team is eight engineers. You would be the fourth on the ledger squad.`,
   console.log(`Created job: ${job.title} at ${job.companyName}`);
 
   const rows = ROSTER.map((entry) => {
-    const normalized = normalizePhone(entry.rawPhone, "IN");
+    const normalized = normalizePhone(entry.rawPhone, "US");
     return {
       jobId: job.id,
       name: entry.name,
@@ -134,6 +145,13 @@ The team is eight engineers. You would be the fourth on the ledger squad.`,
   console.log(
     `Created ${rows.length} candidates — ${callable} callable, ${rows.length - callable} needing a human to fix the number.`,
   );
+  if (DEMO_PHONE) {
+    console.log(`\nPriya Raman is set to your demo number, so she is the one who will actually ring.`);
+  } else {
+    console.log(
+      "\nOPENLINE_DEMO_PHONE is not set, so every number is fiction-reserved and none can connect.",
+    );
+  }
   console.log("\nSeed complete. Run ./start.sh and open http://localhost:3000");
 }
 
