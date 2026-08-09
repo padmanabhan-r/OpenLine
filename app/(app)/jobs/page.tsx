@@ -20,7 +20,7 @@ export default async function JobsPage() {
     <>
       <TopBar
         title="Jobs"
-        subtitle="Every applicant on a job gets a call, not just the shortlist."
+        subtitle="Every shortlisted candidate gets called — without you working down the list."
       />
       <Page>
         {error && (
@@ -82,7 +82,7 @@ export default async function JobsPage() {
                       {job.title}
                     </h2>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Badge tone="neutral">{job.candidateCount} applicants</Badge>
+                      <Badge tone="neutral">{job.candidateCount} shortlisted</Badge>
                       <Badge tone="good">{job.callableCount} callable</Badge>
                       {unreachable > 0 && (
                         <Badge tone="warn">{unreachable} need a human</Badge>

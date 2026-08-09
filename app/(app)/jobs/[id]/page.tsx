@@ -35,7 +35,7 @@ export default async function JobPage({
     <>
       <TopBar
         title={job.title}
-        subtitle={`${job.companyName} · ${roster.length} applicants, all of them getting a call`}
+        subtitle={`${job.companyName} · ${roster.length} shortlisted, every one of them called`}
         actions={<PreviewButton jobId={job.id} />}
       />
       <Page>
@@ -184,7 +184,7 @@ export default async function JobPage({
                 />
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 600 }}>
-                    {unreachable.length} applicant{unreachable.length === 1 ? "" : "s"} could not be
+                    {unreachable.length} candidate{unreachable.length === 1 ? "" : "s"} could not be
                     dialled
                   </p>
                   <p
@@ -196,9 +196,9 @@ export default async function JobPage({
                     }}
                   >
                     Their numbers could not be resolved without guessing, and guessing
-                    would dial a stranger who never applied. They stay in the queue,
-                    visible, waiting for someone to correct the number — rather than
-                    quietly disappearing.
+                    would dial a stranger. They stay on the list, visible, waiting for
+                    someone to correct the number — which is exactly how people fall
+                    off a shortlist when it is worked by hand.
                   </p>
                 </div>
               </div>

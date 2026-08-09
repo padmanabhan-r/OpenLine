@@ -9,59 +9,59 @@ const STEPS = [
   {
     n: "01",
     icon: "people",
-    title: "Bring the queue",
-    body: "Import the applicant roster for a role. Numbers are normalised to E.164, and anything that cannot be resolved is flagged rather than guessed.",
+    title: "Bring your shortlist",
+    body: "Import the candidates you have already picked for a role. Numbers are normalised, and anything unusable is flagged so nobody silently drops off the list.",
   },
   {
     n: "02",
     icon: "doc",
-    title: "Build the scripts",
-    body: "Questions are grounded in the job description and the candidate's own background, then checked against a prohibited-topic guard before anything dials.",
+    title: "Questions write themselves",
+    body: "Screening questions are drawn from the job description and each candidate's own background, so every call is specific to the person answering it.",
   },
   {
     n: "03",
     icon: "eye",
-    title: "Read before it speaks",
-    body: "The dry-run preview shows the exact words CALL-E will be instructed to say. Nothing is summarised. Violations are highlighted in the sentence they came from.",
+    title: "Approve once, not per call",
+    body: "Read the exact words that will be spoken, for every candidate, on one screen. Nothing is summarised and nothing dials until you are happy with it.",
   },
   {
     n: "04",
     icon: "phone",
-    title: "Call, then review",
-    body: "CALL-E holds the conversation and returns a structured result with the candidate's own words as evidence. Uncertain calls go to a human, never to a decision.",
+    title: "Get answers, not voicemails",
+    body: "CALL-E works down the whole list and returns structured answers with the candidate's own words as evidence. You review results instead of chasing people.",
   },
 ];
 
 const FEATURES = [
   {
-    icon: "shield",
-    title: "It cannot ask an unlawful question",
-    body: "Age, marital and family status, pregnancy, religion, caste, national origin, disability, gender, politics, and salary history are all blocked — before dialing and again after. Work authorisation and salary expectations are permitted.",
+    icon: "phone",
+    title: "The whole list gets called",
+    body: "Not the first twenty before the day runs out. Every shortlisted candidate with a working number is reached, and anyone who cannot be is surfaced rather than dropped.",
   },
   {
     icon: "quote",
-    title: "Every answer carries evidence",
-    body: "Each extracted field is paired with the candidate's verbatim words. Nothing reaches a recruiter's screen that cannot be traced to something the candidate actually said.",
-  },
-  {
-    icon: "ban",
-    title: "It abstains rather than guesses",
-    body: "When the transcript does not support an answer, the result is empty rather than invented. Low confidence routes the call to a person.",
+    title: "Answers you can act on",
+    body: "Notice period, availability, interest, and each screening answer come back as structured fields — paired with the candidate's verbatim words, so you can check any of it in a second.",
   },
   {
     icon: "people",
     title: "The call goes both ways",
-    body: "Candidates ask about salary, location policy, the team, and timelines. The assistant answers from a fixed fact sheet and hands anything else to a human.",
+    body: "Candidates ask about salary, location policy, the team, and timelines, and get real answers from a fact sheet you write. A screening call that only takes is a bad first impression.",
   },
   {
     icon: "doc",
-    title: "The script is the artefact",
-    body: "What you read in the preview is the exact string sent to CALL-E. A script you cannot inspect is a script nobody can be responsible for.",
+    title: "One approval, not a hundred",
+    body: "Read the exact script once, for the whole list. What you see in the preview is the string sent to CALL-E — a script you cannot inspect is one nobody can be responsible for.",
   },
   {
-    icon: "check-circle",
-    title: "Dry run by default",
-    body: "Live dialing needs an explicit switch and the destination number on an allowlist. An empty allowlist means nobody, never everybody.",
+    icon: "ban",
+    title: "It abstains rather than guesses",
+    body: "When a transcript does not support an answer, the field comes back empty instead of invented, and the call is routed to you. Nothing uncertain becomes a confident record.",
+  },
+  {
+    icon: "shield",
+    title: "Safe questions by construction",
+    body: "Every script is checked before dialing and every transcript after, so a question that cannot lawfully be asked in hiring never reaches a phone line — even at a hundred calls a day.",
   },
 ];
 
@@ -118,24 +118,24 @@ export default function LandingPage() {
               margin: "18px 0 0",
             }}
           >
-            Everyone applied.
+            Shortlisting is the fast part.
             <br />
-            <em className="hl">
-              Almost no one heard back.
-            </em>
+            <em className="hl">The calling is not.</em>
           </h1>
           <p
             style={{
               fontSize: "clamp(17px, 2.1vw, 21px)",
               color: "var(--ink-2)",
-              maxWidth: 620,
+              maxWidth: 640,
               margin: "26px auto 0",
               lineHeight: 1.5,
             }}
           >
-            A recruiter can phone five of five hundred applicants. OpenLine calls
-            every one of them — a real, two-way conversation that cannot ask an
-            unlawful question, and cannot reject anybody.
+            Once a shortlist exists, someone still has to work down it — dialing,
+            leaving voicemails, chasing callbacks, and eventually running out of
+            day. OpenLine places every one of those calls and hands back
+            structured answers, so you spend your time reviewing candidates
+            instead of reaching them.
           </p>
 
           <div
@@ -170,7 +170,7 @@ export default function LandingPage() {
             }}
           >
             <Icon name="check" size={14} style={{ color: "var(--green)" }} />
-            Dry run by default — nothing dials until you say so
+            You read every script before it is spoken — nothing dials until you say so
           </p>
 
           <QueueStage />
@@ -187,11 +187,9 @@ export default function LandingPage() {
           className="display"
           style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
         >
-          Read the script
+          From shortlist
           <br />
-          <em className="hl">
-            before anyone hears it.
-          </em>
+          <em className="hl">to answers, without dialing.</em>
         </h2>
         <p
           style={{
@@ -201,7 +199,7 @@ export default function LandingPage() {
             maxWidth: 640,
           }}
         >
-          Four steps, and a human sees the words at step three.
+          Four steps. You do the first and the last.
         </p>
 
         <div
@@ -292,20 +290,21 @@ export default function LandingPage() {
               margin: "22px auto 0",
             }}
           >
-            Applying for a job should not end in silence. If a company has time to
-            read your CV, it has time to tell you what happened.
+            Deciding who to call is judgement. Working down the list is not.
+            Only one of those is worth a recruiter&rsquo;s afternoon.
           </p>
           <p
             style={{
               fontSize: 15.5,
               color: "#D8D2A4",
-              maxWidth: 620,
+              maxWidth: 640,
               margin: "26px auto 0",
               lineHeight: 1.6,
             }}
           >
-            Phone calls did not scale, so almost nobody got one. That is the only
-            reason the black hole exists — and the one thing worth automating.
+            You still choose the shortlist, write the questions, and make every
+            decision. OpenLine does the part that was only ever slow because one
+            person can hold one phone at a time.
           </p>
         </div>
       </section>
@@ -321,11 +320,9 @@ export default function LandingPage() {
             className="display"
             style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
           >
-            What the assistant
+            What it will never
             <br />
-            <em className="hl">
-              is not allowed to do.
-            </em>
+            <em className="hl">do on your behalf.</em>
           </h2>
           <p
             style={{
@@ -334,8 +331,8 @@ export default function LandingPage() {
               marginTop: 20,
             }}
           >
-            Enforced in code, not in policy. Each of these is a check that runs
-            before or after every call.
+            Automating the dialing should not mean handing over the judgement. Each
+            of these is a check in the code, not a line in a policy document.
           </p>
         </div>
 
@@ -383,11 +380,9 @@ export default function LandingPage() {
             className="display"
             style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
           >
-            Built so a candidate
+            Built for the recruiter
             <br />
-            <em className="hl">
-              would agree to the call.
-            </em>
+            <em className="hl">who has to trust it.</em>
           </h2>
         </div>
 
@@ -448,11 +443,9 @@ export default function LandingPage() {
           className="display"
           style={{ fontSize: "clamp(38px, 6.5vw, 78px)" }}
         >
-          The queue is already there.
+          The shortlist is done.
           <br />
-          <em className="hl">
-            Call all of it.
-          </em>
+          <em className="hl">Let it call itself.</em>
         </h2>
         <div
           style={{

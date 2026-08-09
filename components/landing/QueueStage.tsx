@@ -1,16 +1,17 @@
 /**
- * One dot per applicant.
+ * One dot per shortlisted candidate.
  *
- * Five start filled — the handful a recruiter has time to phone. The other 495
- * are the ones who hear nothing back. On load the whole grid fills in.
+ * A handful start aqua — the ones a recruiter gets through by hand on a good
+ * day. The rest sit waiting. On load the whole band fills in, which is the
+ * argument the product makes, made without a sentence.
  *
- * It is the argument the product makes, made without a sentence.
+ * Wide and short on purpose: it should read as a workload, not a mosaic.
  */
 
-const TOTAL = 500;
-const COLUMNS = 25;
-/** The five a person actually got to. Spread out, so it reads as arbitrary. */
-const ALREADY_CALLED = new Set([37, 118, 241, 356, 462]);
+const TOTAL = 320;
+const COLUMNS = 40;
+/** The few a person actually got through today. Scattered, so it reads as arbitrary. */
+const CALLED_BY_HAND = new Set([23, 91, 146, 208, 262, 297]);
 
 export default function QueueStage() {
   return (
@@ -18,14 +19,14 @@ export default function QueueStage() {
       style={{
         position: "relative",
         margin: "44px auto 0",
-        width: "min(760px, 92vw)",
+        width: "min(1180px, 96vw)",
       }}
     >
       <div
         aria-hidden
         style={{
           position: "absolute",
-          inset: "-14% -8%",
+          inset: "-22% -6%",
           borderRadius: "50%",
           background:
             "radial-gradient(ellipse, rgba(47,182,188,.22), transparent 70%)",
@@ -36,14 +37,14 @@ export default function QueueStage() {
 
       <div
         role="img"
-        aria-label="Five hundred applicants. Five were phoned by a recruiter; OpenLine calls all five hundred."
+        aria-label="Three hundred and twenty shortlisted candidates. Six were reached by hand today; OpenLine calls all of them."
         style={{
           position: "relative",
           zIndex: 1,
           display: "grid",
           gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
-          gap: "clamp(4px, 0.7vw, 8px)",
-          padding: "clamp(18px, 3vw, 30px)",
+          gap: "clamp(5px, 0.65vw, 10px)",
+          padding: "clamp(20px, 2.6vw, 34px)",
           background: "var(--bg-glass)",
           backdropFilter: "var(--blur)",
           WebkitBackdropFilter: "var(--blur)",
@@ -53,7 +54,7 @@ export default function QueueStage() {
         }}
       >
         {Array.from({ length: TOTAL }, (_, i) => {
-          const called = ALREADY_CALLED.has(i);
+          const called = CALLED_BY_HAND.has(i);
           return (
             <span
               key={i}
@@ -61,9 +62,9 @@ export default function QueueStage() {
               style={
                 called
                   ? undefined
-                  : // Sweep left to right, top to bottom, after the eye has
-                    // had a moment to register the five that were already lit.
-                    { animationDelay: `${900 + i * 3.4}ms` }
+                  : // Sweep left to right, after the eye has had a moment to
+                    // register the few that were already lit.
+                    { animationDelay: `${900 + i * 4.5}ms` }
               }
             />
           );
@@ -82,12 +83,14 @@ export default function QueueStage() {
       >
         <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>
           <strong style={{ color: "var(--ink-2)", fontWeight: 600 }}>
-            500 applied.
+            320 shortlisted.
           </strong>{" "}
-          A recruiter had time for five.
+          Dialing them by hand takes weeks.
         </span>
-        <span style={{ fontSize: 13.5, color: "var(--accent-deep)", fontWeight: 600 }}>
-          OpenLine calls all of them.
+        <span
+          style={{ fontSize: 13.5, color: "var(--accent-deep)", fontWeight: 600 }}
+        >
+          OpenLine calls every one of them.
         </span>
       </div>
     </div>

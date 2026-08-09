@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 const COMMITMENTS = [
   {
-    title: "Everyone in the queue gets called",
-    body: "Not just a shortlist. A recruiter can phone five of five hundred applicants; the rest hear nothing. That gap exists because phone calls do not scale, which is the one thing automation genuinely fixes here.",
+    title: "Every shortlisted candidate gets called",
+    body: "Not the first twenty before the day runs out. Working down a shortlist by hand is slow enough that people fall off the end of it; this is the part of screening that was only ever limited by one person holding one phone.",
   },
   {
     title: "The call goes both ways",

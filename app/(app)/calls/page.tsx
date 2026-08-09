@@ -35,8 +35,8 @@ export default async function CallsPage() {
           <Panel>
             <p style={{ fontWeight: 600 }}>No scripts yet</p>
             <p style={{ fontSize: 13.5, color: "var(--ink-2)", marginTop: 6, maxWidth: 560 }}>
-              Open a job and choose <strong>Build call scripts</strong>. Every applicant
-              with a usable number gets a script you can read before anything dials.
+              Open a job and choose <strong>Build call scripts</strong>. Every shortlisted
+              candidate gets a script you can read before anything dials.
             </p>
             <Link
               href="/jobs"
