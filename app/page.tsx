@@ -3,6 +3,7 @@ import LandingNav from "@/components/landing/LandingNav";
 import QueueStage from "@/components/landing/QueueStage";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
+import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
 
 const STEPS = [
   {
@@ -81,7 +82,35 @@ export default function LandingPage() {
       {/* Hero */}
       <section style={{ textAlign: "center", padding: "56px 24px 0" }}>
         <div style={{ maxWidth: "var(--maxw)", margin: "0 auto" }}>
-          <span className="eyebrow">Screening calls, powered by CALL-E</span>
+          {/* Credit pill, in the shape CALL-E uses for its own partner badge. */}
+          <a
+            href="https://www.heycall-e.com/"
+            target="_blank"
+            rel="noreferrer noopener"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "9px 18px",
+              borderRadius: "var(--radius-pill)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--line)",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            <span
+              className="mono"
+              style={{
+                fontSize: 11,
+                letterSpacing: ".13em",
+                textTransform: "uppercase",
+                color: "var(--ink-2)",
+              }}
+            >
+              Powered by
+            </span>
+            <CalleMark height={19} />
+          </a>
           <h1
             className="display"
             style={{
@@ -447,10 +476,13 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: "1px solid var(--line)", padding: "48px 24px 40px" }}>
+        <div style={{ maxWidth: "var(--maxw)", margin: "0 auto" }}>
+          <CalleCredit />
+        </div>
         <div
           style={{
             maxWidth: "var(--maxw)",
-            margin: "0 auto",
+            margin: "26px auto 0",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -466,7 +498,7 @@ export default function LandingPage() {
             </span>
             <span>· the screening call that goes both ways</span>
           </div>
-          <span>Built with CALL-E for &ldquo;Your Code Is Calling&rdquo;</span>
+          <span>Built for &ldquo;CALL-E: Your Code Is Calling&rdquo;</span>
         </div>
       </footer>
     </div>

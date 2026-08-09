@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/ui/Logo";
 import Icon from "@/components/ui/Icon";
+import { PoweredByCalle } from "@/components/ui/PoweredByCalle";
 
 const navMain = [
   { href: "/jobs", label: "Jobs", icon: "jobs" },
@@ -157,6 +158,19 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
             {liveCalls ? "Real calls will be placed" : "Nothing will dial"}
           </div>
         </div>
+      </div>
+
+      {/* The calls are CALL-E's. Credit stays on screen. */}
+      <div
+        style={{
+          marginTop: 14,
+          paddingTop: 14,
+          borderTop: "1px solid var(--line-2)",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <PoweredByCalle height={17} />
       </div>
     </aside>
   );
