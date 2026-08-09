@@ -40,55 +40,57 @@ const ROSTER = [
     rawPhone: DEMO_PHONE || "+1 415 555 0101",
     email: "demo@example.com",
     summary:
-      "7 years backend and platform. Built the settlement reconciliation service at a payments company and owns it in production. TypeScript and Python, Postgres, event-driven services.",
+      "7 years across ML and platform engineering. Took a retrieval-augmented support assistant from prototype to production and owns it on call. Python and TypeScript, embeddings and vector search, LLM evaluation harnesses.",
   },
   {
     name: "Arjun Mehta",
     rawPhone: "+1 415 555 0114",
     email: "arjun.mehta@example.com",
     summary:
-      "8 years, currently staff engineer. Led a monolith-to-services migration and owns their internal API gateway. Strong on observability.",
+      "8 years, currently staff engineer. Built the model-serving platform their whole ML org deploys through, and led the migration from batch scoring to real-time inference. Strong on observability and latency.",
   },
   {
     name: "Sana Qureshi",
     rawPhone: "+1 415 555 0127",
     email: "sana.qureshi@example.com",
     summary:
-      "4 years. Built the refunds and chargeback pipeline at a payments processor. Python and TypeScript, heavy Postgres.",
+      "4 years. Fine-tuned and shipped the transaction-classification models behind a payments processor's fraud queue. Python, PyTorch, heavy feature engineering.",
   },
   {
     name: "Daniel Okafor",
     rawPhone: "+1 415 555 0132",
     email: "daniel.okafor@example.com",
     summary:
-      "9 years across infrastructure and platform. Ran the on-call rotation for a payments API handling 4k rps.",
+      "9 years across infrastructure and ML platform. Ran GPU capacity and the training pipeline for a team of twenty researchers, and owns their experiment-tracking stack.",
   },
   {
     name: "Meera Iyer",
     rawPhone: "+1 415 555 0143",
     email: "meera.iyer@example.com",
     summary:
-      "5 years. Payments integrations — cards, wallets, and bank rails. Wrote the reconciliation service still in production.",
+      "5 years. Built the LLM agent that drafts responses in a support tool used by 200 agents daily, including the eval suite that gates every prompt change.",
   },
   {
     name: "Tom Whitfield",
     rawPhone: "+1 415 555 0148",
     email: "tom.whitfield@example.com",
     summary:
-      "7 years, backend and data. Built ledger tooling and a double-entry accounting service from scratch.",
+      "7 years, data and ML engineering. Built the feature store and the offline-to-online consistency checks that keep training and serving from drifting apart.",
   },
   // These two cannot be dialled. The queue must say so rather than skip them.
   {
     name: "Rahul Nair",
     rawPhone: "phone on request",
     email: "rahul.nair@example.com",
-    summary: "6 years backend, payments and fraud tooling.",
+    summary:
+      "6 years. Applied ML for fraud and risk, plus the tooling that lets analysts label and audit model decisions.",
   },
   {
     name: "Ananya Bose",
     rawPhone: "12345",
     email: "ananya.bose@example.com",
-    summary: "5 years. Card issuing platform, Kotlin and TypeScript.",
+    summary:
+      "5 years. NLP and document extraction for a card-issuing platform. Python and Kotlin, transformer fine-tuning.",
   },
 ];
 
@@ -103,25 +105,25 @@ async function main() {
   const [job] = await db
     .insert(jobs)
     .values({
-      title: "Senior Backend Engineer",
+      title: "Senior AI Engineer",
       companyName: "Northwind Payments",
       recruiterName: "Sam Oyelaran",
       defaultRegion: "US",
-      description: `We are hiring a Senior Backend Engineer to work on the payments ledger.
+      description: `We are hiring a Senior AI Engineer to build the models and agents behind our fraud review and customer support systems.
 
-You will own settlement reconciliation end to end: the service that matches what we think happened against what the banks say happened, and explains the difference. It is the system everything else trusts.
+You will own an LLM-backed system end to end: the assistant that triages flagged transactions, explains its reasoning to a human reviewer, and gets measurably better every week. It is the system our review team trusts to tell them what to look at first.
 
 What we look for:
-- Substantial backend experience in a typed language (Go, TypeScript, Java, Kotlin).
-- Direct experience with payments, ledgers, reconciliation, or another domain where correctness is not negotiable.
-- Comfort with Postgres beyond ORM basics — you have reasoned about isolation levels.
-- Experience owning a service in production, including being on call for it.
+- Substantial experience shipping ML or LLM systems to production, not only notebooks and prototypes.
+- Evaluation discipline — you have built the harness that decides whether a prompt or model change is actually an improvement.
+- Comfort across the stack: retrieval, fine-tuning, inference cost and latency, and the service that wraps it all.
+- Experience owning a system in production, including being on call for it.
 
-The team is eight engineers. You would be the fourth on the ledger squad.`,
+The team is eight engineers. You would be the fourth on the applied AI squad.`,
       factSheet: [
-        { label: "Salary band", value: "$150,000–$185,000, depending on experience" },
+        { label: "Salary band", value: "$185,000–$225,000, depending on experience" },
         { label: "Location policy", value: "Hybrid — two days a week in the San Francisco office" },
-        { label: "Team size", value: "Eight engineers; four on the ledger squad" },
+        { label: "Team size", value: "Eight engineers; four on the applied AI squad" },
         { label: "Interview process", value: "This screening call, then a technical conversation, then a system design session with the team. Three stages total." },
         { label: "Timeline", value: "Aiming to make a decision within three weeks of the screening call" },
         { label: "Reports to", value: "Head of Engineering" },
