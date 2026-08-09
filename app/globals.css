@@ -1,26 +1,155 @@
 @import "tailwindcss";
 
+/*
+ * OpenLine design tokens.
+ *
+ * Light Linen: warm paper surfaces, terracotta accent, glass panels floating
+ * over a drifting blob field. Carried over from HireSphere so the two products
+ * read as siblings.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --bg: #F1E7D6;
+  --bg-2: #F7EFE2;
+  --surface: #FBF6EC;
+  --surface-2: #FFFCF6;
+
+  /* Typography */
+  --ink: #241B14;
+  --ink-2: #5C5046;
+  --ink-3: #8C7E70;
+
+  /* Borders */
+  --line: #E2D4BF;
+  --line-2: #EDE2D0;
+
+  /* Accent — terracotta */
+  --red: #C5341B;
+  --red-deep: #9E2814;
+  --red-soft: #E8654A;
+  --red-wash: #F7E3DA;
+  --red-tint: #FBEDE7;
+
+  /* Status */
+  --green: #5C7A4A;
+  --green-wash: #E7EBDD;
+  --amber: #C28A2E;
+  --amber-wash: #F3E8D0;
+  --blue: #4A6480;
+  --blue-wash: #E0E5EC;
+
+  /* Layout */
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-lg: 26px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(60,40,20,.05), 0 4px 12px rgba(60,40,20,.04);
+  --shadow: 0 4px 16px rgba(70,45,20,.08), 0 12px 40px rgba(70,45,20,.07);
+  --shadow-lg: 0 8px 32px rgba(70,45,20,.10), 0 24px 80px rgba(70,45,20,.10);
+
+  /* Glass */
+  --bg-glass:       rgba(255, 253, 248, 0.52);
+  --bg-glass-hover: rgba(255, 255, 255, 0.68);
+  --glass-edge:     rgba(255, 255, 255, 0.55);
+  --blur:           blur(22px) saturate(170%);
+  --blur-strong:    blur(32px) saturate(190%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button, input, textarea { font-family: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb {
+  background: #D9C9B2;
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #C9B69A; }
+
+/* ── Utility typography ── */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.eyebrow.muted { color: var(--ink-3); }
+
+.display {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.mono { font-family: var(--mono), ui-monospace, 'SF Mono', monospace; }
+.muted { color: var(--ink-2); }
+.faint { color: var(--ink-3); }
+
+/* ── Animation ── */
+@keyframes blobDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(2%, -1.5%) scale(1.04); }
+  66%      { transform: translate(-1.5%, 2%) scale(0.97); }
+}
+
+@keyframes fadeUp {
+  from { transform: translateY(9px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-up { animation: fadeUp .4s cubic-bezier(.2,.7,.3,1) both; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* The script preview: what the candidate will actually hear. */
+.script {
+  font-family: var(--mono), ui-monospace, 'SF Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink-2);
+}
+
+/* A guard violation, highlighted in place inside the script. */
+.violation {
+  background: var(--red-tint);
+  border-bottom: 2px solid var(--red);
+  color: var(--red-deep);
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 1px 2px;
 }
