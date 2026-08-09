@@ -46,6 +46,7 @@
   --shadow-sm: 0 1px 2px rgba(60,40,20,.05), 0 4px 12px rgba(60,40,20,.04);
   --shadow: 0 4px 16px rgba(70,45,20,.08), 0 12px 40px rgba(70,45,20,.07);
   --shadow-lg: 0 8px 32px rgba(70,45,20,.10), 0 24px 80px rgba(70,45,20,.10);
+  --maxw: 1180px;
 
   /* Glass */
   --bg-glass:       rgba(255, 253, 248, 0.52);
@@ -132,6 +133,56 @@ button, input, textarea { font-family: inherit; }
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
   }
+}
+
+/*
+ * The hero signature: one dot per applicant.
+ *
+ * A handful start terracotta — the few a recruiter has time to phone. The rest
+ * are the ones who hear nothing. On load they all fill in, which is the whole
+ * argument the product makes, made without a sentence.
+ */
+@keyframes dotFill {
+  to {
+    background: var(--red);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+.queue-dot {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--line);
+  opacity: 0.55;
+  transform: scale(0.82);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .queue-dot.pending {
+    animation: dotFill 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+}
+
+/* Without motion, show the end state rather than a frozen half-empty grid. */
+@media (prefers-reduced-motion: reduce) {
+  .queue-dot.pending {
+    background: var(--red);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.queue-dot.called {
+  background: var(--red);
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* The script preview: what the candidate will actually hear. */
