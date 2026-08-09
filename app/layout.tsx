@@ -17,9 +17,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenLine — the screening call that goes both ways",
+  title: "OpenLine — phone screening for recruiting teams",
   description:
-    "Every shortlisted candidate gets a real screening call, without a recruiter working down the list by hand.",
+    "A screening-call platform for recruiters. Bring your shortlist, approve the questions once, and every candidate gets called — with structured answers back.",
 };
 
 export default function RootLayout({

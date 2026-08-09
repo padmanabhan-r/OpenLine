@@ -111,31 +111,50 @@ export default function LandingPage() {
             </span>
             <CalleMark height={19} />
           </a>
+
+          {/* Category line: what this is and who it is for, before the pitch. */}
+          <p className="eyebrow" style={{ marginTop: 22 }}>
+            Phone screening for recruiting teams
+          </p>
+
           <h1
             className="display"
             style={{
-              fontSize: "clamp(44px, 8vw, 100px)",
-              margin: "18px 0 0",
+              fontSize: "clamp(40px, 7.2vw, 92px)",
+              margin: "14px 0 0",
             }}
           >
-            Shortlisting is the fast part.
+            Screen your whole shortlist
             <br />
-            <em className="hl">The calling is not.</em>
+            <em className="hl">by phone, without dialing.</em>
           </h1>
+
           <p
             style={{
               fontSize: "clamp(17px, 2.1vw, 21px)",
               color: "var(--ink-2)",
-              maxWidth: 640,
+              maxWidth: 680,
               margin: "26px auto 0",
               lineHeight: 1.5,
             }}
           >
-            Once a shortlist exists, someone still has to work down it — dialing,
-            leaving voicemails, chasing callbacks, and eventually running out of
-            day. OpenLine places every one of those calls and hands back
-            structured answers, so you spend your time reviewing candidates
-            instead of reaching them.
+            OpenLine is a screening-call platform for recruiters. Bring the
+            shortlist you have already chosen, approve the questions once, and it
+            calls every candidate — returning notice period, availability,
+            interest and their answers as structured fields you can act on.
+          </p>
+
+          <p
+            style={{
+              fontSize: "clamp(15px, 1.7vw, 17px)",
+              color: "var(--ink-3)",
+              maxWidth: 600,
+              margin: "14px auto 0",
+              lineHeight: 1.5,
+            }}
+          >
+            No working down the list by hand. No voicemail tag. No candidate left
+            at the bottom because the day ran out.
           </p>
 
           <div
