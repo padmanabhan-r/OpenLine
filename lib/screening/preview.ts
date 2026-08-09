@@ -6,7 +6,7 @@ import type { Candidate, Job } from "@/lib/db/schema";
 import { assembleTask, createOpenAIQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
-import { callePortFromEnv } from "@/lib/calle/port";
+import { createCallePort } from "@/lib/calle/port";
 
 /**
  * Turn a queued candidate into a reviewable call.
@@ -90,7 +90,16 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
     .from(candidatesTable)
     .where(eq(candidatesTable.jobId, jobId));
 
-  const port = callePortFromEnv();
+  // Previewing never dials, so it always runs the port in dry run — even when
+  // the deployment has live calls enabled. The allowlist is a dial-time
+  // control: gating script generation on it would mean a recruiter could not
+  // read the script for anyone they had not already authorised, which is
+  // backwards. Placing the call (lib/screening/dispatch) does check it.
+  const port = createCallePort({
+    mode: "dry_run",
+    apiKey: process.env.CALLE_API_KEY ?? "",
+    allowlist: [],
+  });
   const outcomes: PreviewOutcome[] = [];
 
   for (const candidate of roster) {
@@ -135,7 +144,7 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
         jobId: job.id,
         candidateId: candidate.id,
         idempotencyKey,
-        mode: port.mode,
+        mode: "dry_run",
         status: refused ? "refused" : "previewed",
         task,
         questions,
@@ -150,7 +159,7 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
         set: {
           task,
           questions,
-          mode: port.mode,
+          mode: "dry_run",
           status: refused ? "refused" : "previewed",
           guardFindings: guard.findings,
           refusalReason: refused ? outcome.refusal : null,

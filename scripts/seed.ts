@@ -19,9 +19,14 @@ import { normalizePhone } from "../lib/phone/normalize";
  * The demo shortlist.
  *
  * Exactly one entry is a real person — the maintainer, who consented to be
- * called on camera. Everyone else is invented, and their numbers are US
- * fiction-reserved (555-01xx): they pass E.164 validation but can never
- * connect, so seeding this repo cannot dial anybody.
+ * called on camera. Everyone else is invented.
+ *
+ * The mock numbers are US fiction-reserved (555-01xx) even though this role is
+ * based in India, and that is deliberate. India publishes no reserved range for
+ * fiction, so any plausible-looking +91 mobile number may well belong to a real
+ * subscriber — committing a handful of them to a public repository would be
+ * handing out numbers for strangers to dial. 555-01xx is genuinely reserved and
+ * can never connect. Numbers are masked in the UI regardless.
  *
  * The real line comes from OPENLINE_DEMO_PHONE and is never committed to
  * source. Without it, the demo candidate falls back to a fiction number too and
@@ -108,7 +113,7 @@ async function main() {
       title: "Senior AI Engineer",
       companyName: "Northwind Payments",
       recruiterName: "Sam Oyelaran",
-      defaultRegion: "US",
+      defaultRegion: "IN",
       description: `We are hiring a Senior AI Engineer to build the models and agents behind our fraud review and customer support systems.
 
 You will own an LLM-backed system end to end: the assistant that triages flagged transactions, explains its reasoning to a human reviewer, and gets measurably better every week. It is the system our review team trusts to tell them what to look at first.
@@ -121,8 +126,8 @@ What we look for:
 
 The team is eight engineers. You would be the fourth on the applied AI squad.`,
       factSheet: [
-        { label: "Salary band", value: "$185,000–$225,000, depending on experience" },
-        { label: "Location policy", value: "Hybrid — two days a week in the San Francisco office" },
+        { label: "Salary band", value: "₹55–75 lakh per annum, depending on experience" },
+        { label: "Location policy", value: "Hybrid — two days a week in the Bangalore office" },
         { label: "Team size", value: "Eight engineers; four on the applied AI squad" },
         { label: "Interview process", value: "This screening call, then a technical conversation, then a system design session with the team. Three stages total." },
         { label: "Timeline", value: "Aiming to make a decision within three weeks of the screening call" },
@@ -134,7 +139,7 @@ The team is eight engineers. You would be the fourth on the applied AI squad.`,
   console.log(`Created job: ${job.title} at ${job.companyName}`);
 
   const rows = ROSTER.map((entry) => {
-    const normalized = normalizePhone(entry.rawPhone, "US");
+    const normalized = normalizePhone(entry.rawPhone, "IN");
     return {
       jobId: job.id,
       name: entry.name,
