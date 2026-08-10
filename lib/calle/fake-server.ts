@@ -136,7 +136,7 @@ export function createFakeCalleFetch(
 
     const getCall = pathname.match(/^\/v1\/calls\/([^/]+)$/);
     if (input.method === "GET" && getCall) {
-      return json(buildCallTask(getCall[1], "Fake task", "+919876543210"));
+      return json(buildCallTask(getCall[1], "Fake task", "+14155550114"));
     }
 
     const listEvents = pathname.match(/^\/v1\/calls\/([^/]+)\/events$/);

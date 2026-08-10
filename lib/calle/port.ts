@@ -22,6 +22,21 @@ export interface CallePortConfig {
   apiKey: string;
   /** E.164 numbers this deployment is permitted to call. Empty means nobody. */
   allowlist: string[];
+  /**
+   * BCP 47 hint that decides how the agent sounds — `en-US` for an American
+   * voice, `en-IN` for Indian English, and so on.
+   *
+   * It is the only voice control CALL-E's Calls API exposes: there is no voice
+   * id, gender, or speed parameter. One value is used for every call, because
+   * a screening line that changes accent between candidates is a strange thing
+   * to ship.
+   *
+   * Note this is deliberately not `region`. That field is the recipient's own
+   * country, used for routing and compliance, and it is already implied by the
+   * E.164 number — sending `US` for an Indian mobile would be a lie told to the
+   * part of the system that checks whether the call is permitted.
+   */
+  locale?: string;
   baseUrl?: string;
   fetch?: (input: Request) => Promise<Response>;
 }
@@ -152,7 +167,12 @@ export function createCallePort(config: CallePortConfig): CallePort {
         const call = await client().calls.create(
           {
             task: request.task,
-            recipients: [{ phones: [request.phone] }],
+            recipients: [
+              {
+                phones: [request.phone],
+                ...(config.locale ? { locale: config.locale } : {}),
+              },
+            ],
             resultSchema: request.resultSchema,
             ...(request.metadata ? { metadata: request.metadata } : {}),
             ...(request.webhookUrl ? { webhookUrl: request.webhookUrl } : {}),
@@ -201,6 +221,9 @@ export function callePortFromEnv(
       .split(",")
       .map((n) => n.trim())
       .filter(Boolean),
+    // American English unless told otherwise. Configurable without a code
+    // change, since which voice sounds right is a judgement, not a constant.
+    locale: env.OPENLINE_CALL_LOCALE?.trim() || "en-US",
     ...(env.CALLE_BASE_URL ? { baseUrl: env.CALLE_BASE_URL } : {}),
   });
 }

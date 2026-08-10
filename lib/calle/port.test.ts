@@ -2,6 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 import { createCallePort } from "./port";
 import { createFakeCalleFetch } from "./fake-server";
 
+/**
+ * US fiction-reserved (555-01xx), so this number can never connect.
+ * India publishes no reserved range, so a plausible +91 number in a public
+ * repository is very likely someone's real phone. The port only cares that a
+ * number is E.164 and on the allowlist, so the country is irrelevant here.
+ */
+const TEST_PHONE = "+14155550114";
+
 const RESULT_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -15,7 +23,7 @@ const dialRequest = (overrides: Partial<Parameters<
   ReturnType<typeof createCallePort>["dial"]
 >[0]> = {}) => ({
   task: "Call Priya about the Senior Backend Engineer role. Ask her notice period.",
-  phone: "+919876543210",
+  phone: TEST_PHONE,
   resultSchema: RESULT_SCHEMA as unknown as Record<string, unknown>,
   idempotencyKey: "job1:cand1:v1",
   ...overrides,
@@ -27,7 +35,7 @@ describe("createCallePort — dry run is the default", () => {
     const port = createCallePort({
       mode: "dry_run",
       apiKey: "test",
-      allowlist: ["+919876543210"],
+      allowlist: [TEST_PHONE],
       fetch,
     });
 
@@ -51,7 +59,7 @@ describe("createCallePort — dry run is the default", () => {
     expect(outcome.ok).toBe(true);
     if (outcome.ok && outcome.mode === "dry_run") {
       expect(outcome.preview.task).toBe("Hello there.");
-      expect(outcome.preview.phone).toBe("+919876543210");
+      expect(outcome.preview.phone).toBe(TEST_PHONE);
     }
   });
 });
@@ -61,7 +69,7 @@ describe("createCallePort — refuses rather than dialing", () => {
     createCallePort({
       mode: "live",
       apiKey: "test",
-      allowlist: ["+919876543210"],
+      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch(),
       ...overrides,
     });
@@ -108,7 +116,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
     const port = createCallePort({
       mode: "live",
       apiKey: "test",
-      allowlist: ["+919876543210"],
+      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch({
         structuredResult: { reached_candidate: "yes" },
       }),
@@ -130,7 +138,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
     const port = createCallePort({
       mode: "live",
       apiKey: "test",
-      allowlist: ["+919876543210"],
+      allowlist: [TEST_PHONE],
       fetch: fake,
     });
 
@@ -138,11 +146,50 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
     expect(fake.lastIdempotencyKey()).toBe("stable-key");
   });
 
+  it("sends the configured locale, which is the only control over how the agent sounds", async () => {
+    const fake = createFakeCalleFetch();
+    const port = createCallePort({
+      mode: "live",
+      apiKey: "test",
+      allowlist: [TEST_PHONE],
+      locale: "en-US",
+      fetch: fake,
+    });
+
+    await port.dial(dialRequest());
+
+    const [body] = fake.createdCalls();
+    const recipients = body.recipients as Array<{
+      phones: string[];
+      locale?: string;
+    }>;
+    expect(recipients[0].locale).toBe("en-US");
+    // The recipient's own country is not ours to assert — it is implied by the
+    // E.164 number and used for compliance, so the port must not invent one.
+    expect(recipients[0]).not.toHaveProperty("region");
+  });
+
+  it("omits locale entirely when none is configured", async () => {
+    const fake = createFakeCalleFetch();
+    const port = createCallePort({
+      mode: "live",
+      apiKey: "test",
+      allowlist: [TEST_PHONE],
+      fetch: fake,
+    });
+
+    await port.dial(dialRequest());
+
+    const [body] = fake.createdCalls();
+    const recipients = body.recipients as Array<Record<string, unknown>>;
+    expect(recipients[0]).not.toHaveProperty("locale");
+  });
+
   it("surfaces a CALL-E API error as a refusal rather than throwing", async () => {
     const port = createCallePort({
       mode: "live",
       apiKey: "test",
-      allowlist: ["+919876543210"],
+      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch({
         failWith: { status: 402, code: "insufficient_balance" },
       }),
