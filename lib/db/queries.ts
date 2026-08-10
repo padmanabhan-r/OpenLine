@@ -15,9 +15,15 @@ export async function listJobs() {
       candidateCount: sql<number>`(
         select count(*)::int from ${candidates} where ${candidates.jobId} = ${jobs.id}
       )`,
+      shortlistedCount: sql<number>`(
+        select count(*)::int from ${candidates}
+        where ${candidates.jobId} = ${jobs.id} and ${candidates.shortlisted}
+      )`,
       callableCount: sql<number>`(
         select count(*)::int from ${candidates}
-        where ${candidates.jobId} = ${jobs.id} and ${candidates.phoneE164} is not null
+        where ${candidates.jobId} = ${jobs.id}
+          and ${candidates.shortlisted}
+          and ${candidates.phoneE164} is not null
       )`,
       callCount: sql<number>`(
         select count(*)::int from ${screeningCalls} where ${screeningCalls.jobId} = ${jobs.id}
@@ -31,6 +37,26 @@ export async function getJob(id: string) {
   const db = getDb();
   const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
   return job ?? null;
+}
+
+/** A single candidate with the job they applied to. */
+export async function getCandidate(id: string) {
+  const db = getDb();
+  const [row] = await db
+    .select({ candidate: candidates, job: jobs })
+    .from(candidates)
+    .innerJoin(jobs, eq(candidates.jobId, jobs.id))
+    .where(eq(candidates.id, id))
+    .limit(1);
+  if (!row) return null;
+
+  const calls = await db
+    .select()
+    .from(screeningCalls)
+    .where(eq(screeningCalls.candidateId, id))
+    .orderBy(desc(screeningCalls.createdAt));
+
+  return { ...row, calls };
 }
 
 /** Candidates for a job, each with its most recent screening call if any. */

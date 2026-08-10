@@ -50,7 +50,7 @@ export default async function JobsPage() {
 
         <div style={{ display: "grid", gap: 14 }}>
           {jobs.map((job) => {
-            const unreachable = job.candidateCount - job.callableCount;
+            const unreachable = job.shortlistedCount - job.callableCount;
             return (
               <Link key={job.id} href={`/jobs/${job.id}`}>
                 <article
@@ -82,7 +82,8 @@ export default async function JobsPage() {
                       {job.title}
                     </h2>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Badge tone="neutral">{job.candidateCount} shortlisted</Badge>
+                      <Badge tone="neutral">{job.candidateCount} applied</Badge>
+                      <Badge tone="info">{job.shortlistedCount} shortlisted</Badge>
                       <Badge tone="good">{job.callableCount} callable</Badge>
                       {unreachable > 0 && (
                         <Badge tone="warn">{unreachable} need a human</Badge>

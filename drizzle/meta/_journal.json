@@ -8,6 +8,13 @@
       "when": 1786289788358,
       "tag": "0000_milky_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786329936911,
+      "tag": "0001_curious_black_cat",
+      "breakpoints": true
     }
   ]
 }

@@ -26,7 +26,9 @@ export default async function JobPage({
   const job = await getJob(id);
   if (!job) notFound();
 
-  const roster = await listJobCandidates(id);
+  const applicants = await listJobCandidates(id);
+  const roster = applicants.filter((r) => r.candidate.shortlisted);
+  const pool = applicants.filter((r) => !r.candidate.shortlisted);
   const callable = roster.filter((r) => r.candidate.phoneE164);
   const unreachable = roster.filter((r) => !r.candidate.phoneE164);
   const scripted = roster.filter((r) => r.call);
@@ -35,7 +37,7 @@ export default async function JobPage({
     <>
       <TopBar
         title={job.title}
-        subtitle={`${job.companyName} · ${roster.length} shortlisted, every one of them called`}
+        subtitle={`${job.companyName} · ${applicants.length} applied, ${roster.length} shortlisted, every one of them called`}
         actions={<PreviewButton jobId={job.id} />}
       />
       <Page>
@@ -79,7 +81,11 @@ export default async function JobPage({
                 borderBottom: "1px solid var(--line-2)",
               }}
             >
-              <h2 style={{ fontSize: 15, fontWeight: 700 }}>Queue</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 700 }}>Shortlist</h2>
+              <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                {roster.length} of {applicants.length} applicants — the only people
+                OpenLine will call
+              </span>
               <div style={{ flex: 1 }} />
               <Badge tone="good">{callable.length} callable</Badge>
               {unreachable.length > 0 && (
@@ -106,7 +112,12 @@ export default async function JobPage({
                   <Avatar name={candidate.name} />
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 600 }}>{candidate.name}</div>
+                    <Link
+                      href={`/candidates/${candidate.id}`}
+                      style={{ fontSize: 14.5, fontWeight: 600 }}
+                    >
+                      {candidate.name}
+                    </Link>
                     <div
                       style={{
                         fontSize: 12.5,
@@ -118,7 +129,9 @@ export default async function JobPage({
                         maxWidth: 480,
                       }}
                     >
-                      {candidate.summary}
+                      {candidate.profile
+                        ? `${candidate.profile.profile.headline} · ${candidate.profile.profile.yearsOfExperience} yrs`
+                        : candidate.summary}
                     </div>
                   </div>
 
@@ -173,6 +186,78 @@ export default async function JobPage({
               );
             })}
           </Panel>
+
+          {/* Everyone the shortlist left out, with the reason, in the open. */}
+          {pool.length > 0 && (
+            <Panel padded={false}>
+              <div
+                style={{
+                  padding: "16px 22px",
+                  borderBottom: "1px solid var(--line-2)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700 }}>
+                    Not shortlisted
+                  </h2>
+                  <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                    {pool.length} applicants, no call, reasons on the record
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "var(--ink-3)",
+                    marginTop: 6,
+                    maxWidth: 620,
+                  }}
+                >
+                  OpenLine did not make these decisions and cannot overturn them.
+                  They are shown because a filter nobody can see is a filter
+                  nobody can correct — and some of these reasons deserve an
+                  argument.
+                </p>
+              </div>
+
+              {pool.map(({ candidate }) => (
+                <div
+                  key={candidate.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "12px 22px",
+                    borderBottom: "1px solid var(--line-2)",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Link
+                      href={`/candidates/${candidate.id}`}
+                      style={{ fontSize: 13.5, fontWeight: 600 }}
+                    >
+                      {candidate.name}
+                    </Link>
+                    <div
+                      style={{
+                        fontSize: 12.5,
+                        color: "var(--ink-3)",
+                        marginTop: 2,
+                        maxWidth: 620,
+                      }}
+                    >
+                      {candidate.profile?.screening.note}
+                    </div>
+                  </div>
+                  <span
+                    className="mono"
+                    style={{ fontSize: 12, color: "var(--ink-3)", flexShrink: 0 }}
+                  >
+                    {candidate.profile?.screening.matchScore ?? "—"}
+                  </span>
+                </div>
+              ))}
+            </Panel>
+          )}
 
           {unreachable.length > 0 && (
             <Panel>

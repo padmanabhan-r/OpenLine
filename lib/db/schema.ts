@@ -8,6 +8,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { CandidateProfile } from "@/lib/candidates/profile";
 import type { FactSheetEntry, ScriptQuestion } from "@/lib/script/build";
 import type { GuardFinding } from "@/lib/script/guard";
 import type { ScreeningResult } from "@/lib/script/schema";
@@ -67,6 +68,20 @@ export const candidates = pgTable(
     email: text("email"),
     /** Background summary used to ground question generation. */
     summary: text("summary"),
+    /**
+     * The full imported record — career history, skills, and the 23 platform
+     * signals — kept whole rather than flattened into columns. Nothing here is
+     * queried on; it exists so a recruiter can see what the shortlist was made
+     * from, and so a question can be grounded in a real project rather than an
+     * adjective. Null for candidates imported from a plain CSV.
+     */
+    profile: jsonb("profile").$type<CandidateProfile | null>(),
+    /**
+     * Whether the recruiter's ATS put this person on the shortlist. Only the
+     * shortlist gets called; the rest stay visible, with their reason, because
+     * a filter nobody can see is a filter nobody can correct.
+     */
+    shortlisted: boolean("shortlisted").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

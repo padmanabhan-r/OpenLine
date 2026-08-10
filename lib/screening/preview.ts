@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
@@ -85,10 +85,18 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
   const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, jobId)).limit(1);
   if (!job) throw new Error(`No job ${jobId}`);
 
+  // Only the shortlist. The rest of the applicant pool is stored so a human can
+  // see who was filtered out, but generating a call script for someone the
+  // recruiter has already declined would be building a call nobody sanctioned.
   const roster = await db
     .select()
     .from(candidatesTable)
-    .where(eq(candidatesTable.jobId, jobId));
+    .where(
+      and(
+        eq(candidatesTable.jobId, jobId),
+        eq(candidatesTable.shortlisted, true),
+      ),
+    );
 
   // Previewing never dials, so it always runs the port in dry run — even when
   // the deployment has live calls enabled. The allowlist is a dial-time
