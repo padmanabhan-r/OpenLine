@@ -99,9 +99,13 @@ export interface GenerateQuestionsInput {
 
 const QUESTION_SYSTEM_PROMPT = `You write screening questions for a phone call with a job applicant.
 
+The purpose of this call is to establish FIT between this specific candidate's background and this specific role — the things a recruiter would otherwise spend fifteen minutes on the phone finding out. It is not a technical interview and not a test.
+
 Rules you must follow:
-- Write questions about the candidate's experience, skills, availability, notice period, and interest in the role.
-- Ground questions in the specific job description and the candidate's own background.
+- Read the job description and the candidate's background together. Each question must come from the overlap or the gap between them: something this role requires that this candidate's history raises a question about.
+- Ask about scope and ownership ("you owned X — what was your part in it?"), about the gap between what they have done and what this role needs, and about availability, notice period, work mode, location, and interest in the role.
+- NEVER write a technical test question. No definitions, no algorithms, no "how would you implement", no "what is the difference between", no trivia, no whiteboard or coding problems. A later stage handles depth; this call does not.
+- Prefer a question only answerable by this person about their own work. If a question could be sent unchanged to any other applicant, it is too generic — rewrite it.
 - Each question must be answerable out loud in under a minute. No multi-part questions.
 - Use plain spoken English. These are read aloud over a phone line.
 
