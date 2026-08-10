@@ -12,21 +12,25 @@ export async function listJobs() {
       recruiterName: jobs.recruiterName,
       defaultRegion: jobs.defaultRegion,
       createdAt: jobs.createdAt,
+      // Both sides of each correlation are qualified by hand, and that is not
+      // decoration. Interpolating `${candidates.jobId} = ${jobs.id}` renders
+      // both columns *unqualified* — `"job_id" = "id"` — so inside the subquery
+      // `id` binds to candidates.id rather than the outer job, every count comes
+      // back 0, and the page looks empty while the table is full. Aliasing the
+      // inner table and naming the outer one removes the ambiguity.
       candidateCount: sql<number>`(
-        select count(*)::int from ${candidates} where ${candidates.jobId} = ${jobs.id}
+        select count(*)::int from ${candidates} c where c.job_id = jobs.id
       )`,
       shortlistedCount: sql<number>`(
-        select count(*)::int from ${candidates}
-        where ${candidates.jobId} = ${jobs.id} and ${candidates.shortlisted}
+        select count(*)::int from ${candidates} c
+        where c.job_id = jobs.id and c.shortlisted
       )`,
       callableCount: sql<number>`(
-        select count(*)::int from ${candidates}
-        where ${candidates.jobId} = ${jobs.id}
-          and ${candidates.shortlisted}
-          and ${candidates.phoneE164} is not null
+        select count(*)::int from ${candidates} c
+        where c.job_id = jobs.id and c.shortlisted and c.phone_e164 is not null
       )`,
       callCount: sql<number>`(
-        select count(*)::int from ${screeningCalls} where ${screeningCalls.jobId} = ${jobs.id}
+        select count(*)::int from ${screeningCalls} sc where sc.job_id = jobs.id
       )`,
     })
     .from(jobs)
@@ -59,20 +63,60 @@ export async function getCandidate(id: string) {
   return { ...row, calls };
 }
 
-/** Candidates for a job, each with its most recent screening call if any. */
+/**
+ * Candidates for a job, each with its most recent screening call if any.
+ *
+ * Both selects are deliberately narrow. `select()` on candidates drags the full
+ * `profile` blob for every applicant — 258kB and about three seconds for a
+ * roster of fifty — to render a list that shows a headline and a score. The
+ * four fields the list actually needs are pulled out of the JSON in Postgres
+ * instead, which is the difference between a 3s page and a 300ms one. The whole
+ * profile is still available on the candidate page, where it is one row.
+ *
+ * Screening calls get the same treatment: the task text and transcript are
+ * another 87kB that nothing on this page reads.
+ */
 export async function listJobCandidates(jobId: string) {
   const db = getDb();
-  const rows = await db
-    .select()
+
+  const rowsQuery = db
+    .select({
+      id: candidates.id,
+      name: candidates.name,
+      phoneE164: candidates.phoneE164,
+      phoneRejection: candidates.phoneRejection,
+      // Only ever rendered as one truncated line, and the full text is the
+      // multi-paragraph grounding summary — 1.7kB a head, 87kB a roster.
+      summary: sql<string | null>`left(${candidates.summary}, 200)`,
+      shortlisted: candidates.shortlisted,
+      headline: sql<
+        string | null
+      >`${candidates.profile}->'profile'->>'headline'`,
+      yearsOfExperience: sql<
+        number | null
+      >`(${candidates.profile}->'profile'->>'yearsOfExperience')::float`,
+      matchScore: sql<
+        number | null
+      >`(${candidates.profile}->'screening'->>'matchScore')::int`,
+      note: sql<string | null>`${candidates.profile}->'screening'->>'note'`,
+    })
     .from(candidates)
     .where(eq(candidates.jobId, jobId))
     .orderBy(candidates.name);
 
-  const calls = await db
-    .select()
+  const callsQuery = db
+    .select({
+      id: screeningCalls.id,
+      candidateId: screeningCalls.candidateId,
+      status: screeningCalls.status,
+      guardFindings: screeningCalls.guardFindings,
+    })
     .from(screeningCalls)
     .where(eq(screeningCalls.jobId, jobId))
     .orderBy(desc(screeningCalls.createdAt));
+
+  // Neither query depends on the other, and each is a round trip to Neon.
+  const [rows, calls] = await Promise.all([rowsQuery, callsQuery]);
 
   const latest = new Map<string, (typeof calls)[number]>();
   for (const call of calls) {
