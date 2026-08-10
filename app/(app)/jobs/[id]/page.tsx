@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
 import PreviewButton from "@/components/screening/PreviewButton";
+import JobDescription from "@/components/jobs/JobDescription";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
@@ -42,32 +43,13 @@ export default async function JobPage({
       />
       <Page>
         <div style={{ display: "grid", gap: 16 }}>
-          {/* What the agent is allowed to say. */}
+          {/* The posting, as a candidate would read it.
+              The fact sheet that used to sit under here is not a second job
+              description — it is the allowlist of things the agent may say out
+              loud. It belongs with the script a recruiter reviews before
+              dialing, not on the page describing the role. */}
           <Panel>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700 }}>Job fact sheet</h2>
-              <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
-                the only things the assistant may state on the call
-              </span>
-            </div>
-            <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 16, maxWidth: 620 }}>
-              CALL-E cannot look anything up mid-call, so every fact must be written
-              into the script before dialing. Anything a candidate asks that is not
-              here is handed to a human instead of guessed.
-            </p>
-            <dl style={{ display: "grid", gap: 10 }}>
-              {job.factSheet.map((fact) => (
-                <div
-                  key={fact.label}
-                  style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 14 }}
-                >
-                  <dt style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>
-                    {fact.label}
-                  </dt>
-                  <dd style={{ fontSize: 13.5, color: "var(--ink)" }}>{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <JobDescription description={job.description} />
           </Panel>
 
           {/* The queue. */}
@@ -129,8 +111,8 @@ export default async function JobPage({
                         maxWidth: 480,
                       }}
                     >
-                      {candidate.profile
-                        ? `${candidate.profile.profile.headline} · ${candidate.profile.profile.yearsOfExperience} yrs`
+                      {candidate.headline
+                        ? `${candidate.headline} · ${candidate.yearsOfExperience} yrs`
                         : candidate.summary}
                     </div>
                   </div>
@@ -245,14 +227,14 @@ export default async function JobPage({
                         maxWidth: 620,
                       }}
                     >
-                      {candidate.profile?.screening.note}
+                      {candidate.note}
                     </div>
                   </div>
                   <span
                     className="mono"
                     style={{ fontSize: 12, color: "var(--ink-3)", flexShrink: 0 }}
                   >
-                    {candidate.profile?.screening.matchScore ?? "—"}
+                    {candidate.matchScore ?? "—"}
                   </span>
                 </div>
               ))}
