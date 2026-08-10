@@ -167,53 +167,11 @@ button, input, textarea { font-family: inherit; }
 }
 
 /*
- * The hero signature: one dot per applicant.
- *
- * A handful start filled — the few a recruiter has time to phone. The rest
- * fill in on load. Ink on yellow, like everything else the brand says plainly.
+ * Ambient motion for the hero.
  */
-@keyframes dotFill {
-  to {
-    background: var(--cta);
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 @keyframes floaty {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-9px); }
-}
-
-.queue-dot {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(29, 27, 16, 0.16);
-  opacity: 0.6;
-  transform: scale(0.82);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .queue-dot.pending {
-    animation: dotFill 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-  }
-}
-
-/* Without motion, show the end state rather than a frozen half-empty grid. */
-@media (prefers-reduced-motion: reduce) {
-  .queue-dot.pending {
-    background: var(--cta);
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* The five a recruiter already reached — aqua, so the story reads at a glance. */
-.queue-dot.called {
-  background: var(--accent);
-  opacity: 1;
-  transform: scale(1);
 }
 
 /* The script preview: what the candidate will actually hear. */

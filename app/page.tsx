@@ -1,6 +1,5 @@
 import Link from "next/link";
 import LandingNav from "@/components/landing/LandingNav";
-import QueueStage from "@/components/landing/QueueStage";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
@@ -15,8 +14,8 @@ const STEPS = [
   {
     n: "02",
     icon: "doc",
-    title: "Questions write themselves",
-    body: "Screening questions are drawn from the job description and each candidate's own background, so every call is specific to the person answering it.",
+    title: "A script built for one person",
+    body: "Each script is written by reading the candidate's profile against the job description and asking where the two meet and where they don't. Not a technical test — the fit questions a recruiter would spend fifteen minutes finding out.",
   },
   {
     n: "03",
@@ -112,9 +111,11 @@ export default function LandingPage() {
             <CalleMark height={19} />
           </a>
 
-          {/* Category line: what this is and who it is for, before the pitch. */}
+          {/* Category line: what this is and who it is for, before the pitch.
+              It says "AI" because the agent says it out loud on every call —
+              the disclosure starts here, not at the dial tone. */}
           <p className="eyebrow" style={{ marginTop: 22 }}>
-            Phone screening for recruiting teams
+            An AI phone screening agent for recruiting teams
           </p>
 
           <h1
@@ -138,10 +139,7 @@ export default function LandingPage() {
               lineHeight: 1.5,
             }}
           >
-            OpenLine is a screening-call platform for recruiters. Bring the
-            shortlist you have already chosen, approve the questions once, and it
-            calls every candidate — returning notice period, availability,
-            interest and their answers as structured fields you can act on.
+            Let your agent make the first calls. You get your day back.
           </p>
 
           <p
@@ -191,8 +189,6 @@ export default function LandingPage() {
             <Icon name="check" size={14} style={{ color: "var(--green)" }} />
             You read every script before it is spoken — nothing dials until you say so
           </p>
-
-          <QueueStage />
         </div>
       </section>
 
@@ -321,7 +317,7 @@ export default function LandingPage() {
               lineHeight: 1.6,
             }}
           >
-            You still choose the shortlist, write the questions, and make every
+            You still choose the shortlist, approve the questions, and make every
             decision. OpenLine does the part that was only ever slow because one
             person can hold one phone at a time.
           </p>
@@ -524,7 +520,9 @@ export default function LandingPage() {
             </span>
             <span>· the screening call that goes both ways</span>
           </div>
-          <span>Built for &ldquo;CALL-E: Your Code Is Calling&rdquo;</span>
+          <span>
+            Built for the &ldquo;CALL-E: Your Code Is Calling&rdquo; hackathon
+          </span>
         </div>
       </footer>
     </div>
