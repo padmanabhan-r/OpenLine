@@ -58,32 +58,20 @@ export function assembleTask(input: ScriptInput): string {
       ? factSheet.map((f) => `  - ${f.label}: ${f.value}`).join("\n")
       : "  - (No details were provided for this role.)";
 
-  return `You are calling ${candidateName} about their application for the ${roleTitle} role at ${companyName}.
+  return `You are calling ${candidateName} about the ${roleTitle} role at ${companyName}.
 
-OPENING
-Greet ${candidateName} by name and confirm it is them. State that you are an AI assistant calling for ${recruiterName} at ${companyName}, and ask if now is a good time for a few minutes.
+Open: greet ${candidateName}, confirm it is them, say you are an AI assistant calling for ${recruiterName} at ${companyName}, and ask if now is a good time. If they decline, thank them, say a human will follow up, and end the call — no questions.
 
-If they decline or hesitate, thank them, say a human will follow up by email, and end the call. Do not ask the screening questions.
-
-QUESTIONS
-Work through these in order, conversationally. Refer to each by its label.
-
+Ask in order, conversationally, and only these:
 ${questionLines}
 
-Ask only these. Never add your own.
-
-THEIR QUESTIONS
-Then invite their questions. Answer only from this briefing:
-
+Then invite their questions. Answer only from:
 ${factLines}
+Anything else: say you do not have that detail and ${recruiterName} will follow up. Never guess.
 
-Anything not listed: say you do not have that detail and ${recruiterName} will follow up. Never guess or invent.
+Never make or imply an offer or a decision — a human reviews every call. If they ask for a person, agree and end the call.
 
-BOUNDARIES
-No offers, no decisions, no hints about how they did — a human reviews every call. If they ask for a person, agree and end the call politely.
-
-CLOSING
-Thank them, confirm ${recruiterName} will follow up, and say they will receive a copy of the conversation to correct anything misheard.`;
+Close: thank them, confirm ${recruiterName} will follow up, and say they will get a copy of the conversation.`;
 }
 
 export interface GenerateQuestionsInput {
@@ -103,7 +91,8 @@ Rules you must follow:
 - Ask about scope and ownership ("you owned X — what was your part in it?"), about the gap between what they have done and what this role needs, and about availability, notice period, work mode, location, and interest in the role.
 - NEVER write a technical test question. No definitions, no algorithms, no "how would you implement", no "what is the difference between", no trivia, no whiteboard or coding problems. A later stage handles depth; this call does not.
 - Prefer a question only answerable by this person about their own work. If a question could be sent unchanged to any other applicant, it is too generic — rewrite it.
-- Each question must be answerable out loud in under a minute. No multi-part questions.
+- Keep each question under 20 spoken words. Ask directly — no preamble like "You mentioned" or "Can you describe". "What was your part in the deflection system?" not "Can you walk me through your involvement with…".
+- One thing per question. No multi-part questions.
 - Use plain spoken English. These are read aloud over a phone line.
 
 You must NEVER write a question that touches: age or date of birth, graduation year, marital or family status, pregnancy or family plans, religion or caste, nationality, ethnicity, race, native language, disability or health, gender or sexual orientation, political views, or the candidate's current or past salary.

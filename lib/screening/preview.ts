@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
@@ -113,6 +113,9 @@ async function previewOne(
         eq(screeningCalls.candidateId, candidate.id),
       ),
     )
+    // A candidate can have several rows once call-again exists; the latest
+    // one is the live script, the rest are records.
+    .orderBy(desc(screeningCalls.createdAt))
     .limit(1);
 
   if (existing && (existing.status === "dialing" || existing.status === "completed")) {

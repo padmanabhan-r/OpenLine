@@ -60,7 +60,7 @@ describe("assembleTask", () => {
   it("states that the assistant cannot make or imply an offer", () => {
     const task = assembleTask(input()).toLowerCase();
     expect(task).toMatch(
-      /((cannot|do not) (make|imply|extend).*(offer|decision))|(no offers?, no decisions?)/,
+      /never make or imply an offer|((cannot|do not) (make|imply|extend).*(offer|decision))/,
     );
   });
 

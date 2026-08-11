@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Call } from "@call-e/calle";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, screeningCalls } from "@/lib/db/schema";
@@ -139,6 +139,67 @@ export async function startCall(
     .where(eq(screeningCalls.id, row.id));
 
   return { ok: true, calleCallId: dial.call.id };
+}
+
+export type NewAttemptOutcome =
+  | { ok: true; screeningCallId: string }
+  | { ok: false; reason: string };
+
+/**
+ * Clone a finished call into a fresh, dialable row.
+ *
+ * A row that has been dialed is a record — its transcript and result must
+ * survive — so calling someone again never reuses it. The clone carries the
+ * same script under a new idempotency key, which is what makes the second
+ * dial a genuinely new call instead of one CALL-E collapses into the first.
+ */
+export async function startNewAttempt(
+  screeningCallId: string,
+): Promise<NewAttemptOutcome> {
+  const db = getDb();
+
+  const [row] = await db
+    .select()
+    .from(screeningCalls)
+    .where(eq(screeningCalls.id, screeningCallId))
+    .limit(1);
+  if (!row) return { ok: false, reason: "No such screening call." };
+
+  if (row.status === "dialing") {
+    return { ok: false, reason: "This call is still in progress." };
+  }
+  if (!row.calleCallId && (row.status === "previewed" || row.status === "refused")) {
+    return { ok: false, reason: "This script has not been called yet — dial it directly." };
+  }
+
+  // Version numbers are per candidate, not per row — a second attempt after
+  // an edit history of v1..v3 becomes v4, never a colliding v2.
+  const [latest] = await db
+    .select({ version: sql<number>`max(${screeningCalls.scriptVersion})::int` })
+    .from(screeningCalls)
+    .where(
+      and(
+        eq(screeningCalls.jobId, row.jobId),
+        eq(screeningCalls.candidateId, row.candidateId),
+      ),
+    );
+  const nextVersion = (latest?.version ?? row.scriptVersion) + 1;
+
+  const [created] = await db
+    .insert(screeningCalls)
+    .values({
+      jobId: row.jobId,
+      candidateId: row.candidateId,
+      idempotencyKey: `${row.jobId}:${row.candidateId}:v${nextVersion}`,
+      scriptVersion: nextVersion,
+      status: "previewed",
+      task: row.task,
+      questions: row.questions,
+      guardFindings: [],
+    })
+    .returning({ id: screeningCalls.id });
+
+  return { ok: true, screeningCallId: created.id };
 }
 
 /**

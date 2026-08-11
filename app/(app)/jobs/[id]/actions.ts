@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { previewCandidate } from "@/lib/screening/preview";
-import { finishCall, startCall } from "@/lib/screening/dispatch";
+import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates } from "@/lib/db/schema";
@@ -27,6 +27,23 @@ export async function callFromRow(jobId: string, screeningCallId: string) {
 
   revalidatePath(`/jobs/${jobId}`);
   revalidatePath(`/calls/${screeningCallId}`);
+  revalidatePath("/calls");
+  return outcome;
+}
+
+/** Call a candidate again: clone the finished call, then dial the clone. */
+export async function callAgainFromRow(jobId: string, screeningCallId: string) {
+  const attempt = await startNewAttempt(screeningCallId);
+  if (!attempt.ok) return attempt;
+
+  const outcome = await startCall(attempt.screeningCallId);
+  if (outcome.ok) {
+    const calleCallId = outcome.calleCallId;
+    const newId = attempt.screeningCallId;
+    after(() => finishCall(newId, calleCallId));
+  }
+
+  revalidatePath(`/jobs/${jobId}`);
   revalidatePath("/calls");
   return outcome;
 }

@@ -4,6 +4,8 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Icon from "@/components/ui/Icon";
 import ScriptView from "@/components/screening/ScriptView";
 import CallButton from "@/components/screening/CallButton";
+import CallAgainButton from "@/components/screening/CallAgainButton";
+import RebuildButton from "@/components/screening/RebuildButton";
 import CallResult from "@/components/screening/CallResult";
 import DialingWatcher from "@/components/screening/DialingWatcher";
 import ScriptEditor from "@/components/screening/ScriptEditor";
@@ -58,12 +60,19 @@ export default async function CallPage({
         subtitle={`${job.title} · ${job.companyName}`}
         actions={
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <CallButton
-              screeningCallId={call.id}
-              candidateName={candidate.name}
-              disabled={Boolean(cannotCall)}
-              {...(cannotCall ? { disabledReason: cannotCall } : {})}
-            />
+            {call.status === "completed" || call.status === "failed" ? (
+              <CallAgainButton
+                screeningCallId={call.id}
+                candidateName={candidate.name}
+              />
+            ) : (
+              <CallButton
+                screeningCallId={call.id}
+                candidateName={candidate.name}
+                disabled={Boolean(cannotCall)}
+                {...(cannotCall ? { disabledReason: cannotCall } : {})}
+              />
+            )}
             <Link
             href={`/jobs/${job.id}`}
             style={{
@@ -280,13 +289,17 @@ export default async function CallPage({
 
           {/* The questions — editable until dialing starts. */}
           <Panel>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <h2 style={{ fontSize: 15, fontWeight: 700 }}>
                 Questions for {candidate.name.split(" ")[0]}
               </h2>
               <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
                 asked in this order; the assistant may not add its own
               </span>
+              <div style={{ flex: 1 }} />
+              {editableScript && (
+                <RebuildButton jobId={job.id} candidateId={candidate.id} />
+              )}
             </div>
             <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 10, maxWidth: 640 }}>
               Edit freely — the disclosure, consent gate, and boundaries are

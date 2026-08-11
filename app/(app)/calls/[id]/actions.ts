@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { finishCall, startCall } from "@/lib/screening/dispatch";
+import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
 import { applyScriptEdit, type EditOutcome } from "@/lib/screening/edit";
 
 /**
@@ -24,6 +24,25 @@ export async function callCandidate(screeningCallId: string) {
   revalidatePath(`/calls/${screeningCallId}`);
   revalidatePath("/calls");
   return outcome;
+}
+
+/** Clone a finished call and dial the clone. Returns the new call's id. */
+export async function callAgain(
+  screeningCallId: string,
+): Promise<{ ok: true; newCallId: string } | { ok: false; reason: string }> {
+  const attempt = await startNewAttempt(screeningCallId);
+  if (!attempt.ok) return attempt;
+
+  const outcome = await startCall(attempt.screeningCallId);
+  if (!outcome.ok) return outcome;
+
+  const newId = attempt.screeningCallId;
+  const calleCallId = outcome.calleCallId;
+  after(() => finishCall(newId, calleCallId));
+
+  revalidatePath("/calls");
+  revalidatePath(`/calls/${newId}`);
+  return { ok: true, newCallId: newId };
 }
 
 /** Save edited questions; the script is reassembled and re-guarded server-side. */
