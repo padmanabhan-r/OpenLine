@@ -6,6 +6,7 @@ import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
 import JobDescription from "@/components/jobs/JobDescription";
 import RowActions from "@/components/screening/RowActions";
+import ResumeUpload from "@/components/candidates/ResumeUpload";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
 import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 
@@ -115,6 +116,7 @@ export default async function JobPage({
       <TopBar
         title={job.title}
         subtitle={`${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted`}
+        actions={<ResumeUpload jobId={job.id} />}
       />
       <Page>
         <div style={{ display: "grid", gap: 16 }}>

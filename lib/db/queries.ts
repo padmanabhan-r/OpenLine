@@ -43,6 +43,27 @@ export async function getJob(id: string) {
   return job ?? null;
 }
 
+/** Every candidate across all jobs, for the Profiles tab. */
+export async function listProfiles() {
+  const db = getDb();
+  return db
+    .select({
+      id: candidates.id,
+      name: candidates.name,
+      shortlisted: candidates.shortlisted,
+      source: candidates.source,
+      parseStatus: candidates.parseStatus,
+      jobTitle: jobs.title,
+      headline: sql<string | null>`${candidates.profile}->'profile'->>'headline'`,
+      matchScore: sql<
+        number | null
+      >`(${candidates.profile}->'screening'->>'matchScore')::int`,
+    })
+    .from(candidates)
+    .innerJoin(jobs, eq(candidates.jobId, jobs.id))
+    .orderBy(desc(candidates.createdAt));
+}
+
 /** A single candidate with the job they applied to. */
 export async function getCandidate(id: string) {
   const db = getDb();

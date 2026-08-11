@@ -3,6 +3,7 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import { listJobs } from "@/lib/db/queries";
+import Button from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,11 @@ export default async function JobsPage() {
       <TopBar
         title="Jobs"
         subtitle="Every shortlisted candidate gets called — without you working down the list."
+        actions={
+          <Link href="/jobs/new">
+            <Button size="sm">New job</Button>
+          </Link>
+        }
       />
       <Page>
         {error && (

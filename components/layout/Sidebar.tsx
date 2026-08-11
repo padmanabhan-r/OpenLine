@@ -8,10 +8,9 @@ import { PoweredByCalle } from "@/components/ui/PoweredByCalle";
 
 const navMain = [
   { href: "/jobs", label: "Jobs", icon: "jobs" },
+  { href: "/profiles", label: "Profiles", icon: "people" },
   { href: "/calls", label: "Screening Calls", icon: "phone" },
 ];
-
-const navAccount = [{ href: "/safety", label: "Safety", icon: "shield" }];
 
 function NavItem({
   href,
@@ -114,10 +113,6 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
       <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
         <SectionLabel label="Pipeline" />
         {navMain.map((item) => (
-          <NavItem key={item.href} {...item} />
-        ))}
-        <SectionLabel label="Account" />
-        {navAccount.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
       </nav>

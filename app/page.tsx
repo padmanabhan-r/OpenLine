@@ -167,7 +167,7 @@ export default function LandingPage() {
             <Link href="/jobs">
               <Button size="lg">Open the console</Button>
             </Link>
-            <Link href="/safety">
+            <Link href="#boundaries">
               <Button size="lg" variant="ghost">
                 <Icon name="shield" size={17} />
                 What it can&rsquo;t do
