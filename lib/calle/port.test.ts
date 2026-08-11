@@ -201,7 +201,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
   });
 });
 
-describe("fetchCall — re-fetch used by the webhook receiver", () => {
+describe("fetchCall — re-fetch used by the reconciler", () => {
   it("reads a call back by id", async () => {
     const port = createCallePort({
       mode: "live",

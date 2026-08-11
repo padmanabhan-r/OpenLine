@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePhone, pickCallablePhone } from "./normalize";
+import { normalizePhone } from "./normalize";
 
 describe("normalizePhone", () => {
   describe("Indian résumé formats (the common real-world case)", () => {
@@ -58,31 +58,5 @@ describe("normalizePhone", () => {
       ok: true,
       e164: "+919876543210",
     });
-  });
-});
-
-describe("pickCallablePhone", () => {
-  it("returns the first valid number from a résumé's phone array", () => {
-    const result = pickCallablePhone(["not a phone", "9876543210"], "IN");
-    expect(result).toEqual({ ok: true, e164: "+919876543210" });
-  });
-
-  it("refuses when no entry is callable, listing what it saw", () => {
-    const result = pickCallablePhone(["12345", "nope"], "IN");
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.rejected).toHaveLength(2);
-    }
-  });
-
-  it("refuses an empty array", () => {
-    expect(pickCallablePhone([], "IN").ok).toBe(false);
-  });
-
-  it("deduplicates numbers that normalize to the same E.164", () => {
-    // A résumé listing the same number twice in different formats must not
-    // produce two calls to the same person.
-    const result = pickCallablePhone(["+91 98765 43210", "9876543210"], "IN");
-    expect(result).toEqual({ ok: true, e164: "+919876543210" });
   });
 });

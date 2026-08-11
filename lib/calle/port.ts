@@ -48,7 +48,6 @@ export interface DialRequest {
   phone: string;
   resultSchema: JsonObject;
   metadata?: JsonObject;
-  webhookUrl?: string;
   /** Business-stable, so a retried dispatch cannot double-dial. */
   idempotencyKey: string;
 }
@@ -82,10 +81,8 @@ const E164 = /^\+[1-9]\d{6,14}$/;
 export interface CallePort {
   dial(request: DialRequest): Promise<DialOutcome>;
   /**
-   * Read a call back by id.
-   *
-   * CALL-E webhooks are unsigned, so the receiver must re-fetch through the
-   * authenticated API before acting on anything a webhook claims.
+   * Read a call back by id — how the reconciler rescues a row whose
+   * detached waiter died with the process.
    */
   fetchCall(callId: string): Promise<Call>;
   /** Poll until the call reaches a terminal state. */
@@ -176,7 +173,6 @@ export function createCallePort(config: CallePortConfig): CallePort {
             ],
             resultSchema: request.resultSchema,
             ...(request.metadata ? { metadata: request.metadata } : {}),
-            ...(request.webhookUrl ? { webhookUrl: request.webhookUrl } : {}),
           },
           { idempotencyKey: request.idempotencyKey },
         );

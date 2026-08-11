@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { inspectScript, type GuardResult } from "./guard";
 
 /**
  * Script construction.
@@ -157,7 +156,7 @@ Write exactly ${count} screening questions.`,
 }
 
 /** Extract a JSON array of questions from a model response. */
-export function parseQuestionList(text: string): string[] {
+function parseQuestionList(text: string): string[] {
   const start = text.indexOf("[");
   const end = text.lastIndexOf("]");
   if (start === -1 || end === -1 || end < start) return [];
@@ -172,46 +171,4 @@ export function parseQuestionList(text: string): string[] {
   } catch {
     return [];
   }
-}
-
-export interface BuiltScript {
-  task: string;
-  questions: ScriptQuestion[];
-  guard: GuardResult;
-}
-
-/**
- * Generate questions, drop any the guard rejects, and assemble the script.
- *
- * Questions are filtered individually before assembly so one bad suggestion
- * costs a question rather than the whole call. The assembled script is then
- * checked again, and the port checks it a third time before dialing — the model
- * is never trusted to have followed its instructions.
- */
-export async function buildScript(
-  generator: QuestionGenerator,
-  input: GenerateQuestionsInput &
-    Omit<ScriptInput, "questions" | "roleTitle">,
-): Promise<BuiltScript> {
-  const raw = await generator.generate({
-    roleTitle: input.roleTitle,
-    jobDescription: input.jobDescription,
-    candidateSummary: input.candidateSummary,
-    ...(input.count === undefined ? {} : { count: input.count }),
-  });
-
-  const questions = raw
-    .filter((text) => inspectScript(text).ok)
-    .map((text, index) => ({ id: `q${index + 1}`, text }));
-
-  const task = assembleTask({
-    candidateName: input.candidateName,
-    roleTitle: input.roleTitle,
-    companyName: input.companyName,
-    recruiterName: input.recruiterName,
-    factSheet: input.factSheet,
-    questions,
-  });
-
-  return { task, questions, guard: inspectScript(task) };
 }

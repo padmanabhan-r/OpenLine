@@ -110,7 +110,6 @@ export const candidates = pgTable(
 
 /** Lifecycle of a screening call, from queued through to reviewed. */
 export type ScreeningCallStatus =
-  | "pending"
   | "previewed"
   | "refused"
   | "dialing"
@@ -211,7 +210,7 @@ export const screeningCalls = pgTable(
     uniqueIndex("screening_calls_idempotency_key_unique").on(
       table.idempotencyKey,
     ),
-    // The webhook receiver looks calls up by CALL-E's id.
+    // The reconciler looks stranded calls up by CALL-E's id.
     uniqueIndex("screening_calls_calle_call_id_unique").on(table.calleCallId),
     uniqueIndex("screening_calls_reply_token_unique").on(table.replyToken),
   ],

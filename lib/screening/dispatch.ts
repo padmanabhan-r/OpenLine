@@ -198,9 +198,9 @@ export async function finishCall(
 /**
  * Write a terminal CALL-E call onto its screening row.
  *
- * Shared by the polling path and, later, the webhook receiver — which must
- * re-fetch through the API before trusting anything, since CALL-E's webhooks
- * are unsigned.
+ * Shared by the detached waiter and the reconciler — both arrive here with a
+ * call re-fetched from CALL-E's authenticated API, never with claims from
+ * anywhere less trustworthy.
  */
 export async function recordTerminalCall(screeningCallId: string, call: Call) {
   const db = getDb();
