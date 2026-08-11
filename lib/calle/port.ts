@@ -1,41 +1,30 @@
 import { CalleClient, type Call, type JsonObject } from "@call-e/calle";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
-import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 
 /**
  * The only way OpenLine places a phone call.
  *
- * Everything that could cause real-world harm is enforced here rather than at
- * the call sites, so there is no code path that dials without passing all of it:
+ * Two checks stand between a script and a dial tone, enforced here rather
+ * than at the call sites so no code path can skip them:
  *
- *   - the prohibited-topic guard must pass
- *   - the number must be E.164 and on the allowlist
- *   - live mode must be explicitly enabled and hold an API key
+ *   - the prohibited-topic guard must pass — the model that wrote the
+ *     questions is never trusted to have obeyed its instructions
+ *   - the number must be real E.164 — a malformed number is refused with a
+ *     reason, never "fixed" by guessing
  *
- * Dry run is the default. A publicly deployed demo therefore cannot spend money
- * or telephone a stranger, which is what makes the app safe to hand to judges.
+ * If both hold and a key is configured, the call is placed. A number on
+ * file is a number that gets called — that is the product.
  */
 
-export type DialMode = "dry_run" | "live";
-
 export interface CallePortConfig {
-  mode: DialMode;
   apiKey: string;
-  /** E.164 numbers this deployment is permitted to call. Empty means nobody. */
-  allowlist: string[];
   /**
    * BCP 47 hint that decides how the agent sounds — `en-US` for an American
-   * voice, `en-IN` for Indian English, and so on.
+   * voice, `en-IN` for Indian English, and so on. The only voice control
+   * CALL-E's Calls API exposes; one value for every call.
    *
-   * It is the only voice control CALL-E's Calls API exposes: there is no voice
-   * id, gender, or speed parameter. One value is used for every call, because
-   * a screening line that changes accent between candidates is a strange thing
-   * to ship.
-   *
-   * Note this is deliberately not `region`. That field is the recipient's own
-   * country, used for routing and compliance, and it is already implied by the
-   * E.164 number — sending `US` for an Indian mobile would be a lie told to the
-   * part of the system that checks whether the call is permitted.
+   * Deliberately not `region`: that field is the recipient's own country,
+   * used for routing and compliance, and already implied by the E.164 number.
    */
   locale?: string;
   baseUrl?: string;
@@ -54,21 +43,12 @@ export interface DialRequest {
 
 export type RefusalReason =
   | "guard_violation"
-  | "not_allowlisted"
   | "invalid_phone"
   | "missing_api_key"
   | "api_error";
 
-export interface DialPreview {
-  task: string;
-  phone: string;
-  resultSchema: JsonObject;
-  idempotencyKey: string;
-}
-
 export type DialOutcome =
-  | { ok: true; mode: "dry_run"; preview: DialPreview }
-  | { ok: true; mode: "live"; call: Call }
+  | { ok: true; call: Call }
   | {
       ok: false;
       refusal: RefusalReason;
@@ -90,11 +70,10 @@ export interface CallePort {
     callId: string,
     options?: { timeoutMs?: number; intervalMs?: number },
   ): Promise<Call>;
-  readonly mode: DialMode;
 }
 
 export function createCallePort(config: CallePortConfig): CallePort {
-  const { mode, apiKey, allowlist, baseUrl, fetch } = config;
+  const { apiKey, baseUrl, fetch } = config;
 
   const client = () =>
     new CalleClient({
@@ -104,11 +83,10 @@ export function createCallePort(config: CallePortConfig): CallePort {
     });
 
   return {
-    mode,
-
     async dial(request: DialRequest): Promise<DialOutcome> {
-      // 1. The script must be lawful. Checked in every mode so the dry-run
-      //    preview surfaces violations before anyone tries to go live.
+      // 1. The script must be lawful. The guard already ran on generation and
+      //    on every edit; running it again here means no future code path can
+      //    dial an unchecked script by accident.
       const guard = inspectScript(request.task);
       if (!guard.ok) {
         return {
@@ -131,33 +109,11 @@ export function createCallePort(config: CallePortConfig): CallePort {
         };
       }
 
-      if (mode === "dry_run") {
-        return {
-          ok: true,
-          mode: "dry_run",
-          preview: {
-            task: request.task,
-            phone: request.phone,
-            resultSchema: request.resultSchema,
-            idempotencyKey: request.idempotencyKey,
-          },
-        };
-      }
-
-      // 3. Live dialing needs explicit permission for this specific number.
-      if (!allowlist.includes(request.phone)) {
-        return {
-          ok: false,
-          refusal: "not_allowlisted",
-          detail: `${request.phone} is not on this deployment's call allowlist.`,
-        };
-      }
-
       if (!apiKey) {
         return {
           ok: false,
           refusal: "missing_api_key",
-          detail: "CALLE_API_KEY is not set, so live dialing is unavailable.",
+          detail: "CALLE_API_KEY is not set, so calls cannot be placed.",
         };
       }
 
@@ -177,7 +133,7 @@ export function createCallePort(config: CallePortConfig): CallePort {
           { idempotencyKey: request.idempotencyKey },
         );
 
-        return { ok: true, mode: "live", call };
+        return { ok: true, call };
       } catch (error) {
         // A failed create is a refusal, not a crash — the dispatcher continues
         // with the rest of the queue.
@@ -207,14 +163,12 @@ export function createCallePort(config: CallePortConfig): CallePort {
   };
 }
 
-/** Build a port from environment configuration. Dry run unless explicitly enabled. */
+/** Build a port from environment configuration. */
 export function callePortFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): CallePort {
   return createCallePort({
-    mode: liveCallsEnabled(env) ? "live" : "dry_run",
     apiKey: env.CALLE_API_KEY ?? "",
-    allowlist: callAllowlist(env),
     // American English unless told otherwise. Configurable without a code
     // change, since which voice sounds right is a judgement, not a constant.
     locale: env.OPENLINE_CALL_LOCALE?.trim() || "en-US",

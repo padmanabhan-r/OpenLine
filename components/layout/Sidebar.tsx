@@ -83,7 +83,7 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
+export default function Sidebar() {
   return (
     <aside
       style={{
@@ -117,10 +117,7 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
         ))}
       </nav>
 
-      {/*
-        Dial mode is always visible. This app can place real phone calls, and which
-        mode it is in should never be something you have to go and check.
-      */}
+      {/* This app places real phone calls. That fact stays on screen. */}
       <div
         style={{
           marginTop: "auto",
@@ -129,10 +126,8 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
           gap: 10,
           padding: "11px 12px",
           borderRadius: 14,
-          border: `1px solid ${liveCalls ? "rgba(194,47,30,0.30)" : "rgba(29,27,16,0.14)"}`,
-          background: liveCalls
-            ? "var(--danger-wash)"
-            : "rgba(255,252,220,0.45)",
+          border: "1px solid rgba(194,47,30,0.30)",
+          background: "var(--danger-wash)",
           boxShadow: "inset 0 1px 0 var(--glass-edge)",
         }}
       >
@@ -142,15 +137,15 @@ export default function Sidebar({ liveCalls }: { liveCalls: boolean }) {
             height: 8,
             borderRadius: "50%",
             flexShrink: 0,
-            background: liveCalls ? "var(--danger)" : "var(--green)",
+            background: "var(--danger)",
           }}
         />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
-            {liveCalls ? "Live calls" : "Dry run"}
+            Calls are live
           </div>
           <div style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.35 }}>
-            {liveCalls ? "Real calls will be placed" : "Nothing will dial"}
+            A number on file is a number that rings
           </div>
         </div>
       </div>

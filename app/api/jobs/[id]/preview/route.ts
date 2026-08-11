@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { liveCallsEnabled } from "@/lib/config";
 import { previewJob } from "@/lib/screening/preview";
 
 /**
@@ -10,8 +9,8 @@ import { previewJob } from "@/lib/screening/preview";
  * a browser.
  *
  * It is safe to call on a public deployment: it goes through the same CallePort
- * as everything else, so it inherits dry-run-by-default and the number
- * allowlist. In dry run it writes previews and dials nothing.
+ * as everything else. It writes scripts and dials nothing — dialing is a
+ * separate, per-candidate decision.
  */
 export async function POST(
   _request: Request,
@@ -23,7 +22,6 @@ export async function POST(
     const outcomes = await previewJob(id);
     return NextResponse.json({
       jobId: id,
-      mode: liveCallsEnabled() ? "live" : "dry_run",
       previewed: outcomes.filter((o) => o.status === "previewed").length,
       refused: outcomes.filter((o) => o.status === "refused").length,
       skipped: outcomes.filter((o) => o.status === "skipped").length,

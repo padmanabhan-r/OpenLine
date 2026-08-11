@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 import { notFound } from "next/navigation";
 import TopBar, { Page, Panel } from "@/components/layout/TopBar";
-import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import ScriptView from "@/components/screening/ScriptView";
 import CallButton from "@/components/screening/CallButton";
@@ -36,11 +34,6 @@ export default async function CallPage({
   const findings = call.guardFindings;
   const blocked = findings.length > 0 || call.status === "refused";
 
-  const liveEnabled = liveCallsEnabled();
-  const allowlist = callAllowlist();
-  const allowlisted = Boolean(
-    candidate.phoneE164 && allowlist.includes(candidate.phoneE164),
-  );
   const alreadyCalled = Boolean(call.calleCallId);
   const result = call.structuredResult;
 
@@ -56,11 +49,7 @@ export default async function CallPage({
       ? "This candidate has already been called."
       : !candidate.phoneE164
         ? "This candidate has no callable number."
-        : !liveEnabled
-          ? "Dry run — set OPENLINE_LIVE_CALLS=true to dial."
-          : !allowlisted
-            ? "This number is not on the call allowlist."
-            : null;
+        : null;
 
   return (
     <>
@@ -126,11 +115,6 @@ export default async function CallPage({
                       "The script contains a question that cannot lawfully be asked in a hiring conversation. It is blocked before dialing, not flagged afterwards."
                     : "The script passed the prohibited-topic check. Every question is lawful, and the assistant may only state facts from the job fact sheet."}
                 </p>
-              </div>
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <Badge tone={call.mode === "live" ? "danger" : "neutral"}>
-                  {call.mode === "live" ? "Live" : "Dry run"}
-                </Badge>
               </div>
             </div>
 

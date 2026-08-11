@@ -5,16 +5,13 @@ import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from
 import type { Candidate, Job } from "@/lib/db/schema";
 import { assembleTask, createOpenAIQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
-import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
-import { createCallePort } from "@/lib/calle/port";
 
 /**
- * Turn a queued candidate into a reviewable call.
+ * Turn a queued candidate into a reviewable script.
  *
- * In dry run this stops at the preview: the exact words that would be spoken,
- * stored so a recruiter can read them before anything dials. That artefact is
- * the point — a script you cannot inspect is a script you cannot be responsible
- * for.
+ * Nothing dials from here. This produces the exact words that will be spoken,
+ * stored so a recruiter can read and edit them first — a script you cannot
+ * inspect is a script you cannot be responsible for.
  */
 
 /**
@@ -91,7 +88,6 @@ export interface PreviewOutcome {
 async function previewOne(
   job: typeof jobsTable.$inferSelect,
   candidate: Candidate,
-  port: ReturnType<typeof createCallePort>,
 ): Promise<PreviewOutcome> {
   const db = getDb();
 
@@ -138,21 +134,18 @@ async function previewOne(
     factSheet: job.factSheet,
   });
 
+  // The same guard that runs again at dial time. A violating script is stored
+  // as refused with its findings visible, so the recruiter sees exactly what
+  // was caught rather than a call that quietly never happens.
   const guard = inspectScript(task);
+  const refused = !guard.ok;
+  const refusalDetail = refused
+    ? `Script contains ${guard.findings.length} prohibited question(s): ${guard.findings
+        .map((f) => f.category)
+        .join(", ")}`
+    : null;
   const idempotencyKey =
     existing?.idempotencyKey ?? `${job.id}:${candidate.id}:v1`;
-
-  // Dry run in the port too, so the preview travels the exact code path a
-  // live dial would — including the guard and allowlist checks.
-  const outcome = await port.dial({
-    task,
-    phone: candidate.phoneE164,
-    resultSchema: SCREENING_RESULT_SCHEMA as unknown as Record<string, unknown>,
-    idempotencyKey,
-    metadata: { jobId: job.id, candidateId: candidate.id },
-  });
-
-  const refused = !outcome.ok;
 
   await db
     .insert(screeningCalls)
@@ -160,28 +153,26 @@ async function previewOne(
       jobId: job.id,
       candidateId: candidate.id,
       idempotencyKey,
-      mode: "dry_run",
       status: refused ? "refused" : "previewed",
       task,
       questions,
       guardFindings: guard.findings,
-      refusalReason: refused ? outcome.refusal : null,
-      refusalDetail: refused ? outcome.detail : null,
+      refusalReason: refused ? "guard_violation" : null,
+      refusalDetail,
       needsHuman: refused,
-      needsHumanReasons: refused ? [outcome.detail] : [],
+      needsHumanReasons: refusalDetail ? [refusalDetail] : [],
     })
     .onConflictDoUpdate({
       target: screeningCalls.idempotencyKey,
       set: {
         task,
         questions,
-        mode: "dry_run",
         status: refused ? "refused" : "previewed",
         guardFindings: guard.findings,
-        refusalReason: refused ? outcome.refusal : null,
-        refusalDetail: refused ? outcome.detail : null,
+        refusalReason: refused ? "guard_violation" : null,
+        refusalDetail,
         needsHuman: refused,
-        needsHumanReasons: refused ? [outcome.detail] : [],
+        needsHumanReasons: refusalDetail ? [refusalDetail] : [],
       },
     });
 
@@ -189,23 +180,8 @@ async function previewOne(
     candidateId: candidate.id,
     name: candidate.name,
     status: refused ? "refused" : "previewed",
-    ...(refused ? { detail: outcome.detail } : {}),
+    ...(refusalDetail ? { detail: refusalDetail } : {}),
   };
-}
-
-/**
- * The port previews never dial, so it always runs in dry run — even when the
- * deployment has live calls enabled. The allowlist is a dial-time control:
- * gating script generation on it would mean a recruiter could not read the
- * script for anyone they had not already authorised, which is backwards.
- * Placing the call (lib/screening/dispatch) does check it.
- */
-function previewPort() {
-  return createCallePort({
-    mode: "dry_run",
-    apiKey: process.env.CALLE_API_KEY ?? "",
-    allowlist: [],
-  });
 }
 
 /** Generate and persist a preview for every callable candidate on a job. */
@@ -228,10 +204,9 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
       ),
     );
 
-  const port = previewPort();
   const outcomes: PreviewOutcome[] = [];
   for (const candidate of roster) {
-    outcomes.push(await previewOne(job, candidate, port));
+    outcomes.push(await previewOne(job, candidate));
   }
   return outcomes;
 }
@@ -264,5 +239,5 @@ export async function previewCandidate(
     };
   }
 
-  return previewOne(job, candidate, previewPort());
+  return previewOne(job, candidate);
 }

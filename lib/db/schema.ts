@@ -136,7 +136,6 @@ export const screeningCalls = pgTable(
     /** CALL-E's id. Null until a live call is accepted. */
     calleCallId: text("calle_call_id"),
 
-    mode: text("mode").$type<"dry_run" | "live">().notNull(),
     status: text("status").$type<ScreeningCallStatus>().notNull(),
     /**
      * When dialing began. Lets the reconciler tell "in progress" from

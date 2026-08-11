@@ -8,7 +8,6 @@ import JobDescription from "@/components/jobs/JobDescription";
 import RowActions from "@/components/screening/RowActions";
 import ResumeUpload from "@/components/candidates/ResumeUpload";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
-import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -108,9 +107,6 @@ export default async function JobPage({
   const callable = roster.filter((r) => r.candidate.phoneE164);
   const unreachable = roster.filter((r) => !r.candidate.phoneE164);
 
-  const liveEnabled = liveCallsEnabled();
-  const allowlist = callAllowlist();
-
   return (
     <>
       <TopBar
@@ -144,13 +140,9 @@ export default async function JobPage({
                 call && (call.guardFindings.length > 0 || call.status === "refused"),
               );
 
-              const dialDisabledReason = !candidate.phoneE164
-                ? "No callable number."
-                : !liveEnabled
-                  ? "Dry run — set OPENLINE_LIVE_CALLS=true to dial."
-                  : !allowlist.includes(candidate.phoneE164)
-                    ? "This number is not on the call allowlist."
-                    : null;
+              const dialDisabledReason = candidate.phoneE164
+                ? null
+                : "No callable number.";
 
               return (
                 <div

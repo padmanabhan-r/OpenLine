@@ -22,6 +22,13 @@
       "when": 1786413891433,
       "tag": "0002_cuddly_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786417415503,
+      "tag": "0003_white_bug",
+      "breakpoints": true
     }
   ]
 }

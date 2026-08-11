@@ -132,8 +132,6 @@ env_value() {
 DATABASE_URL_VALUE="$(env_value DATABASE_URL)"
 CALLE_KEY_VALUE="$(env_value CALLE_API_KEY)"
 OPENAI_KEY_VALUE="$(env_value OPENAI_API_KEY)"
-LIVE_CALLS_VALUE="$(env_value OPENLINE_LIVE_CALLS)"
-ALLOWLIST_VALUE="$(env_value OPENLINE_CALL_ALLOWLIST)"
 
 # ── Dependencies ─────────────────────────────────────────────────────────────
 
@@ -175,32 +173,21 @@ if [ "$RUN_MIGRATIONS" = true ]; then
   ok "Migrations applied."
 fi
 
-# ── Safety banner ────────────────────────────────────────────────────────────
+# ── Banner ───────────────────────────────────────────────────────────────────
 #
-# Dry run is the default, and live dialing needs BOTH an explicit flag and the
-# destination number on the allowlist. Both facts are printed every time.
-
-allowlist_count=0
-if [ -n "$ALLOWLIST_VALUE" ]; then
-  allowlist_count="$(printf '%s' "$ALLOWLIST_VALUE" | tr ',' '\n' | grep -c '[^[:space:]]' || true)"
-fi
+# This app places real phone calls. That fact is printed every time.
 
 printf '\n%s\n' "${BOLD}OpenLine${RESET} ${DIM}— the screening call that goes both ways${RESET}"
 printf '%s\n' "${DIM}────────────────────────────────────────────────────────${RESET}"
 
-if [ "$LIVE_CALLS_VALUE" = "true" ]; then
-  if [ "$allowlist_count" -eq 0 ]; then
-    printf '  %s\n' "${YELLOW}LIVE CALLS ENABLED — but the allowlist is empty, so nothing can dial.${RESET}"
-  else
-    printf '  %s\n' "${RED}${BOLD}LIVE CALLS ENABLED${RESET} ${RED}— real phone calls will be placed.${RESET}"
-    printf '  %s\n' "${RED}${allowlist_count} number(s) on the allowlist. These cost money and reach people.${RESET}"
-  fi
+if [ -n "$CALLE_KEY_VALUE" ]; then
+  printf '  %s\n' "${RED}${BOLD}CALLS ARE LIVE${RESET} ${RED}— a candidate with a number on file will really be dialed.${RESET}"
 else
-  printf '  %s\n' "${GREEN}Dry run${RESET} ${DIM}— scripts are generated and previewed, nothing dials.${RESET}"
+  printf '  %s\n' "${YELLOW}No CALLE_API_KEY — scripts can be built, but no call can be placed.${RESET}"
 fi
 
 printf '  %s\n' "${DIM}Database:${RESET}  $([ -n "$DATABASE_URL_VALUE" ] && echo "${GREEN}configured${RESET}" || echo "${RED}missing — set DATABASE_URL${RESET}")"
-printf '  %s\n' "${DIM}CALL-E:${RESET}    $([ -n "$CALLE_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (dry run only)${RESET}")"
+printf '  %s\n' "${DIM}CALL-E:${RESET}    $([ -n "$CALLE_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key${RESET}")"
 printf '  %s\n' "${DIM}OpenAI:${RESET}    $([ -n "$OPENAI_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (default questions will be used)${RESET}")"
 printf '%s\n\n' "${DIM}────────────────────────────────────────────────────────${RESET}"
 

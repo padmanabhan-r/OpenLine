@@ -158,9 +158,6 @@ export default async function CallsPage() {
                       Needs you
                     </Badge>
                   )}
-                  <Badge tone={call.mode === "live" ? "danger" : "neutral"}>
-                    {call.mode === "live" ? "Live" : "Dry run"}
-                  </Badge>
                   <StatusBadge call={call} />
                   <Icon name="arrow-right" size={17} style={{ color: "var(--ink-3)" }} />
                 </div>

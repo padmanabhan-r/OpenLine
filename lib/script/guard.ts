@@ -29,7 +29,7 @@
  *
  * It is therefore a floor, not a ceiling: it catches the obvious and the
  * accidental, which is what an automated script generator actually produces.
- * A human still reviews the script in the dry-run preview before any dial.
+ * A human still reads every script before any dial.
  */
 
 export type GuardCategory =

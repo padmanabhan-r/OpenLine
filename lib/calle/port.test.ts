@@ -29,47 +29,10 @@ const dialRequest = (overrides: Partial<Parameters<
   ...overrides,
 });
 
-describe("createCallePort — dry run is the default", () => {
-  it("does not dial when mode is dry_run", async () => {
-    const fetch = vi.fn();
-    const port = createCallePort({
-      mode: "dry_run",
-      apiKey: "test",
-      allowlist: [TEST_PHONE],
-      fetch,
-    });
-
-    const outcome = await port.dial(dialRequest());
-
-    expect(fetch).not.toHaveBeenCalled();
-    expect(outcome.ok).toBe(true);
-    if (outcome.ok) expect(outcome.mode).toBe("dry_run");
-  });
-
-  it("returns the exact task text that would be spoken", async () => {
-    const port = createCallePort({
-      mode: "dry_run",
-      apiKey: "test",
-      allowlist: [],
-      fetch: vi.fn(),
-    });
-
-    const outcome = await port.dial(dialRequest({ task: "Hello there." }));
-
-    expect(outcome.ok).toBe(true);
-    if (outcome.ok && outcome.mode === "dry_run") {
-      expect(outcome.preview.task).toBe("Hello there.");
-      expect(outcome.preview.phone).toBe(TEST_PHONE);
-    }
-  });
-});
-
 describe("createCallePort — refuses rather than dialing", () => {
   const livePort = (overrides = {}) =>
     createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch(),
       ...overrides,
     });
@@ -84,39 +47,21 @@ describe("createCallePort — refuses rather than dialing", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("refuses a number that is not on the allowlist", async () => {
-    const fetch = vi.fn();
-    const outcome = await livePort({ fetch }).dial(
-      dialRequest({ phone: "+14155550132" }),
-    );
-
-    expect(outcome).toMatchObject({ ok: false, refusal: "not_allowlisted" });
-    expect(fetch).not.toHaveBeenCalled();
-  });
-
   it("refuses a phone number that is not E.164", async () => {
     const outcome = await livePort().dial(dialRequest({ phone: "9876543210" }));
     expect(outcome).toMatchObject({ ok: false, refusal: "invalid_phone" });
   });
 
-  it("refuses live mode with no API key", async () => {
+  it("refuses with no API key", async () => {
     const outcome = await livePort({ apiKey: "" }).dial(dialRequest());
     expect(outcome).toMatchObject({ ok: false, refusal: "missing_api_key" });
   });
-
-  it("refuses when the allowlist is empty, even in live mode", async () => {
-    // An empty allowlist must mean "nobody", never "everybody".
-    const outcome = await livePort({ allowlist: [] }).dial(dialRequest());
-    expect(outcome).toMatchObject({ ok: false, refusal: "not_allowlisted" });
-  });
 });
 
-describe("createCallePort — live dialing through the fake CALL-E server", () => {
+describe("createCallePort — dialing through the fake CALL-E server", () => {
   it("creates a call and returns the terminal result", async () => {
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch({
         structuredResult: { reached_candidate: "yes" },
       }),
@@ -125,7 +70,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
     const outcome = await port.dial(dialRequest());
 
     expect(outcome.ok).toBe(true);
-    if (outcome.ok && outcome.mode === "live") {
+    if (outcome.ok) {
       expect(outcome.call.id).toMatch(/^call_/);
       expect(outcome.call.structuredResult).toEqual({
         reached_candidate: "yes",
@@ -136,9 +81,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
   it("passes the idempotency key so a retried dispatch does not double-dial", async () => {
     const fake = createFakeCalleFetch();
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       fetch: fake,
     });
 
@@ -149,9 +92,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
   it("sends the configured locale, which is the only control over how the agent sounds", async () => {
     const fake = createFakeCalleFetch();
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       locale: "en-US",
       fetch: fake,
     });
@@ -172,9 +113,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
   it("omits locale entirely when none is configured", async () => {
     const fake = createFakeCalleFetch();
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       fetch: fake,
     });
 
@@ -187,9 +126,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
 
   it("surfaces a CALL-E API error as a refusal rather than throwing", async () => {
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [TEST_PHONE],
       fetch: createFakeCalleFetch({
         failWith: { status: 402, code: "insufficient_balance" },
       }),
@@ -204,9 +141,7 @@ describe("createCallePort — live dialing through the fake CALL-E server", () =
 describe("fetchCall — re-fetch used by the reconciler", () => {
   it("reads a call back by id", async () => {
     const port = createCallePort({
-      mode: "live",
       apiKey: "test",
-      allowlist: [],
       fetch: createFakeCalleFetch({
         structuredResult: { reached_candidate: "no" },
       }),

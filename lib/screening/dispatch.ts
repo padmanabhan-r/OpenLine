@@ -131,24 +131,11 @@ export async function startCall(
     return { ok: false, reason: dial.detail };
   }
 
-  if (dial.mode === "dry_run") {
-    // Nothing dialed; hand the claim back.
-    await db
-      .update(screeningCalls)
-      .set({ status: "previewed", dialStartedAt: null })
-      .where(eq(screeningCalls.id, row.id));
-    return {
-      ok: false,
-      reason:
-        "OpenLine is in dry run. Set OPENLINE_LIVE_CALLS=true and add the number to the allowlist to dial.",
-    };
-  }
-
   // The id exists now — persist it before anything waits, so a crash mid-call
   // does not orphan a call we have already paid for.
   await db
     .update(screeningCalls)
-    .set({ calleCallId: dial.call.id, mode: "live" })
+    .set({ calleCallId: dial.call.id })
     .where(eq(screeningCalls.id, row.id));
 
   return { ok: true, calleCallId: dial.call.id };

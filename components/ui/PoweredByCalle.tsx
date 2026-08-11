@@ -111,8 +111,8 @@ export function CalleCredit() {
           <strong style={{ color: "var(--ink)", fontWeight: 600 }}>
             CALL-E: Your Code Is Calling
           </strong>{" "}
-          hackathon. OpenLine is an alpha — it places real phone calls, so it runs in dry
-          run until you explicitly turn dialing on.
+          hackathon. OpenLine places real phone calls — every script is read by
+          a human before it is spoken, and no machine ever rejects a candidate.
         </p>
       </div>
     </div>

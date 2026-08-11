@@ -92,7 +92,6 @@ export default async function CandidatePage({
                     {call.status}
                   </Badge>
                   <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
-                    {call.mode === "live" ? "Live call" : "Dry run"} ·{" "}
                     {call.questions.length} questions
                   </span>
                   <div style={{ flex: 1 }} />

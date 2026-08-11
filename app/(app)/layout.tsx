@@ -1,13 +1,10 @@
 import Sidebar from "@/components/layout/Sidebar";
-import { liveCallsEnabled } from "@/lib/config";
 
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const liveCalls = liveCallsEnabled();
-
   return (
     <div
       style={{
@@ -98,7 +95,7 @@ export default function AppLayout({
           overflow: "hidden",
         }}
       >
-        <Sidebar liveCalls={liveCalls} />
+        <Sidebar />
         <main
           style={{
             flex: 1,
