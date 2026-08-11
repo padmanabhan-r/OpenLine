@@ -78,6 +78,136 @@ export interface PreviewOutcome {
   detail?: string;
 }
 
+/**
+ * Generate and persist a preview for one candidate.
+ *
+ * Careful with rows that already exist. A regenerate must reuse the existing
+ * row's idempotency key and version — minting a fresh `:v1` after an edit
+ * bumped the row to `:v2` would insert a second row for the same person, two
+ * scripts, one dialable. And a row that is dialing or done is not touched at
+ * all: regenerating a script for a call that is happening right now would
+ * replace the record of what is actually being said on the line.
+ */
+async function previewOne(
+  job: typeof jobsTable.$inferSelect,
+  candidate: Candidate,
+  port: ReturnType<typeof createCallePort>,
+): Promise<PreviewOutcome> {
+  const db = getDb();
+
+  if (!candidate.phoneE164) {
+    return {
+      candidateId: candidate.id,
+      name: candidate.name,
+      status: "skipped",
+      detail: `Phone number could not be resolved (${candidate.phoneRejection ?? "unknown"}).`,
+    };
+  }
+
+  const [existing] = await db
+    .select({
+      id: screeningCalls.id,
+      status: screeningCalls.status,
+      idempotencyKey: screeningCalls.idempotencyKey,
+    })
+    .from(screeningCalls)
+    .where(
+      and(
+        eq(screeningCalls.jobId, job.id),
+        eq(screeningCalls.candidateId, candidate.id),
+      ),
+    )
+    .limit(1);
+
+  if (existing && (existing.status === "dialing" || existing.status === "completed")) {
+    return {
+      candidateId: candidate.id,
+      name: candidate.name,
+      status: "skipped",
+      detail: "A call for this candidate is in progress or already happened.",
+    };
+  }
+
+  const questions = await questionsFor(job, candidate);
+  const task = assembleTask({
+    candidateName: candidate.name,
+    roleTitle: job.title,
+    companyName: job.companyName,
+    recruiterName: job.recruiterName,
+    questions,
+    factSheet: job.factSheet,
+  });
+
+  const guard = inspectScript(task);
+  const idempotencyKey =
+    existing?.idempotencyKey ?? `${job.id}:${candidate.id}:v1`;
+
+  // Dry run in the port too, so the preview travels the exact code path a
+  // live dial would — including the guard and allowlist checks.
+  const outcome = await port.dial({
+    task,
+    phone: candidate.phoneE164,
+    resultSchema: SCREENING_RESULT_SCHEMA as unknown as Record<string, unknown>,
+    idempotencyKey,
+    metadata: { jobId: job.id, candidateId: candidate.id },
+  });
+
+  const refused = !outcome.ok;
+
+  await db
+    .insert(screeningCalls)
+    .values({
+      jobId: job.id,
+      candidateId: candidate.id,
+      idempotencyKey,
+      mode: "dry_run",
+      status: refused ? "refused" : "previewed",
+      task,
+      questions,
+      guardFindings: guard.findings,
+      refusalReason: refused ? outcome.refusal : null,
+      refusalDetail: refused ? outcome.detail : null,
+      needsHuman: refused,
+      needsHumanReasons: refused ? [outcome.detail] : [],
+    })
+    .onConflictDoUpdate({
+      target: screeningCalls.idempotencyKey,
+      set: {
+        task,
+        questions,
+        mode: "dry_run",
+        status: refused ? "refused" : "previewed",
+        guardFindings: guard.findings,
+        refusalReason: refused ? outcome.refusal : null,
+        refusalDetail: refused ? outcome.detail : null,
+        needsHuman: refused,
+        needsHumanReasons: refused ? [outcome.detail] : [],
+      },
+    });
+
+  return {
+    candidateId: candidate.id,
+    name: candidate.name,
+    status: refused ? "refused" : "previewed",
+    ...(refused ? { detail: outcome.detail } : {}),
+  };
+}
+
+/**
+ * The port previews never dial, so it always runs in dry run — even when the
+ * deployment has live calls enabled. The allowlist is a dial-time control:
+ * gating script generation on it would mean a recruiter could not read the
+ * script for anyone they had not already authorised, which is backwards.
+ * Placing the call (lib/screening/dispatch) does check it.
+ */
+function previewPort() {
+  return createCallePort({
+    mode: "dry_run",
+    apiKey: process.env.CALLE_API_KEY ?? "",
+    allowlist: [],
+  });
+}
+
 /** Generate and persist a preview for every callable candidate on a job. */
 export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
   const db = getDb();
@@ -98,92 +228,41 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
       ),
     );
 
-  // Previewing never dials, so it always runs the port in dry run — even when
-  // the deployment has live calls enabled. The allowlist is a dial-time
-  // control: gating script generation on it would mean a recruiter could not
-  // read the script for anyone they had not already authorised, which is
-  // backwards. Placing the call (lib/screening/dispatch) does check it.
-  const port = createCallePort({
-    mode: "dry_run",
-    apiKey: process.env.CALLE_API_KEY ?? "",
-    allowlist: [],
-  });
+  const port = previewPort();
   const outcomes: PreviewOutcome[] = [];
-
   for (const candidate of roster) {
-    if (!candidate.phoneE164) {
-      outcomes.push({
-        candidateId: candidate.id,
-        name: candidate.name,
-        status: "skipped",
-        detail: `Phone number could not be resolved (${candidate.phoneRejection ?? "unknown"}).`,
-      });
-      continue;
-    }
+    outcomes.push(await previewOne(job, candidate, port));
+  }
+  return outcomes;
+}
 
-    const questions = await questionsFor(job, candidate);
-    const task = assembleTask({
-      candidateName: candidate.name,
-      roleTitle: job.title,
-      companyName: job.companyName,
-      recruiterName: job.recruiterName,
-      questions,
-      factSheet: job.factSheet,
-    });
+/** Generate a preview for one candidate — the per-row "Build script" path. */
+export async function previewCandidate(
+  jobId: string,
+  candidateId: string,
+): Promise<PreviewOutcome> {
+  const db = getDb();
 
-    const guard = inspectScript(task);
-    const idempotencyKey = `${job.id}:${candidate.id}:v1`;
+  const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, jobId)).limit(1);
+  if (!job) throw new Error(`No job ${jobId}`);
 
-    // Dry run in the port too, so the preview travels the exact code path a
-    // live dial would — including the guard and allowlist checks.
-    const outcome = await port.dial({
-      task,
-      phone: candidate.phoneE164,
-      resultSchema: SCREENING_RESULT_SCHEMA as unknown as Record<string, unknown>,
-      idempotencyKey,
-      metadata: { jobId: job.id, candidateId: candidate.id },
-    });
+  const [candidate] = await db
+    .select()
+    .from(candidatesTable)
+    .where(
+      and(eq(candidatesTable.id, candidateId), eq(candidatesTable.jobId, jobId)),
+    )
+    .limit(1);
+  if (!candidate) throw new Error(`No candidate ${candidateId} on job ${jobId}`);
 
-    const refused = !outcome.ok;
-
-    await db
-      .insert(screeningCalls)
-      .values({
-        jobId: job.id,
-        candidateId: candidate.id,
-        idempotencyKey,
-        mode: "dry_run",
-        status: refused ? "refused" : "previewed",
-        task,
-        questions,
-        guardFindings: guard.findings,
-        refusalReason: refused ? outcome.refusal : null,
-        refusalDetail: refused ? outcome.detail : null,
-        needsHuman: refused,
-        needsHumanReasons: refused ? [outcome.detail] : [],
-      })
-      .onConflictDoUpdate({
-        target: screeningCalls.idempotencyKey,
-        set: {
-          task,
-          questions,
-          mode: "dry_run",
-          status: refused ? "refused" : "previewed",
-          guardFindings: guard.findings,
-          refusalReason: refused ? outcome.refusal : null,
-          refusalDetail: refused ? outcome.detail : null,
-          needsHuman: refused,
-          needsHumanReasons: refused ? [outcome.detail] : [],
-        },
-      });
-
-    outcomes.push({
-      candidateId: candidate.id,
+  if (!candidate.shortlisted) {
+    return {
+      candidateId,
       name: candidate.name,
-      status: refused ? "refused" : "previewed",
-      ...(refused ? { detail: outcome.detail } : {}),
-    });
+      status: "skipped",
+      detail: "Not on the shortlist — OpenLine only scripts calls the recruiter sanctioned.",
+    };
   }
 
-  return outcomes;
+  return previewOne(job, candidate, previewPort());
 }

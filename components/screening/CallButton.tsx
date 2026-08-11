@@ -9,8 +9,9 @@ import { callCandidate } from "@/app/(app)/calls/[id]/actions";
  * The one control in OpenLine that spends money and rings a stranger.
  *
  * It asks for confirmation naming the person, because "are you sure?" is
- * useless when you cannot remember which row you clicked, and it stays busy for
- * the length of the call rather than pretending to finish early.
+ * useless when you cannot remember which row you clicked. Starting the call
+ * takes a second or two; the conversation itself continues detached, and the
+ * page's dialing banner takes over from there.
  */
 export default function CallButton({
   screeningCallId,
@@ -68,7 +69,7 @@ export default function CallButton({
             }}
           >
             <Icon name={pending ? "clock" : "phone"} size={15} />
-            {pending ? "On the call…" : `Yes, call ${candidateName.split(" ")[0]}`}
+            {pending ? "Starting call…" : `Yes, call ${candidateName.split(" ")[0]}`}
           </Button>
         </div>
       ) : (
@@ -85,7 +86,7 @@ export default function CallButton({
       )}
       {pending && (
         <p style={{ fontSize: 12, color: "var(--ink-2)", marginTop: 6 }}>
-          The call is running. This page updates when it ends.
+          Asking CALL-E to dial…
         </p>
       )}
       {error && (

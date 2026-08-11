@@ -7,7 +7,10 @@ import Icon from "@/components/ui/Icon";
 import ScriptView from "@/components/screening/ScriptView";
 import CallButton from "@/components/screening/CallButton";
 import CallResult from "@/components/screening/CallResult";
+import DialingWatcher from "@/components/screening/DialingWatcher";
+import ScriptEditor from "@/components/screening/ScriptEditor";
 import { getCall } from "@/lib/db/queries";
+import { reconcileCall } from "@/lib/screening/reconcile";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +20,17 @@ export default async function CallPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const row = await getCall(id);
+  let row = await getCall(id);
   if (!row) notFound();
+
+  // If the detached waiter died with the process, this page is where the row
+  // must stop lying. Reconcile, then re-read whatever the truth now is.
+  if (row.call.status === "dialing") {
+    const outcome = await reconcileCall(row.call);
+    if (outcome !== "still_dialing") {
+      row = (await getCall(id)) ?? row;
+    }
+  }
 
   const { call, candidate, job } = row;
   const findings = call.guardFindings;
@@ -32,9 +44,15 @@ export default async function CallPage({
   const alreadyCalled = Boolean(call.calleCallId);
   const result = call.structuredResult;
 
+  const dialing = call.status === "dialing";
+  const editableScript =
+    (call.status === "previewed" || call.status === "refused") &&
+    !call.calleCallId;
   const cannotCall = blocked
     ? "The script is blocked, so it cannot dial."
-    : alreadyCalled
+    : dialing
+      ? "The call is in progress."
+      : alreadyCalled
       ? "This candidate has already been called."
       : !candidate.phoneE164
         ? "This candidate has no callable number."
@@ -75,6 +93,8 @@ export default async function CallPage({
       />
       <Page>
         <div style={{ display: "grid", gap: 16 }}>
+          {dialing && <DialingWatcher />}
+
           {/* Verdict first — it decides whether the script below may be spoken. */}
           <Panel>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
@@ -274,33 +294,36 @@ export default async function CallPage({
             </Panel>
           )}
 
-          {/* The questions, as a list, before the full script. */}
+          {/* The questions — editable until dialing starts. */}
           <Panel>
-            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
-              Questions for {candidate.name.split(" ")[0]}
-            </h2>
-            <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 14 }}>
-              Asked in this order. The assistant may not add its own.
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700 }}>
+                Questions for {candidate.name.split(" ")[0]}
+              </h2>
+              <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                asked in this order; the assistant may not add its own
+              </span>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 10, maxWidth: 640 }}>
+              Edit freely — the disclosure, consent gate, and boundaries are
+              reassembled around your questions and cannot be edited out. Every
+              save is re-checked against the prohibited-topic guard.
             </p>
-            <ol style={{ display: "grid", gap: 8, paddingLeft: 0, listStyle: "none" }}>
-              {call.questions.map((q) => (
-                <li key={q.id} style={{ display: "flex", gap: 11 }}>
-                  <span
-                    className="mono"
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: "var(--accent)",
-                      flexShrink: 0,
-                      paddingTop: 2,
-                    }}
-                  >
-                    {q.id}
-                  </span>
-                  <span style={{ fontSize: 14 }}>{q.text}</span>
-                </li>
-              ))}
-            </ol>
+            <ScriptEditor
+              screeningCallId={call.id}
+              questions={call.questions}
+              editable={editableScript}
+              {...(editableScript
+                ? {}
+                : {
+                    lockedReason:
+                      call.status === "dialing"
+                        ? "The call is in progress — the script is locked."
+                        : alreadyCalled || call.status === "completed" || call.status === "failed"
+                          ? "This call already happened; the script is part of its record."
+                          : "This script is locked.",
+                  })}
+            />
           </Panel>
 
           {/* The artefact that matters: the exact words. */}

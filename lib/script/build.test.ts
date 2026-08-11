@@ -54,12 +54,14 @@ describe("assembleTask", () => {
 
   it("forbids answering beyond the fact sheet rather than improvising", () => {
     const task = assembleTask(input()).toLowerCase();
-    expect(task).toMatch(/do not (guess|invent|make up)/);
+    expect(task).toMatch(/(do not|never) (guess|invent|make up)/);
   });
 
   it("states that the assistant cannot make or imply an offer", () => {
     const task = assembleTask(input()).toLowerCase();
-    expect(task).toMatch(/(cannot|do not) (make|imply|extend).*(offer|decision)/);
+    expect(task).toMatch(
+      /((cannot|do not) (make|imply|extend).*(offer|decision))|(no offers?, no decisions?)/,
+    );
   });
 
   it("produces a guard-clean script from clean questions", () => {

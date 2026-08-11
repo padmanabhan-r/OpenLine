@@ -8,6 +8,18 @@ interface IconProps {
 }
 
 const paths: Record<string, ReactNode> = {
+  x: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </>
+  ),
   jobs: (
     <>
       <rect x="2" y="7" width="20" height="14" rx="2" />

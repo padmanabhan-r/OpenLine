@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { Call } from "@call-e/calle";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, screeningCalls } from "@/lib/db/schema";
@@ -16,10 +16,6 @@ import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
  * retried dispatch collapses into the same CALL-E call rather than telephoning
  * the candidate twice.
  */
-
-export type DispatchOutcome =
-  | { ok: true; callId: string; status: "completed" | "failed" }
-  | { ok: false; reason: string };
 
 /** Flatten CALL-E's recipient/attempt hierarchy into one ordered transcript. */
 function flattenTranscript(call: Call): InspectableTurn[] {
@@ -49,10 +45,21 @@ function readResult(call: Call): ScreeningResult | null {
   return (recipientLevel as ScreeningResult | null) ?? null;
 }
 
-/** Place one screening call and record the outcome. */
-export async function placeCall(
+export type StartOutcome =
+  | { ok: true; calleCallId: string }
+  | { ok: false; reason: string };
+
+/**
+ * Begin one screening call and return the moment CALL-E accepts it.
+ *
+ * This used to wait for the call to end, which held a server action — and the
+ * recruiter's button — hostage for the length of a phone conversation. Now the
+ * split is: `startCall` claims the row and dials; `finishCall` waits and
+ * records, detached from the request that started it.
+ */
+export async function startCall(
   screeningCallId: string,
-): Promise<DispatchOutcome> {
+): Promise<StartOutcome> {
   const db = getDb();
 
   const [row] = await db
@@ -70,10 +77,7 @@ export async function placeCall(
   }
 
   if (row.calleCallId) {
-    return {
-      ok: false,
-      reason: "This candidate has already been called.",
-    };
+    return { ok: false, reason: "This candidate has already been called." };
   }
 
   const [candidate] = await db
@@ -83,6 +87,23 @@ export async function placeCall(
     .limit(1);
   if (!candidate?.phoneE164) {
     return { ok: false, reason: "This candidate has no callable number." };
+  }
+
+  // Claim the row before dialing. Neon HTTP has no transactions, but a single
+  // conditional UPDATE is atomic — whichever click matches `status` wins and
+  // every other click matches zero rows. This is the double-dial mutex.
+  const claimed = await db
+    .update(screeningCalls)
+    .set({ status: "dialing", dialStartedAt: new Date() })
+    .where(
+      and(
+        eq(screeningCalls.id, row.id),
+        inArray(screeningCalls.status, ["previewed", "refused"]),
+      ),
+    )
+    .returning({ id: screeningCalls.id });
+  if (claimed.length === 0) {
+    return { ok: false, reason: "This call is already in progress or done." };
   }
 
   const port = callePortFromEnv();
@@ -100,6 +121,7 @@ export async function placeCall(
       .update(screeningCalls)
       .set({
         status: "refused",
+        dialStartedAt: null,
         refusalReason: dial.refusal,
         refusalDetail: dial.detail,
         needsHuman: true,
@@ -110,6 +132,11 @@ export async function placeCall(
   }
 
   if (dial.mode === "dry_run") {
+    // Nothing dialed; hand the claim back.
+    await db
+      .update(screeningCalls)
+      .set({ status: "previewed", dialStartedAt: null })
+      .where(eq(screeningCalls.id, row.id));
     return {
       ok: false,
       reason:
@@ -117,42 +144,55 @@ export async function placeCall(
     };
   }
 
-  // The id exists now — persist it before waiting, so a crash mid-call does not
-  // orphan a call we have already paid for.
+  // The id exists now — persist it before anything waits, so a crash mid-call
+  // does not orphan a call we have already paid for.
   await db
     .update(screeningCalls)
-    .set({ calleCallId: dial.call.id, status: "dialing", mode: "live" })
+    .set({ calleCallId: dial.call.id, mode: "live" })
     .where(eq(screeningCalls.id, row.id));
+
+  return { ok: true, calleCallId: dial.call.id };
+}
+
+/**
+ * Wait for a started call to end and record it. Runs detached (via `after()`),
+ * so it must never throw — an error here has no request left to surface in.
+ */
+export async function finishCall(
+  screeningCallId: string,
+  calleCallId: string,
+): Promise<void> {
+  const db = getDb();
 
   let call: Call;
   try {
-    call = await port.waitForCall(dial.call.id);
+    call = await callePortFromEnv().waitForCall(calleCallId);
   } catch (error) {
-    await db
-      .update(screeningCalls)
-      .set({
-        needsHuman: true,
-        needsHumanReasons: [
-          `The call was placed but no terminal result arrived: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ],
-      })
-      .where(eq(screeningCalls.id, row.id));
-    return {
-      ok: false,
-      reason:
-        "The call was placed, but OpenLine stopped waiting before it finished. Reload shortly.",
-    };
+    try {
+      await db
+        .update(screeningCalls)
+        .set({
+          status: "failed",
+          needsHuman: true,
+          needsHumanReasons: [
+            `The call was placed but no terminal result arrived: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          ],
+          completedAt: new Date(),
+        })
+        .where(eq(screeningCalls.id, screeningCallId));
+    } catch (writeError) {
+      console.error("finishCall: failed to record wait failure", writeError);
+    }
+    return;
   }
 
-  await recordTerminalCall(row.id, call);
-
-  return {
-    ok: true,
-    callId: call.id,
-    status: call.status === "completed" ? "completed" : "failed",
-  };
+  try {
+    await recordTerminalCall(screeningCallId, call);
+  } catch (error) {
+    console.error("finishCall: failed to record terminal call", error);
+  }
 }
 
 /**

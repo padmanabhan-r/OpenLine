@@ -4,9 +4,10 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
-import PreviewButton from "@/components/screening/PreviewButton";
 import JobDescription from "@/components/jobs/JobDescription";
+import RowActions from "@/components/screening/RowActions";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
+import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,79 @@ const REJECTION_COPY: Record<string, string> = {
   invalid: "Not a valid number",
   no_region: "No country code and no region",
 };
+
+/**
+ * The shared header treatment for the two applicant sections. The eyebrow is
+ * the machine's word for the section; the sentence underneath is the human
+ * explanation of what belonging to it means.
+ */
+function SectionHeader({
+  eyebrow,
+  title,
+  count,
+  explanation,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  count: number;
+  explanation: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        padding: "18px 22px 14px",
+        borderBottom: "1px solid var(--line)",
+        background: "var(--surface-2)",
+        borderRadius: "var(--radius) var(--radius) 0 0",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span className="eyebrow" style={{ color: "var(--accent-deep)" }}>
+          {eyebrow}
+        </span>
+        <div style={{ flex: 1 }} />
+        {children}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 10,
+          marginTop: 6,
+        }}
+      >
+        <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-.02em" }}>
+          {title}
+        </h2>
+        <span
+          className="mono"
+          style={{
+            fontSize: 11.5,
+            padding: "2px 9px",
+            borderRadius: "var(--radius-pill)",
+            background: "var(--bg-2)",
+            border: "1px solid var(--line-2)",
+            color: "var(--ink-2)",
+          }}
+        >
+          {count}
+        </span>
+      </div>
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--ink-3)",
+          marginTop: 5,
+          maxWidth: 640,
+        }}
+      >
+        {explanation}
+      </p>
+    </div>
+  );
+}
 
 export default async function JobPage({
   params,
@@ -32,53 +106,49 @@ export default async function JobPage({
   const pool = applicants.filter((r) => !r.candidate.shortlisted);
   const callable = roster.filter((r) => r.candidate.phoneE164);
   const unreachable = roster.filter((r) => !r.candidate.phoneE164);
-  const scripted = roster.filter((r) => r.call);
+
+  const liveEnabled = liveCallsEnabled();
+  const allowlist = callAllowlist();
 
   return (
     <>
       <TopBar
         title={job.title}
-        subtitle={`${job.companyName} · ${applicants.length} applied, ${roster.length} shortlisted, every one of them called`}
-        actions={<PreviewButton jobId={job.id} />}
+        subtitle={`${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted`}
       />
       <Page>
         <div style={{ display: "grid", gap: 16 }}>
-          {/* The posting, as a candidate would read it.
-              The fact sheet that used to sit under here is not a second job
-              description — it is the allowlist of things the agent may say out
-              loud. It belongs with the script a recruiter reviews before
-              dialing, not on the page describing the role. */}
+          {/* The posting, as a candidate would read it. */}
           <Panel>
             <JobDescription description={job.description} />
           </Panel>
 
-          {/* The queue. */}
+          {/* The shortlist — the people whose phones will ring. */}
           <Panel padded={false}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "16px 22px",
-                borderBottom: "1px solid var(--line-2)",
-              }}
+            <SectionHeader
+              eyebrow="The queue"
+              title="Shortlisted"
+              count={roster.length}
+              explanation="The only people OpenLine will call. Build each script, read it, then place the call — nothing dials without a human having seen the words first."
             >
-              <h2 style={{ fontSize: 15, fontWeight: 700 }}>Shortlist</h2>
-              <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
-                {roster.length} of {applicants.length} applicants — the only people
-                OpenLine will call
-              </span>
-              <div style={{ flex: 1 }} />
               <Badge tone="good">{callable.length} callable</Badge>
               {unreachable.length > 0 && (
                 <Badge tone="warn">{unreachable.length} need a human</Badge>
               )}
-              {scripted.length > 0 && <Badge tone="info">{scripted.length} scripted</Badge>}
-            </div>
+            </SectionHeader>
 
             {roster.map(({ candidate, call }) => {
-              const guardFindings = call?.guardFindings ?? [];
-              const blocked = guardFindings.length > 0 || call?.status === "refused";
+              const blocked = Boolean(
+                call && (call.guardFindings.length > 0 || call.status === "refused"),
+              );
+
+              const dialDisabledReason = !candidate.phoneE164
+                ? "No callable number."
+                : !liveEnabled
+                  ? "Dry run — set OPENLINE_LIVE_CALLS=true to dial."
+                  : !allowlist.includes(candidate.phoneE164)
+                    ? "This number is not on the call allowlist."
+                    : null;
 
               return (
                 <div
@@ -87,7 +157,7 @@ export default async function JobPage({
                     display: "flex",
                     alignItems: "center",
                     gap: 14,
-                    padding: "14px 22px",
+                    padding: "13px 22px",
                     borderBottom: "1px solid var(--line-2)",
                   }}
                 >
@@ -108,7 +178,7 @@ export default async function JobPage({
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: 480,
+                        maxWidth: 440,
                       }}
                     >
                       {candidate.headline
@@ -117,34 +187,57 @@ export default async function JobPage({
                     </div>
                   </div>
 
-                  {/* Phone state — masked, since a full number never needs to be on screen. */}
-                  <div style={{ width: 150, flexShrink: 0 }}>
-                    {candidate.phoneE164 ? (
-                      <span className="mono" style={{ fontSize: 12.5, color: "var(--ink-2)" }}>
-                        {maskPhone(candidate.phoneE164)}
+                  {/* The score that put them here — arguable, so shown. */}
+                  <div style={{ width: 64, flexShrink: 0, textAlign: "right" }}>
+                    {candidate.matchScore != null ? (
+                      <span
+                        className="mono"
+                        style={{
+                          fontSize: 13.5,
+                          fontWeight: 700,
+                          color:
+                            candidate.matchScore >= 85
+                              ? "var(--accent-deep)"
+                              : "var(--ink-2)",
+                        }}
+                        title="ATS match score"
+                      >
+                        {candidate.matchScore}
                       </span>
                     ) : (
-                      <Badge tone="warn">
-                        {REJECTION_COPY[candidate.phoneRejection ?? ""] ?? "Unusable number"}
-                      </Badge>
+                      <span style={{ fontSize: 12, color: "var(--ink-3)" }}>—</span>
                     )}
                   </div>
 
-                  <div style={{ width: 130, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+                  <div
+                    style={{
+                      width: 210,
+                      flexShrink: 0,
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
                     {!candidate.phoneE164 ? (
-                      <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>Not queued</span>
-                    ) : blocked ? (
-                      <Badge tone="danger" dot>
-                        Blocked
+                      <Badge tone="warn">
+                        {REJECTION_COPY[candidate.phoneRejection ?? ""] ??
+                          "Unusable number"}
                       </Badge>
-                    ) : call ? (
-                      <Badge tone="info">Script ready</Badge>
                     ) : (
-                      <Badge tone="neutral">No script yet</Badge>
+                      <RowActions
+                        jobId={job.id}
+                        candidateId={candidate.id}
+                        candidateName={candidate.name}
+                        call={
+                          call
+                            ? { id: call.id, status: call.status, blocked }
+                            : null
+                        }
+                        dialDisabledReason={dialDisabledReason}
+                      />
                     )}
                   </div>
 
-                  <div style={{ width: 92, flexShrink: 0, textAlign: "right" }}>
+                  <div style={{ width: 82, flexShrink: 0, textAlign: "right" }}>
                     {call ? (
                       <Link
                         href={`/calls/${call.id}`}
@@ -172,34 +265,12 @@ export default async function JobPage({
           {/* Everyone the shortlist left out, with the reason, in the open. */}
           {pool.length > 0 && (
             <Panel padded={false}>
-              <div
-                style={{
-                  padding: "16px 22px",
-                  borderBottom: "1px solid var(--line-2)",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700 }}>
-                    Not shortlisted
-                  </h2>
-                  <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
-                    {pool.length} applicants, no call, reasons on the record
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "var(--ink-3)",
-                    marginTop: 6,
-                    maxWidth: 620,
-                  }}
-                >
-                  OpenLine did not make these decisions and cannot overturn them.
-                  They are shown because a filter nobody can see is a filter
-                  nobody can correct — and some of these reasons deserve an
-                  argument.
-                </p>
-              </div>
+              <SectionHeader
+                eyebrow="The rest of the pool"
+                title="Not shortlisted"
+                count={pool.length}
+                explanation="No call is scripted for these applicants. The reasons are on the record because a filter nobody can see is a filter nobody can correct — and some of these reasons deserve an argument."
+              />
 
               {pool.map(({ candidate }) => (
                 <div
@@ -275,9 +346,4 @@ export default async function JobPage({
       </Page>
     </>
   );
-}
-
-/** Show enough to recognise the number, never the whole thing. */
-function maskPhone(e164: string) {
-  return `${e164.slice(0, 3)}•••••${e164.slice(-4)}`;
 }

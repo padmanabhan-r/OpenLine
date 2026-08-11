@@ -1,10 +1,37 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { placeCall } from "@/lib/screening/dispatch";
+import { after } from "next/server";
+import { finishCall, startCall } from "@/lib/screening/dispatch";
+import { applyScriptEdit, type EditOutcome } from "@/lib/screening/edit";
 
+/**
+ * Start the call and return immediately.
+ *
+ * The wait for the call to end runs in `after()` — Next's post-response hook —
+ * so the recruiter's button resolves in a second or two while the phone
+ * conversation continues on its own. The page shows "dialing" and updates
+ * itself when the result lands.
+ */
 export async function callCandidate(screeningCallId: string) {
-  const outcome = await placeCall(screeningCallId);
+  const outcome = await startCall(screeningCallId);
+
+  if (outcome.ok) {
+    const calleCallId = outcome.calleCallId;
+    after(() => finishCall(screeningCallId, calleCallId));
+  }
+
+  revalidatePath(`/calls/${screeningCallId}`);
+  revalidatePath("/calls");
+  return outcome;
+}
+
+/** Save edited questions; the script is reassembled and re-guarded server-side. */
+export async function saveScriptEdits(
+  screeningCallId: string,
+  questionTexts: string[],
+): Promise<EditOutcome> {
+  const outcome = await applyScriptEdit({ screeningCallId, questionTexts });
   revalidatePath(`/calls/${screeningCallId}`);
   revalidatePath("/calls");
   return outcome;
