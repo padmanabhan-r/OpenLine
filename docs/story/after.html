@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>With OpenLine — the whole shortlist, by tonight</title>
+<style>
+  :root {
+    --bg: #F2D845; --bg-2: #F6E36F; --surface: #FCF6D5; --surface-2: #F9EFB4;
+    --ink: #1D1B10; --ink-2: #57522F; --ink-3: #857C4E;
+    --line: rgba(29,27,16,.18);
+    --aqua: #1E8F98; --aqua-deep: #14717A; --aqua-soft: #7FD3D8; --aqua-wash: #DDF0E9;
+    --danger: #C22F1E; --green: #55793B; --green-wash: #E9EFC8;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #17160F; }
+  body { overflow: hidden; font-family: var(--sans); }
+
+  #stage {
+    width: 1920px; height: 1080px; overflow: hidden;
+    /* A fixed-size stage centered by translate, then scaled — grid centering
+       cannot center an item larger than its container. */
+    position: absolute; left: 50%; top: 50%;
+    background:
+      radial-gradient(60% 55% at 76% 18%, rgba(127,211,216,.28), transparent 70%),
+      radial-gradient(45% 50% at 12% 85%, rgba(246,227,111,.65), transparent 75%),
+      var(--bg);
+    color: var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 21px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+  }
+  .scene { position: absolute; inset: 0; padding: 90px 110px; opacity: 0; visibility: hidden; transition: opacity .9s ease; }
+  .scene.active { opacity: 1; visibility: visible; }
+  .rise { opacity: 0; transform: translateY(26px); }
+  .active .rise { opacity: 1; transform: none; transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1); }
+
+  .card { background: var(--surface); border: 2px solid var(--line); border-radius: 26px; box-shadow: 0 10px 40px rgba(95,80,8,.14); }
+
+  h1 { font-size: 104px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.04; }
+  h2 { font-size: 58px; font-weight: 800; letter-spacing: -0.02em; }
+  .sub { font-size: 34px; color: var(--ink-2); line-height: 1.45; max-width: 1150px; }
+
+  .hl {
+    font-style: normal;
+    background-image: linear-gradient(90deg, #35B5C2, #63CBA8, #4A9FD8);
+    background-repeat: no-repeat; background-size: 100% 0.08em; background-position: 0 96%;
+    padding-bottom: 0.06em;
+  }
+
+  /* Scene 2 · parallel fan-out */
+  .hub {
+    width: 380px; padding: 38px 44px; text-align: center; position: relative;
+    border-color: var(--aqua) !important; box-shadow: 0 10px 44px rgba(30,143,152,.30) !important;
+  }
+  .hub .brand { font-family: var(--mono); font-size: 22px; letter-spacing: .14em; color: var(--aqua-deep); font-weight: 700; }
+  .pulse-ring {
+    position: absolute; inset: -3px; border-radius: 26px; border: 3px solid var(--aqua);
+    opacity: 0; pointer-events: none;
+  }
+  .active .pulse-ring { animation: ring 2.2s ease-out infinite .8s; }
+  @keyframes ring {
+    0% { opacity: .8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.14); }
+  }
+
+  .fan { position: relative; flex: 1; height: 640px; }
+  .fan .cand {
+    position: absolute; right: 0; width: 240px;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 16px;
+    padding: 13px 18px; font-family: var(--mono); font-size: 20px; color: var(--ink-2);
+    display: flex; justify-content: space-between; align-items: center;
+    opacity: 0; transform: translateX(24px);
+  }
+  .active .fan .cand { opacity: 1; transform: none; transition: all .5s ease; }
+  .fan .ok { color: var(--green); font-weight: 700; }
+  .fan svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .fan line { stroke: var(--aqua); stroke-width: 2.5; stroke-dasharray: 7 7; opacity: 0; }
+  .active .fan line { opacity: .75; animation: dashmove 1.4s linear infinite; }
+  @keyframes dashmove { to { stroke-dashoffset: -28; } }
+
+  /* Scene 3 · the gate */
+  .gate-card { padding: 40px 50px; font-size: 27px; line-height: 1.6; max-width: 760px; }
+  .gate-card .q { font-family: var(--mono); font-size: 22px; color: var(--ink-2); padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .stamp {
+    display: inline-block; font-family: var(--mono); font-weight: 700; font-size: 24px;
+    color: var(--aqua-deep); border: 3px solid var(--aqua-deep); border-radius: 12px;
+    padding: 8px 22px; transform: rotate(-4deg); letter-spacing: .1em;
+  }
+
+  /* Scene 4 · results */
+  .result-card { padding: 26px 32px; width: 540px; font-size: 24px; }
+  .result-card .name { font-weight: 700; font-size: 27px; }
+  .field { display: flex; justify-content: space-between; margin-top: 12px; font-size: 22px; }
+  .field .k { color: var(--ink-3); font-family: var(--mono); font-size: 19px; }
+  .pill { font-family: var(--mono); font-size: 18px; padding: 4px 14px; border-radius: 999px; }
+  .pill.good { background: var(--green-wash); color: var(--green); }
+  .pill.aqua { background: var(--aqua-wash); color: var(--aqua-deep); }
+  .pill.warn { background: #F3E7B5; color: #A87A1D; }
+  .quote { font-size: 20px; color: var(--ink-2); border-left: 4px solid var(--aqua-soft); padding-left: 14px; margin-top: 14px; font-style: italic; }
+
+  .bigstat { font-size: 150px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+  .stat-label { font-size: 30px; color: var(--ink-2); margin-top: 14px; }
+
+  .footer-tag {
+    position: absolute; bottom: 46px; left: 110px; right: 110px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 19px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .progress { position: absolute; bottom: 0; left: 0; height: 7px; background: var(--aqua); width: 0%; transition: width .4s linear; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- SCENE 1 · Title -->
+  <section class="scene" data-dur="5200">
+    <div style="display:grid; place-items:center; height:100%; text-align:center;">
+      <div>
+        <p class="eyebrow rise">OpenLine · powered by CALL-E</p>
+        <h1 class="rise" style="transition-delay:.25s; margin-top:28px;">Same shortlist.<br><em class="hl">Every phone rings tonight.</em></h1>
+        <p class="sub rise" style="transition-delay:.6s; margin:44px auto 0;">
+          The screening call becomes something you approve, not something you perform.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 2 · The gate: a human reads every script first -->
+  <section class="scene" data-dur="8000">
+    <p class="eyebrow rise">Step 1 — You approve the words</p>
+    <h2 class="rise" style="margin-top:20px;">A script per candidate, drawn from the job — read before it is spoken.</h2>
+    <div style="display:flex; gap:80px; margin-top:70px; align-items:flex-start;">
+      <div class="card gate-card rise" style="transition-delay:.3s;">
+        <div style="font-weight:700; margin-bottom:8px;">Questions for Vikram</div>
+        <div class="q">q1 · Your hybrid retriever work — how does it translate to fraud review?</div>
+        <div class="q">q2 · Walk me through the offline set you built. What did it miss?</div>
+        <div class="q">q3 · Notice period, and what would change it?</div>
+        <div style="margin-top:22px; font-size:21px; color:var(--ink-2);">
+          Consent gate, AI disclosure, and boundaries are fixed in the frame —
+          <b>editable questions, uneditable ethics.</b>
+        </div>
+      </div>
+      <div style="display:grid; gap:36px; justify-items:center; padding-top:40px;">
+        <div class="rise" style="transition-delay:.7s; font-size:76px;">👁️</div>
+        <div class="rise stamp" style="transition-delay:1.0s;">HUMAN APPROVED</div>
+        <div class="rise" style="transition-delay:1.3s; font-family:var(--mono); font-size:20px; color:var(--ink-3); text-align:center;">
+          nothing dials until<br>a person has read it
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 3 · Parallel fan-out -->
+  <section class="scene" data-dur="9000">
+    <p class="eyebrow rise">Step 2 — The agent makes the first calls</p>
+    <h2 class="rise" style="margin-top:20px;">All twenty. In parallel. The same evening.</h2>
+    <div style="display:flex; gap:90px; margin-top:60px; align-items:center;">
+      <div class="card hub rise" style="transition-delay:.25s;">
+        <div class="pulse-ring"></div>
+        <div style="font-size:64px;">☎️</div>
+        <div class="brand" style="margin-top:10px;">CALL-E</div>
+        <div style="font-size:22px; color:var(--ink-2); margin-top:8px;">discloses it's an AI ·<br>asks permission first</div>
+      </div>
+      <div class="fan rise" style="transition-delay:.5s;">
+        <svg viewBox="0 0 900 640" preserveAspectRatio="none">
+          <line x1="0" y1="320" x2="650" y2="45"/>
+          <line x1="0" y1="320" x2="650" y2="140"/>
+          <line x1="0" y1="320" x2="650" y2="235"/>
+          <line x1="0" y1="320" x2="650" y2="330"/>
+          <line x1="0" y1="320" x2="650" y2="425"/>
+          <line x1="0" y1="320" x2="650" y2="520"/>
+          <line x1="0" y1="320" x2="650" y2="610"/>
+        </svg>
+        <div class="cand" style="top:20px;  transition-delay:.8s;"><span>C-01</span><span class="ok">✓ 9 min</span></div>
+        <div class="cand" style="top:115px; transition-delay:1.1s;"><span>C-02</span><span class="ok">✓ 7 min</span></div>
+        <div class="cand" style="top:210px; transition-delay:1.4s;"><span>C-07</span><span class="ok">✓ 12 min</span></div>
+        <div class="cand" style="top:305px; transition-delay:1.7s;"><span>C-11</span><span style="color:var(--ink-3);">↻ retry 7pm</span></div>
+        <div class="cand" style="top:400px; transition-delay:2.0s;"><span>C-14</span><span class="ok">✓ 8 min</span></div>
+        <div class="cand" style="top:495px; transition-delay:2.3s;"><span>C-19</span><span class="ok">✓ 10 min</span></div>
+        <div class="cand" style="top:585px; transition-delay:2.6s;"><span>C-20</span><span class="ok">✓ 6 min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 4 · Structured results -->
+  <section class="scene" data-dur="9000">
+    <p class="eyebrow rise">Step 3 — Answers, not voicemail memories</p>
+    <h2 class="rise" style="margin-top:20px;">Every call comes back structured — with the candidate's own words.</h2>
+    <div style="display:flex; gap:44px; margin-top:64px;">
+      <div class="card result-card rise" style="transition-delay:.3s;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="name">Vikram D.</span><span class="pill good">interest: high</span>
+        </div>
+        <div class="field"><span class="k">notice period</span><span>60 days</span></div>
+        <div class="field"><span class="k">availability</span><span>can start interviews this week</span></div>
+        <div class="quote">"I've rebuilt this exact system three times — fraud would be the fourth domain."</div>
+      </div>
+      <div class="card result-card rise" style="transition-delay:.8s;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="name">Meera I.</span><span class="pill aqua">asked about salary</span>
+        </div>
+        <div class="field"><span class="k">notice period</span><span>45 days</span></div>
+        <div class="field"><span class="k">answered from fact sheet</span><span>band, location policy</span></div>
+        <div class="quote">"The eval-harness ownership is what I'm looking for."</div>
+      </div>
+      <div class="card result-card rise" style="transition-delay:1.3s; border-color:#A87A1D;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="name">Harish M.</span><span class="pill warn">needs you</span>
+        </div>
+        <div class="field"><span class="k">reason</span><span>asked for a human — call ended politely</span></div>
+        <div class="field"><span class="k">routed to</span><span>your queue, with transcript</span></div>
+        <div class="quote">Nothing uncertain becomes a confident record.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENE 5 · Humans decide -->
+  <section class="scene" data-dur="7500">
+    <p class="eyebrow rise">Step 4 — You make every decision</p>
+    <h2 class="rise" style="margin-top:20px;">Your morning: twenty transcripts, zero dialing.</h2>
+    <p class="sub rise" style="transition-delay:.4s; margin-top:44px;">
+      Read the answers with evidence attached. Argue with the ATS score if you like —
+      it's on the record. Schedule the strong ones. The agent never rejects anyone,
+      never implies a decision, never guesses — anything uncertain lands in
+      <b>your</b> queue, not the bin.
+    </p>
+    <div style="display:flex; gap:26px; margin-top:70px;" class="rise">
+      <span class="pill good" style="font-size:24px; padding:12px 26px;">8 schedule now</span>
+      <span class="pill aqua" style="font-size:24px; padding:12px 26px;">7 solid — your call</span>
+      <span class="pill warn" style="font-size:24px; padding:12px 26px;">3 need you</span>
+      <span class="pill" style="font-size:24px; padding:12px 26px; background:var(--surface); border:2px solid var(--line); color:var(--ink-2);">2 retrying</span>
+    </div>
+  </section>
+
+  <!-- SCENE 6 · Closing numbers -->
+  <section class="scene" data-dur="8000">
+    <div style="display:grid; place-items:center; height:100%; text-align:center;">
+      <div>
+        <div style="display:flex; gap:150px; justify-content:center;">
+          <div class="rise"><div class="bigstat" style="color:var(--aqua-deep);">20/20</div><div class="stat-label">shortlisted, reached</div></div>
+          <div class="rise" style="transition-delay:.3s;"><div class="bigstat" style="color:var(--aqua-deep);">1</div><div class="stat-label">evening, not a week</div></div>
+          <div class="rise" style="transition-delay:.6s;"><div class="bigstat" style="color:var(--aqua-deep);">0</div><div class="stat-label">decisions made by a machine</div></div>
+        </div>
+        <p class="sub rise" style="transition-delay:1s; margin:80px auto 0;">
+          Let your agent make the first calls. <em class="hl">You get your day back.</em>
+        </p>
+        <p class="rise" style="transition-delay:1.3s; margin-top:40px; font-family:var(--mono); font-size:21px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3);">
+          OpenLine — built on CALL-E
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-tag">
+    <span>OpenLine</span>
+    <span>the screening call that goes both ways</span>
+  </div>
+  <div class="progress" id="bar"></div>
+</div>
+
+<script>
+  const stage = document.getElementById("stage");
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+    stage.style.transformOrigin = "center";
+  }
+  addEventListener("resize", fit); fit();
+
+  const scenes = [...document.querySelectorAll(".scene")];
+  const bar = document.getElementById("bar");
+  const total = scenes.reduce((t, s) => t + Number(s.dataset.dur), 0);
+  let i = -1, elapsed = 0;
+
+  function next() {
+    scenes.forEach(s => s.classList.remove("active"));
+    i = (i + 1) % scenes.length;
+    if (i === 0) elapsed = 0;
+    const scene = scenes[i];
+    void scene.offsetWidth;
+    scene.classList.add("active");
+    const dur = Number(scene.dataset.dur);
+    elapsed += dur;
+    bar.style.width = `${(elapsed / total) * 100}%`;
+    setTimeout(next, dur);
+  }
+  next();
+</script>
+</body>
+</html>

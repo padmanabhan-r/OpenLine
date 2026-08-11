@@ -79,8 +79,16 @@ export default function LandingPage() {
       <LandingNav />
 
       {/* Hero */}
-      <section style={{ textAlign: "center", padding: "56px 24px 0" }}>
-        <div style={{ maxWidth: "var(--maxw)", margin: "0 auto" }}>
+      <section
+        style={{
+          textAlign: "center",
+          padding: "56px 24px 0",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div aria-hidden className="aqua-sheen" />
+        <div style={{ maxWidth: "var(--maxw)", margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Credit pill, in the shape CALL-E uses for its own partner badge. */}
           <a
             href="https://www.heycall-e.com/"

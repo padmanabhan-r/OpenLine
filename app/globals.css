@@ -131,16 +131,60 @@ button, input, textarea { font-family: inherit; }
 .hl {
   font-style: normal;
   color: inherit;
-  background-image: linear-gradient(90deg, #35B5C2, #63CBA8, #4A9FD8);
+  /* The gradient is tripled and oversized so a slow background-position sweep
+     reads as light travelling along the underline rather than a color swap. */
+  background-image: linear-gradient(
+    90deg,
+    #35B5C2, #63CBA8, #4A9FD8, #7FD3D8, #35B5C2, #63CBA8, #4A9FD8
+  );
   background-repeat: no-repeat;
-  background-size: 100% 0.08em;
+  background-size: 300% 0.08em;
   background-position: 0 97%;
   padding-bottom: 0.06em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hl {
+    animation: hl-shimmer 7s linear infinite;
+  }
+}
+
+@keyframes hl-shimmer {
+  from { background-position: 0% 97%; }
+  to   { background-position: -200% 97%; }
 }
 
 .mono { font-family: var(--mono), ui-monospace, 'SF Mono', monospace; }
 .muted { color: var(--ink-2); }
 .faint { color: var(--ink-3); }
+
+/*
+ * Ambient aqua sheen for the landing hero — one slow pass of "sky" light
+ * drifting across the yellow field. Decorative only: behind the text,
+ * ignores the pointer, and holds still for reduced motion.
+ */
+.aqua-sheen {
+  position: absolute;
+  inset: -12% -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(38% 42% at 22% 30%, rgba(127, 211, 216, 0.34), transparent 70%),
+    radial-gradient(30% 36% at 78% 62%, rgba(53, 181, 194, 0.22), transparent 72%);
+  filter: blur(46px);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .aqua-sheen {
+    animation: sheen-drift 11s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes sheen-drift {
+  from { transform: translate3d(-3%, 0, 0) scale(1); }
+  to   { transform: translate3d(3%, 2%, 0) scale(1.06); }
+}
 
 /* ── Animation ── */
 @keyframes blobDrift {
