@@ -146,7 +146,13 @@ export interface CandidateProfile {
   skills: SkillEntry[];
   certifications: CertificationEntry[];
   languages: LanguageEntry[];
-  signals: PlatformSignals;
+  /**
+   * Null for candidates who arrived as an uploaded resume: a PDF carries no
+   * platform behaviour, and synthesizing plausible values here would make
+   * `reachabilityWarnings` lie to a recruiter about a person's availability.
+   * Absence is information; fabrication is not.
+   */
+  signals: PlatformSignals | null;
   screening: ScreeningDecision;
 }
 
@@ -225,6 +231,12 @@ export function summarizeForScript(candidate: CandidateProfile): string {
     roles,
     "",
     `Strongest skills: ${topSkills || "none listed above intermediate"}.`,
-    `Stated notice period: ${signals.noticePeriodDays} days. Preferred work mode: ${signals.preferredWorkMode}.`,
+    // Resume-sourced candidates have no stated preferences — say nothing
+    // rather than feed the question generator an invented notice period.
+    ...(signals
+      ? [
+          `Stated notice period: ${signals.noticePeriodDays} days. Preferred work mode: ${signals.preferredWorkMode}.`,
+        ]
+      : []),
   ].join("\n");
 }

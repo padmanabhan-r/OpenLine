@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 import { notFound } from "next/navigation";
 import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
@@ -23,11 +24,8 @@ export default async function CallPage({
   const findings = call.guardFindings;
   const blocked = findings.length > 0 || call.status === "refused";
 
-  const liveEnabled = process.env.OPENLINE_LIVE_CALLS === "true";
-  const allowlist = (process.env.OPENLINE_CALL_ALLOWLIST ?? "")
-    .split(",")
-    .map((n) => n.trim())
-    .filter(Boolean);
+  const liveEnabled = liveCallsEnabled();
+  const allowlist = callAllowlist();
   const allowlisted = Boolean(
     candidate.phoneE164 && allowlist.includes(candidate.phoneE164),
   );

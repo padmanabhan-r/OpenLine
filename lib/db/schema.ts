@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -77,11 +78,24 @@ export const candidates = pgTable(
      */
     profile: jsonb("profile").$type<CandidateProfile | null>(),
     /**
-     * Whether the recruiter's ATS put this person on the shortlist. Only the
-     * shortlist gets called; the rest stay visible, with their reason, because
-     * a filter nobody can see is a filter nobody can correct.
+     * Whether this person is on the shortlist. Seeded rows carry the ATS's
+     * decision; uploaded resumes are auto-shortlisted at a score threshold.
+     * Either way a recruiter can override it, and only the shortlist gets
+     * called; the rest stay visible, with their reason, because a filter
+     * nobody can see is a filter nobody can correct.
      */
     shortlisted: boolean("shortlisted").notNull().default(false),
+    /** How this candidate arrived: bulk import (seed) or an uploaded resume. */
+    source: text("source").$type<"import" | "resume">().notNull().default("import"),
+    /** R2 object key of the uploaded resume PDF. Null for imported rows. */
+    resumeKey: text("resume_key"),
+    /**
+     * Outcome of resume parsing. Null for imported rows, which were never
+     * parsed. A failed parse still creates a row — a file that silently
+     * disappears from a hiring pipeline is worse than a visible failure.
+     */
+    parseStatus: text("parse_status").$type<"parsed" | "parse_failed">(),
+    parseError: text("parse_error"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -125,6 +139,17 @@ export const screeningCalls = pgTable(
 
     mode: text("mode").$type<"dry_run" | "live">().notNull(),
     status: text("status").$type<ScreeningCallStatus>().notNull(),
+    /**
+     * When dialing began. Lets the reconciler tell "in progress" from
+     * "the process died mid-call and this row will say dialing forever".
+     */
+    dialStartedAt: timestamp("dial_started_at", { withTimezone: true }),
+    /**
+     * Bumped when a human edits the script. Folded into the idempotency key,
+     * so an edited script can never be collapsed by CALL-E onto a stale
+     * create for the pre-edit text.
+     */
+    scriptVersion: integer("script_version").notNull().default(1),
 
     /** The exact words that were, or would have been, spoken. */
     task: text("task").notNull(),

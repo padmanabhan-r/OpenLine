@@ -128,7 +128,7 @@ function Decision({
   name: string;
 }) {
   const { screening, profile, signals } = candidate;
-  const warnings = reachabilityWarnings(signals);
+  const warnings = signals ? reachabilityWarnings(signals) : [];
 
   return (
     <Panel>
@@ -326,9 +326,28 @@ function Background({ candidate }: { candidate: CandidateProfile }) {
   );
 }
 
-/** All 23 platform signals, unabridged. */
+/** All 23 platform signals, unabridged — or an honest absence. */
 function Signals({ candidate }: { candidate: CandidateProfile }) {
   const s = candidate.signals;
+  if (!s) {
+    return (
+      <Panel>
+        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Platform signals</h2>
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--ink-3)",
+            marginTop: 6,
+            maxWidth: 660,
+          }}
+        >
+          None. This profile came from an uploaded resume, and a PDF says
+          nothing about how someone behaves on a hiring platform. OpenLine
+          shows the absence rather than inventing plausible numbers.
+        </p>
+      </Panel>
+    );
+  }
   const idle = daysSinceActive(s);
 
   const rows: Array<[string, string]> = [

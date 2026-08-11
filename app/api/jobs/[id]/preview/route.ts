@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { liveCallsEnabled } from "@/lib/config";
 import { previewJob } from "@/lib/screening/preview";
 
 /**
@@ -22,7 +23,7 @@ export async function POST(
     const outcomes = await previewJob(id);
     return NextResponse.json({
       jobId: id,
-      mode: process.env.OPENLINE_LIVE_CALLS === "true" ? "live" : "dry_run",
+      mode: liveCallsEnabled() ? "live" : "dry_run",
       previewed: outcomes.filter((o) => o.status === "previewed").length,
       refused: outcomes.filter((o) => o.status === "refused").length,
       skipped: outcomes.filter((o) => o.status === "skipped").length,

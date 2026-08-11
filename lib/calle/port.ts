@@ -1,5 +1,6 @@
 import { CalleClient, type Call, type JsonObject } from "@call-e/calle";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
+import { callAllowlist, liveCallsEnabled } from "@/lib/config";
 
 /**
  * The only way OpenLine places a phone call.
@@ -215,12 +216,9 @@ export function callePortFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): CallePort {
   return createCallePort({
-    mode: env.OPENLINE_LIVE_CALLS === "true" ? "live" : "dry_run",
+    mode: liveCallsEnabled(env) ? "live" : "dry_run",
     apiKey: env.CALLE_API_KEY ?? "",
-    allowlist: (env.OPENLINE_CALL_ALLOWLIST ?? "")
-      .split(",")
-      .map((n) => n.trim())
-      .filter(Boolean),
+    allowlist: callAllowlist(env),
     // American English unless told otherwise. Configurable without a code
     // change, since which voice sounds right is a judgement, not a constant.
     locale: env.OPENLINE_CALL_LOCALE?.trim() || "en-US",
