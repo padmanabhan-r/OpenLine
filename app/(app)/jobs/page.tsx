@@ -3,6 +3,8 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import { listJobs } from "@/lib/db/queries";
+import { jobRef } from "@/lib/jobs/ref";
+import { JOB_STATUS_LABELS } from "@/lib/jobs/status";
 import Button from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
@@ -75,7 +77,7 @@ export default async function JobsPage() {
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="eyebrow muted" style={{ marginBottom: 6 }}>
-                      {job.companyName}
+                      <span className="mono">{jobRef(job.id)}</span> · {job.companyName}
                     </div>
                     <h2
                       style={{
@@ -88,6 +90,11 @@ export default async function JobsPage() {
                       {job.title}
                     </h2>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {job.status !== "open" && (
+                        <Badge tone="warn" dot>
+                          {JOB_STATUS_LABELS[job.status]}
+                        </Badge>
+                      )}
                       <Badge tone="neutral">{job.candidateCount} applied</Badge>
                       <Badge tone="info">{job.shortlistedCount} shortlisted</Badge>
                       <Badge tone="good">

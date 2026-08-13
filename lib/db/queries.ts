@@ -1,6 +1,14 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { getDb } from "./index";
 import { candidates, jobs, screeningCalls } from "./schema";
+import { STAGES, isShortlisted } from "@/lib/candidates/stage";
+
+/** The stages that count as on-the-shortlist, for use inside SQL. */
+const SHORTLISTED_STAGES = STAGES.filter(isShortlisted);
+const shortlistedSql = sql`(${sql.join(
+  SHORTLISTED_STAGES.map((s) => sql`${s}`),
+  sql`, `,
+)})`;
 
 export async function listJobs() {
   const db = getDb();
@@ -11,6 +19,7 @@ export async function listJobs() {
       companyName: jobs.companyName,
       recruiterName: jobs.recruiterName,
       defaultRegion: jobs.defaultRegion,
+      status: jobs.status,
       createdAt: jobs.createdAt,
       // Both sides of each correlation are qualified by hand, and that is not
       // decoration. Interpolating `${candidates.jobId} = ${jobs.id}` renders
@@ -23,11 +32,12 @@ export async function listJobs() {
       )`,
       shortlistedCount: sql<number>`(
         select count(*)::int from ${candidates} c
-        where c.job_id = jobs.id and c.shortlisted
+        where c.job_id = jobs.id and c.stage in ${shortlistedSql}
       )`,
       callableCount: sql<number>`(
         select count(*)::int from ${candidates} c
-        where c.job_id = jobs.id and c.shortlisted and c.phone_e164 is not null
+        where c.job_id = jobs.id and c.stage in ${shortlistedSql}
+          and c.phone_e164 is not null
       )`,
     })
     .from(jobs)
@@ -40,24 +50,72 @@ export async function getJob(id: string) {
   return job ?? null;
 }
 
-/** Every candidate across all jobs, for the Profiles tab. */
+/**
+ * One row per *person*, not per application.
+ *
+ * A candidates row is an application — the same person applying to three roles
+ * is three rows — so this folds them together. Phone number is the identity
+ * where there is one (it is the thing OpenLine actually dials); name is the
+ * fallback for rows whose number never resolved.
+ */
 export async function listProfiles() {
   const db = getDb();
+  const identity = sql`coalesce(${candidates.phoneE164}, lower(${candidates.name}))`;
+
+  return db
+    .select({
+      // The most recent application is the one the row links to.
+      id: sql<string>`(array_agg(${candidates.id} order by ${candidates.createdAt} desc))[1]`,
+      name: sql<string>`(array_agg(${candidates.name} order by ${candidates.createdAt} desc))[1]`,
+      headline: sql<
+        string | null
+      >`(array_agg(${candidates.profile}->'profile'->>'headline' order by ${candidates.createdAt} desc))[1]`,
+      applicationCount: sql<number>`count(*)::int`,
+      shortlistedCount: sql<number>`count(*) filter (where ${candidates.stage} in ${shortlistedSql})::int`,
+      lastAppliedAt: sql<Date>`max(${candidates.createdAt})`,
+    })
+    .from(candidates)
+    .groupBy(identity)
+    .orderBy(desc(sql`max(${candidates.createdAt})`));
+}
+
+/**
+ * Every job this person has applied to, with the decision for each.
+ *
+ * Matched the same way `listProfiles` groups: by phone where there is one.
+ */
+export async function listApplicationsForCandidate(candidateId: string) {
+  const db = getDb();
+
+  const [self] = await db
+    .select({ phoneE164: candidates.phoneE164, name: candidates.name })
+    .from(candidates)
+    .where(eq(candidates.id, candidateId))
+    .limit(1);
+  if (!self) return [];
+
+  const sameParty = self.phoneE164
+    ? eq(candidates.phoneE164, self.phoneE164)
+    : sql`lower(${candidates.name}) = lower(${self.name}) and ${candidates.phoneE164} is null`;
+
   return db
     .select({
       id: candidates.id,
-      name: candidates.name,
-      shortlisted: candidates.shortlisted,
+      jobId: jobs.id,
+      jobTitle: jobs.title,
+      companyName: jobs.companyName,
+      stage: candidates.stage,
+      shortlistedBy: candidates.shortlistedBy,
       source: candidates.source,
       parseStatus: candidates.parseStatus,
-      jobTitle: jobs.title,
-      headline: sql<string | null>`${candidates.profile}->'profile'->>'headline'`,
+      appliedAt: candidates.createdAt,
       matchScore: sql<
         number | null
       >`(${candidates.profile}->'screening'->>'matchScore')::int`,
     })
     .from(candidates)
     .innerJoin(jobs, eq(candidates.jobId, jobs.id))
+    .where(sameParty)
     .orderBy(desc(candidates.createdAt));
 }
 
@@ -106,7 +164,8 @@ export async function listJobCandidates(jobId: string) {
       // Only ever rendered as one truncated line, and the full text is the
       // multi-paragraph grounding summary — 1.7kB a head, 87kB a roster.
       summary: sql<string | null>`left(${candidates.summary}, 200)`,
-      shortlisted: candidates.shortlisted,
+      stage: candidates.stage,
+      shortlistedBy: candidates.shortlistedBy,
       headline: sql<
         string | null
       >`${candidates.profile}->'profile'->>'headline'`,

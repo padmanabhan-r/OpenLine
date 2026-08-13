@@ -1,10 +1,14 @@
 import OpenAI from "openai";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
 import { assembleTask, createOpenAIQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
+import { STAGES, isShortlisted } from "@/lib/candidates/stage";
+
+/** Only people on the shortlist get a script written for them. */
+const SHORTLISTED_STAGES = STAGES.filter(isShortlisted);
 
 /**
  * Turn a queued candidate into a reviewable script.
@@ -203,7 +207,7 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
     .where(
       and(
         eq(candidatesTable.jobId, jobId),
-        eq(candidatesTable.shortlisted, true),
+        inArray(candidatesTable.stage, SHORTLISTED_STAGES),
       ),
     );
 
@@ -233,7 +237,7 @@ export async function previewCandidate(
     .limit(1);
   if (!candidate) throw new Error(`No candidate ${candidateId} on job ${jobId}`);
 
-  if (!candidate.shortlisted) {
+  if (!isShortlisted(candidate.stage)) {
     return {
       candidateId,
       name: candidate.name,

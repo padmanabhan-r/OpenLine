@@ -1,8 +1,13 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Call } from "@call-e/calle";
 import { getDb } from "@/lib/db";
-import { candidates as candidatesTable, screeningCalls } from "@/lib/db/schema";
+import {
+  candidates as candidatesTable,
+  jobs as jobsTable,
+  screeningCalls,
+} from "@/lib/db/schema";
 import { callePortFromEnv } from "@/lib/calle/port";
+import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { inspectTranscript, type InspectableTurn } from "@/lib/script/guard";
 import { needsHuman, type ScreeningResult } from "@/lib/script/schema";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
@@ -78,6 +83,18 @@ export async function startCall(
 
   if (row.calleCallId) {
     return { ok: false, reason: "This candidate has already been called." };
+  }
+
+  // A filled or closed posting stops the dialing. Checked here rather than in
+  // the UI alone: this is the last point before a real phone rings, and a role
+  // that no longer exists is not a role anyone should be called about.
+  const [job] = await db
+    .select({ status: jobsTable.status, statusReason: jobsTable.statusReason })
+    .from(jobsTable)
+    .where(eq(jobsTable.id, row.jobId))
+    .limit(1);
+  if (job && !acceptsCalls(job.status)) {
+    return { ok: false, reason: closedReason(job.status, job.statusReason) };
   }
 
   const [candidate] = await db
@@ -285,4 +302,27 @@ export async function recordTerminalCall(screeningCallId: string, call: Call) {
       completedAt: call.completedAt ? new Date(call.completedAt) : new Date(),
     })
     .where(eq(screeningCalls.id, screeningCallId));
+
+  // The screening happened, so the pipeline says so. Only forward, and only
+  // from Shortlisted: a completed call is evidence they were screened, never
+  // evidence of a decision — that stays a person's to make.
+  if (call.status === "completed") {
+    const [row] = await db
+      .select({ candidateId: screeningCalls.candidateId })
+      .from(screeningCalls)
+      .where(eq(screeningCalls.id, screeningCallId))
+      .limit(1);
+
+    if (row) {
+      await db
+        .update(candidatesTable)
+        .set({ stage: "screened" })
+        .where(
+          and(
+            eq(candidatesTable.id, row.candidateId),
+            eq(candidatesTable.stage, "shortlisted"),
+          ),
+        );
+    }
+  }
 }

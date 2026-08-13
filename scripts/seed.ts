@@ -93,13 +93,18 @@ async function main() {
       email: entry.email,
       summary: summarizeForScript(profile),
       profile,
-      shortlisted: entry.screening.shortlisted,
+      // The seed is the ATS's decision; a human moving anyone is recorded as
+      // "human" the moment they touch the control.
+      stage: entry.screening.shortlisted
+        ? ("shortlisted" as const)
+        : ("applied" as const),
+      shortlistedBy: entry.screening.shortlisted ? ("ats" as const) : null,
     };
   });
 
   await db.insert(candidates).values(rows);
 
-  const shortlisted = rows.filter((r) => r.shortlisted);
+  const shortlisted = rows.filter((r) => r.stage === "shortlisted");
   const callable = shortlisted.filter((r) => r.phoneE164).length;
 
   console.log(

@@ -7,7 +7,12 @@ import Icon from "@/components/ui/Icon";
 import JobDescription from "@/components/jobs/JobDescription";
 import RowActions from "@/components/screening/RowActions";
 import ResumeUpload from "@/components/candidates/ResumeUpload";
+import StageControl from "@/components/candidates/StageControl";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
+import { jobRef } from "@/lib/jobs/ref";
+import { isShortlisted } from "@/lib/candidates/stage";
+import JobStatusControl from "@/components/jobs/JobStatusControl";
+import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 
 export const dynamic = "force-dynamic";
 
@@ -102,8 +107,8 @@ export default async function JobPage({
   if (!job) notFound();
 
   const applicants = await listJobCandidates(id);
-  const roster = applicants.filter((r) => r.candidate.shortlisted);
-  const pool = applicants.filter((r) => !r.candidate.shortlisted);
+  const roster = applicants.filter((r) => isShortlisted(r.candidate.stage));
+  const pool = applicants.filter((r) => !isShortlisted(r.candidate.stage));
   const callable = roster.filter((r) => r.candidate.phoneE164);
   const unreachable = roster.filter((r) => !r.candidate.phoneE164);
 
@@ -111,11 +116,50 @@ export default async function JobPage({
     <>
       <TopBar
         title={job.title}
-        subtitle={`${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted`}
-        actions={<ResumeUpload jobId={job.id} />}
+        subtitle={`${jobRef(job.id)} · ${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted`}
+        actions={
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <JobStatusControl
+              jobId={job.id}
+              status={job.status}
+              statusReason={job.statusReason}
+            />
+            <ResumeUpload jobId={job.id} />
+          </div>
+        }
       />
       <Page>
         <div style={{ display: "grid", gap: 16 }}>
+          {!acceptsCalls(job.status) && (
+            <Panel>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <Icon
+                  name="alert"
+                  size={19}
+                  style={{ color: "var(--amber)", flexShrink: 0, marginTop: 2 }}
+                />
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600 }}>
+                    Calling is off for this job
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "var(--ink-2)",
+                      marginTop: 5,
+                      maxWidth: 620,
+                    }}
+                  >
+                    {closedReason(job.status, job.statusReason)} Everything
+                    already recorded stays readable — transcripts, results, and
+                    the shortlist are all still here. Reopen the job to dial
+                    again.
+                  </p>
+                </div>
+              </div>
+            </Panel>
+          )}
+
           {/* The posting, as a candidate would read it. */}
           <Panel>
             <JobDescription description={job.description} />
@@ -142,9 +186,11 @@ export default async function JobPage({
                 call && (call.guardFindings.length > 0 || call.status === "refused"),
               );
 
-              const dialDisabledReason = candidate.phoneE164
-                ? null
-                : "No phone number for this candidate.";
+              const dialDisabledReason = !acceptsCalls(job.status)
+                ? closedReason(job.status, job.statusReason)
+                : candidate.phoneE164
+                  ? null
+                  : "No phone number for this candidate.";
 
               return (
                 <div
@@ -196,13 +242,33 @@ export default async function JobPage({
                               ? "var(--accent-deep)"
                               : "var(--ink-2)",
                         }}
-                        title="ATS match score"
+                        title={
+                          candidate.shortlistedBy === "human"
+                            ? "ATS match score — a person shortlisted them anyway"
+                            : "ATS match score"
+                        }
                       >
                         {candidate.matchScore}
                       </span>
                     ) : (
                       <span style={{ fontSize: 12, color: "var(--ink-3)" }}>—</span>
                     )}
+                    {candidate.shortlistedBy === "human" && (
+                      <div
+                        style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 1 }}
+                      >
+                        added by you
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ flexShrink: 0 }}>
+                    <StageControl
+                      jobId={job.id}
+                      candidateId={candidate.id}
+                      stage={candidate.stage}
+                      shortlistedBy={candidate.shortlistedBy}
+                    />
                   </div>
 
                   <div
@@ -303,6 +369,12 @@ export default async function JobPage({
                   >
                     {candidate.matchScore ?? "—"}
                   </span>
+                  <StageControl
+                    jobId={job.id}
+                    candidateId={candidate.id}
+                    stage={candidate.stage}
+                    shortlistedBy={candidate.shortlistedBy}
+                  />
                 </div>
               ))}
             </Panel>

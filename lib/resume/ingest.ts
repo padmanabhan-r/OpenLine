@@ -45,7 +45,7 @@ async function insertFailedRow(
       resumeKey: key,
       parseStatus: "parse_failed",
       parseError: reason,
-      shortlisted: false,
+      stage: "applied" as const,
     })
     .returning({ id: candidates.id });
   return row.id;
@@ -142,7 +142,10 @@ export async function ingestResume(input: {
         email: parsed.email,
         summary: summarizeForScript(profile),
         profile,
-        shortlisted: shouldShortlist(parsed.matchScore),
+        stage: shouldShortlist(parsed.matchScore)
+          ? ("shortlisted" as const)
+          : ("applied" as const),
+        shortlistedBy: shouldShortlist(parsed.matchScore) ? ("ats" as const) : null,
         source: "resume",
         resumeKey: key,
         parseStatus: "parsed",

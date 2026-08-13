@@ -8,9 +8,12 @@ import { listProfiles } from "@/lib/db/queries";
 export const dynamic = "force-dynamic";
 
 /**
- * Every candidate in the system, across jobs — imported and uploaded alike.
- * The job page answers "who will we call for this role"; this page answers
- * "what do we know about everyone who has ever applied".
+ * Every person in the system, one row each.
+ *
+ * A candidates row is an application, so somebody who applied to three roles is
+ * three rows in the table and one row here. Which job, what they scored against
+ * it, and whether they made its shortlist are job-scoped facts, and they live on
+ * the profile rather than in a column that can only ever show one of them.
  */
 export default async function ProfilesPage() {
   let rows: Awaited<ReturnType<typeof listProfiles>> = [];
@@ -26,7 +29,7 @@ export default async function ProfilesPage() {
     <>
       <TopBar
         title="Profiles"
-        subtitle={`${rows.length} candidates across all jobs — parsed, scored, and on the record.`}
+        subtitle={`${rows.length} people across all jobs. Open one to see every role they applied to.`}
       />
       <Page>
         {error && (
@@ -71,38 +74,26 @@ export default async function ProfilesPage() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: 460,
+                        maxWidth: 520,
                       }}
                     >
-                      {row.headline ?? row.jobTitle}
+                      {row.headline ?? "No headline on file"}
                     </div>
                   </div>
 
-                  <Badge tone={row.source === "resume" ? "info" : "neutral"}>
-                    {row.source === "resume" ? "Uploaded" : "Imported"}
-                  </Badge>
+                  {/* Per-job facts live on the profile. All this row claims is
+                      how many roles this person is in play for. */}
+                  <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>
+                    {row.applicationCount === 1
+                      ? "1 application"
+                      : `${row.applicationCount} applications`}
+                  </span>
 
-                  {row.parseStatus === "parse_failed" && (
-                    <Badge tone="danger" dot>
-                      Parse failed
+                  {row.shortlistedCount > 0 && (
+                    <Badge tone="good">
+                      In play for {row.shortlistedCount}
                     </Badge>
                   )}
-
-                  {row.shortlisted && <Badge tone="good">Shortlisted</Badge>}
-
-                  <span
-                    className="mono"
-                    style={{
-                      width: 34,
-                      textAlign: "right",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "var(--ink-2)",
-                    }}
-                    title="ATS match score"
-                  >
-                    {row.matchScore ?? "—"}
-                  </span>
 
                   <Icon name="arrow-right" size={16} style={{ color: "var(--ink-3)" }} />
                 </div>

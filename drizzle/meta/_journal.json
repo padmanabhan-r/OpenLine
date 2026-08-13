@@ -29,6 +29,27 @@
       "when": 1786417415503,
       "tag": "0003_white_bug",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786639290772,
+      "tag": "0004_known_smiling_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786640030387,
+      "tag": "0005_talented_rocket_raccoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786640066001,
+      "tag": "0006_demonic_blindfold",
+      "breakpoints": true
     }
   ]
 }

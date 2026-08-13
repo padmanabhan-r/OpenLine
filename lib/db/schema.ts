@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import type { CandidateProfile } from "@/lib/candidates/profile";
+import type { Stage } from "@/lib/candidates/stage";
 import type { FactSheetEntry, ScriptQuestion } from "@/lib/script/build";
 import type { GuardFinding } from "@/lib/script/guard";
 import type { ScreeningResult } from "@/lib/script/schema";
@@ -44,6 +45,21 @@ export const jobs = pgTable("jobs", {
     .default([]),
   /** ISO country used to normalize national-format phone numbers, e.g. "IN". */
   defaultRegion: text("default_region"),
+  /**
+   * A filled or closed posting stops taking calls — dialling people for a role
+   * that no longer exists is the kind of thing a machine will happily do at
+   * scale. Records stay readable either way.
+   */
+  status: text("status")
+    .$type<"open" | "filled" | "closed">()
+    .notNull()
+    .default("open"),
+  /**
+   * Why it is in that state. Required to reopen, because "we reopened it" is
+   * not an answer to "what happened to the person who accepted".
+   */
+  statusReason: text("status_reason"),
+  statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -78,13 +94,21 @@ export const candidates = pgTable(
      */
     profile: jsonb("profile").$type<CandidateProfile | null>(),
     /**
-     * Whether this person is on the shortlist. Seeded rows carry the ATS's
-     * decision; uploaded resumes are auto-shortlisted at a score threshold.
-     * Either way a recruiter can override it, and only the shortlist gets
-     * called; the rest stay visible, with their reason, because a filter
+     * Where this person stands in this job's pipeline, and the only definition
+     * of "shortlisted" in the system — see `lib/candidates/stage.ts`. Seeded
+     * rows carry the ATS's decision; uploaded resumes clear a score threshold.
+     * Either way a recruiter can move anyone, and only the shortlisted stages
+     * get called; the rest stay visible, with their reason, because a filter
      * nobody can see is a filter nobody can correct.
      */
-    shortlisted: boolean("shortlisted").notNull().default(false),
+    stage: text("stage").$type<Stage>().notNull().default("applied"),
+    /**
+     * Who moved them here: the ATS score, or a person overruling it. Worth a
+     * column rather than an inference — "a machine ranked you 84" and "a
+     * recruiter added you anyway" are different facts, and the second is the
+     * one a candidate would want on the record.
+     */
+    shortlistedBy: text("shortlisted_by").$type<"ats" | "human">(),
     /** How this candidate arrived: bulk import (seed) or an uploaded resume. */
     source: text("source").$type<"import" | "resume">().notNull().default("import"),
     /** R2 object key of the uploaded resume PDF. Null for imported rows. */

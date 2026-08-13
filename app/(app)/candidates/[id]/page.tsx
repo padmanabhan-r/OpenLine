@@ -4,7 +4,9 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
-import { getCandidate } from "@/lib/db/queries";
+import StageControl from "@/components/candidates/StageControl";
+import { getCandidate, listApplicationsForCandidate } from "@/lib/db/queries";
+import { jobRef } from "@/lib/jobs/ref";
 import {
   daysSinceActive,
   reachabilityWarnings,
@@ -30,6 +32,10 @@ export default async function CandidatePage({
 
   const row = await getCandidate(id);
   if (!row) notFound();
+
+  // Every role this person is in play for — the job-scoped facts that used to
+  // sit in the profiles list, where only one of them could ever be shown.
+  const applications = await listApplicationsForCandidate(id);
 
   const { candidate, job, calls } = row;
   const record = candidate.profile;
@@ -66,6 +72,11 @@ export default async function CandidatePage({
               <Signals candidate={record} />
             </>
           )}
+
+          <Applications
+            applications={applications}
+            currentCandidateId={candidate.id}
+          />
 
           {calls.length > 0 && (
             <Panel padded={false}>
@@ -116,6 +127,83 @@ export default async function CandidatePage({
         </div>
       </Page>
     </>
+  );
+}
+
+/**
+ * Every role this person applied to, and the decision for each.
+ *
+ * The shortlist is per job, so the control is too: someone can be right for one
+ * posting and wrong for the next, and the toggle says which of the two a human
+ * decided rather than leaving it indistinguishable from the ATS's ranking.
+ */
+function Applications({
+  applications,
+  currentCandidateId,
+}: {
+  applications: Awaited<ReturnType<typeof listApplicationsForCandidate>>;
+  currentCandidateId: string;
+}) {
+  if (applications.length === 0) return null;
+
+  return (
+    <Panel padded={false}>
+      <div style={{ padding: "16px 22px", borderBottom: "1px solid var(--line-2)" }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700 }}>
+          Applications{" "}
+          <span style={{ color: "var(--ink-3)", fontWeight: 500 }}>
+            ({applications.length})
+          </span>
+        </h2>
+        <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 4 }}>
+          Shortlisting is per job. The score is the ATS ranking against that
+          posting; you can overrule it either way.
+        </p>
+      </div>
+
+      {applications.map((app) => (
+        <div
+          key={app.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "13px 22px",
+            borderBottom: "1px solid var(--line-2)",
+            background:
+              app.id === currentCandidateId ? "var(--surface-2)" : undefined,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Link
+              href={`/jobs/${app.jobId}`}
+              style={{ fontSize: 13.5, fontWeight: 600 }}
+            >
+              {app.jobTitle}
+            </Link>
+            <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>
+              <span className="mono">{jobRef(app.jobId)}</span> · {app.companyName}{" "}
+              · {app.source === "resume" ? "resume upload" : "from the ATS"}
+            </div>
+          </div>
+
+          <span
+            className="mono"
+            style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-2)" }}
+            title="ATS match score against this job"
+          >
+            {app.matchScore ?? "—"}
+          </span>
+
+          <StageControl
+            jobId={app.jobId}
+            candidateId={app.id}
+            stage={app.stage}
+            shortlistedBy={app.shortlistedBy}
+          />
+        </div>
+      ))}
+    </Panel>
   );
 }
 
