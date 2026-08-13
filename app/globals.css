@@ -139,46 +139,38 @@ button, input, textarea { font-family: inherit; }
    * same colour, the image is exactly twice the element (one full period), and
    * it tiles — a no-repeat image slides off the end and leaves bare text.
    */
-  background-image:
-    /* The marker band: aqua, laid under the words like a highlighter. */
-    linear-gradient(
-      90deg,
-      rgba(30, 143, 152, 0.30) 0%,
-      rgba(30, 143, 152, 0.30) 30%,
-      rgba(99, 203, 168, 0.46) 44%,
-      rgba(191, 237, 228, 0.60) 50%,
-      rgba(99, 203, 168, 0.46) 56%,
-      rgba(30, 143, 152, 0.30) 70%,
-      rgba(30, 143, 152, 0.30) 100%
-    ),
-    /* The keel line: saturated, so the band reads as drawn rather than washed. */
-    linear-gradient(
-      90deg,
-      #1E8F98 0%,
-      #1E8F98 34%,
-      #63CBA8 44%,
-      #BFEDE4 50%,
-      #63CBA8 56%,
-      #1E8F98 66%,
-      #1E8F98 100%
-    );
-  background-repeat: repeat-x, repeat-x;
-  background-size: 200% 0.38em, 200% 0.1em;
-  background-position: 0 88%, 0 97%;
-  padding-bottom: 0.08em;
+  /*
+   * A thin aqua-to-blue gradient running under the words that matter.
+   *
+   * Three things keep the sweep seamless, and breaking any one of them makes
+   * the line flicker or vanish mid-cycle: the gradient opens and closes on the
+   * same colour, the image is exactly twice the element (one full period), and
+   * it tiles — a no-repeat image slides off the end and leaves bare text.
+   */
+  background-image: linear-gradient(
+    90deg,
+    #35B5C2 0%,
+    #63CBA8 25%,
+    #4A9FD8 50%,
+    #7FD3D8 75%,
+    #35B5C2 100%
+  );
+  background-repeat: repeat-x;
+  background-size: 200% 0.08em;
+  background-position: 0 97%;
+  padding-bottom: 0.06em;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .hl {
-    animation: hl-shimmer 6s linear infinite;
+    animation: hl-shimmer 7s linear infinite;
   }
 }
 
-/* Exactly one period, so the wrap lands on an identical frame. Both layers
-   sweep together — they are the same gradient at two weights. */
+/* Exactly one period, so the wrap lands on an identical frame. */
 @keyframes hl-shimmer {
-  from { background-position: 0 88%, 0 97%; }
-  to   { background-position: -200% 88%, -200% 97%; }
+  from { background-position: 0 97%; }
+  to   { background-position: -200% 97%; }
 }
 
 .mono { font-family: var(--mono), ui-monospace, 'SF Mono', monospace; }
@@ -209,12 +201,15 @@ button, input, textarea { font-family: inherit; }
  */
 .hero-orb {
   position: absolute;
-  inset: -8% -6% auto -6%;
-  height: 128%;
-  width: 112%;
-  object-fit: cover;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* The orb is centred in its own frame, so the layer must not crop
+     asymmetrically — contain keeps it whole and centred at every width. */
+  object-fit: contain;
+  object-position: center;
   mix-blend-mode: multiply;
-  opacity: 0.42;
+  opacity: 0.4;
   filter: saturate(1.05) contrast(1.03);
   pointer-events: none;
   z-index: 0;
