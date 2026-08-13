@@ -90,12 +90,11 @@ export default async function JobsPage() {
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Badge tone="neutral">{job.candidateCount} applied</Badge>
                       <Badge tone="info">{job.shortlistedCount} shortlisted</Badge>
-                      <Badge tone="good">{job.callableCount} callable</Badge>
+                      <Badge tone="good">
+                        {job.callableCount} with a phone number
+                      </Badge>
                       {unreachable > 0 && (
-                        <Badge tone="warn">{unreachable} need a human</Badge>
-                      )}
-                      {job.callCount > 0 && (
-                        <Badge tone="info">{job.callCount} scripted</Badge>
+                        <Badge tone="warn">{unreachable} missing a number</Badge>
                       )}
                     </div>
                   </div>

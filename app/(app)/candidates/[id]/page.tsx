@@ -325,13 +325,13 @@ function Background({ candidate }: { candidate: CandidateProfile }) {
   );
 }
 
-/** All 23 platform signals, unabridged — or an honest absence. */
+/** The eight signals worth a recruiter's eye — or an honest absence. */
 function Signals({ candidate }: { candidate: CandidateProfile }) {
   const s = candidate.signals;
   if (!s) {
     return (
       <Panel>
-        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Platform signals</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Candidate activity</h2>
         <p
           style={{
             fontSize: 13,
@@ -349,57 +349,50 @@ function Signals({ candidate }: { candidate: CandidateProfile }) {
   }
   const idle = daysSinceActive(s);
 
-  const rows: Array<[string, string]> = [
-    ["Profile completeness", `${s.profileCompletenessScore}%`],
-    ["Signed up", s.signupDate],
-    ["Last active", `${s.lastActiveDate} (${idle} days ago)`],
-    ["Open to work", s.openToWorkFlag ? "Yes" : "No"],
-    ["Profile views, 30d", `${s.profileViewsReceived30d}`],
-    ["Applications, 30d", `${s.applicationsSubmitted30d}`],
-    ["Recruiter response rate", `${Math.round(s.recruiterResponseRate * 100)}%`],
-    ["Median response time", `${s.avgResponseTimeHours} hours`],
-    [
-      "Assessment scores",
-      Object.entries(s.skillAssessmentScores)
-        .map(([name, score]) => `${name} ${score}`)
-        .join(", ") || "None taken",
-    ],
-    ["Connections", `${s.connectionCount}`],
-    ["Endorsements received", `${s.endorsementsReceived}`],
-    ["Notice period", `${s.noticePeriodDays} days`],
-    [
-      "Salary expectation",
-      `₹${s.expectedSalaryRangeInrLpa.min}–${s.expectedSalaryRangeInrLpa.max} LPA`,
-    ],
-    ["Preferred work mode", s.preferredWorkMode],
-    ["Willing to relocate", s.willingToRelocate ? "Yes" : "No"],
-    [
-      "GitHub activity",
-      s.githubActivityScore < 0 ? "No GitHub linked" : `${s.githubActivityScore}/100`,
-    ],
-    ["Search appearances, 30d", `${s.searchAppearance30d}`],
-    ["Saved by recruiters, 30d", `${s.savedByRecruiters30d}`],
-    [
-      "Interview completion",
-      `${Math.round(s.interviewCompletionRate * 100)}%`,
-    ],
-    [
-      "Offer acceptance",
-      s.offerAcceptanceRate < 0
-        ? "No offer history"
-        : `${Math.round(s.offerAcceptanceRate * 100)}%`,
-    ],
-    ["Email verified", s.verifiedEmail ? "Yes" : "No"],
-    ["Phone verified", s.verifiedPhone ? "Yes" : "No"],
-    ["LinkedIn connected", s.linkedinConnected ? "Yes" : "No"],
+  /*
+   * Eight of the twenty-three signals are shown. A field earns its row by
+   * driving `reachabilityWarnings`, by feeding the script, or by being
+   * something the call itself asks — so the recruiter can hold the claim next
+   * to the answer. Connection counts and search appearances change nothing a
+   * recruiter does with a call outcome, so they stay in the record and off
+   * the screen.
+   */
+  const groups: Array<{ heading: string; rows: Array<[string, string]> }> = [
+    {
+      heading: "Can we reach them",
+      rows: [
+        ["Last active", `${s.lastActiveDate} (${idle} days ago)`],
+        [
+          "Recruiter response rate",
+          `${Math.round(s.recruiterResponseRate * 100)}%`,
+        ],
+        [
+          "Interview completion",
+          `${Math.round(s.interviewCompletionRate * 100)}%`,
+        ],
+        ["Open to work", s.openToWorkFlag ? "Yes" : "No"],
+        ["Phone verified", s.verifiedPhone ? "Yes" : "No"],
+      ],
+    },
+    {
+      heading: "What they have told the platform",
+      rows: [
+        ["Notice period", `${s.noticePeriodDays} days`],
+        ["Preferred work mode", s.preferredWorkMode],
+        [
+          "Salary expectation",
+          `₹${s.expectedSalaryRangeInrLpa.min}–${s.expectedSalaryRangeInrLpa.max} LPA`,
+        ],
+      ],
+    },
   ];
 
   return (
     <Panel>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Platform signals</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700 }}>Candidate activity</h2>
         <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
-          how this person behaves, not what they claim
+          how this person has behaved on the hiring platform
         </span>
       </div>
       <p
@@ -411,42 +404,57 @@ function Signals({ candidate }: { candidate: CandidateProfile }) {
           maxWidth: 660,
         }}
       >
-        None of these feed the call script. They are shown so a recruiter reading
-        a poor call outcome can tell the difference between a candidate who was
-        not interested and one who was never reachable in the first place.
+        Shown so a recruiter reading a poor call outcome can tell a candidate who
+        was not interested from one who was never reachable. Notice period and
+        work mode also ground the script; the rest of the record does not.
       </p>
-      <dl
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: "8px 24px",
-        }}
-      >
-        {rows.map(([label, value]) => (
-          <div
-            key={label}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-              borderBottom: "1px solid var(--line-2)",
-              paddingBottom: 5,
-            }}
-          >
-            <dt style={{ fontSize: 12.5, color: "var(--ink-3)" }}>{label}</dt>
-            <dd
+
+      <div style={{ display: "grid", gap: 20 }}>
+        {groups.map((group) => (
+          <div key={group.heading}>
+            <h3
+              className="eyebrow muted"
+              style={{ fontSize: 11, marginBottom: 9 }}
+            >
+              {group.heading}
+            </h3>
+            <dl
               style={{
-                fontSize: 12.5,
-                color: "var(--ink)",
-                textAlign: "right",
-                minWidth: 0,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: "8px 24px",
               }}
             >
-              {value}
-            </dd>
+              {group.rows.map(([label, value]) => (
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    borderBottom: "1px solid var(--line-2)",
+                    paddingBottom: 5,
+                  }}
+                >
+                  <dt style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                    {label}
+                  </dt>
+                  <dd
+                    style={{
+                      fontSize: 12.5,
+                      color: "var(--ink)",
+                      textAlign: "right",
+                      minWidth: 0,
+                    }}
+                  >
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         ))}
-      </dl>
+      </div>
     </Panel>
   );
 }

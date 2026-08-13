@@ -1,41 +1,42 @@
 import Link from "next/link";
 import LandingNav from "@/components/landing/LandingNav";
+import Reveal from "@/components/landing/Reveal";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
 
-const STEPS = [
+/**
+ * Deliberately not numbered. These are not steps a recruiter performs — they
+ * are the screening work OpenLine takes off the week, which is why the section
+ * reads as claims rather than a setup guide.
+ */
+const WHAT_IT_TAKES_OVER = [
   {
-    n: "01",
-    icon: "people",
-    title: "Bring your shortlist",
-    body: "Import the candidates you have already picked for a role. Numbers are normalised, and anything unusable is flagged so nobody silently drops off the list.",
-  },
-  {
-    n: "02",
     icon: "doc",
-    title: "A script built for one person",
-    body: "Each script is written by reading the candidate's profile against the job description and asking where the two meet and where they don't. Not a technical test — the fit questions a recruiter would spend fifteen minutes finding out.",
+    title: "It reads before it dials",
+    body: "Every resume is parsed and set against the job description, so the questions come from what that specific profile raises. Not a template and not a technical test — the fit questions a recruiter would spend fifteen minutes finding out.",
   },
   {
-    n: "03",
-    icon: "eye",
-    title: "Approve once, not per call",
-    body: "Read the exact words that will be spoken, for every candidate, on one screen. Nothing is summarised and nothing dials until you are happy with it.",
-  },
-  {
-    n: "04",
     icon: "phone",
-    title: "Get answers, not voicemails",
-    body: "CALL-E works down the whole list and returns structured answers with the candidate's own words as evidence. You review results instead of chasing people.",
+    title: "It calls all of them",
+    body: "Not the first few before the day runs out. Every shortlisted candidate with a working number is reached, and anyone who cannot be is surfaced rather than quietly dropped.",
+  },
+  {
+    icon: "quote",
+    title: "It answers their questions too",
+    body: "Salary band, location policy, team, timelines. Candidates get real answers from a fact sheet you write. A screening call that only takes is a bad first impression.",
   },
 ];
 
+/**
+ * Only what the section above does not already say — reach and the two-way
+ * call live there.
+ */
 const FEATURES = [
   {
-    icon: "phone",
-    title: "The whole list gets called",
-    body: "Not the first twenty before the day runs out. Every shortlisted candidate with a working number is reached, and anyone who cannot be is surfaced rather than dropped.",
+    icon: "eye",
+    title: "Every script is yours to read",
+    body: "Each candidate gets their own questions, and you can read the exact words before the call, edit any of them, or throw them out and rebuild. What is on screen is the string sent to CALL-E.",
   },
   {
     icon: "quote",
@@ -43,39 +44,25 @@ const FEATURES = [
     body: "Notice period, availability, interest, and each screening answer come back as structured fields — paired with the candidate's verbatim words, so you can check any of it in a second.",
   },
   {
-    icon: "people",
-    title: "The call goes both ways",
-    body: "Candidates ask about salary, location policy, the team, and timelines, and get real answers from a fact sheet you write. A screening call that only takes is a bad first impression.",
-  },
-  {
-    icon: "doc",
-    title: "One approval, not a hundred",
-    body: "Read the exact script once, for the whole list. What you see in the preview is the string sent to CALL-E — a script you cannot inspect is one nobody can be responsible for.",
-  },
-  {
     icon: "ban",
     title: "It abstains rather than guesses",
     body: "When a transcript does not support an answer, the field comes back empty instead of invented, and the call is routed to you. Nothing uncertain becomes a confident record.",
   },
-  {
-    icon: "shield",
-    title: "Safe questions by construction",
-    body: "Every script is checked before dialing and every transcript after, so a question that cannot lawfully be asked in hiring never reaches a phone line — even at a hundred calls a day.",
-  },
-];
-
-const BOUNDARIES = [
-  "Reject a candidate, or imply one was rejected",
-  "Make, extend, or hint at an offer",
-  "Answer anything outside the job fact sheet",
-  "Ask a question the recruiter did not approve",
-  "Record an answer it did not actually hear",
-  "Continue after someone asks for a human",
 ];
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--ink)" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bg)",
+        color: "var(--ink)",
+      }}
+    >
+      {/* Scroll reveal hides its content until observed; without JS it stays. */}
+      <noscript>
+        <style>{".reveal{opacity:1}.rule-open::before{transform:none}"}</style>
+      </noscript>
       <LandingNav />
 
       {/* Hero */}
@@ -88,13 +75,22 @@ export default function LandingPage() {
         }}
       >
         <div aria-hidden className="aqua-sheen" />
-        <div style={{ maxWidth: "var(--maxw)", margin: "0 auto", position: "relative", zIndex: 1 }}>
+        <div
+          style={{
+            maxWidth: "var(--maxw)",
+            margin: "0 auto",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
           {/* Credit pill, in the shape CALL-E uses for its own partner badge. */}
           <a
             href="https://www.heycall-e.com/"
             target="_blank"
             rel="noreferrer noopener"
+            className="fade-up"
             style={{
+              animationDelay: "0ms",
               display: "inline-flex",
               alignItems: "center",
               gap: 10,
@@ -122,13 +118,17 @@ export default function LandingPage() {
           {/* Category line: what this is and who it is for, before the pitch.
               It says "AI" because the agent says it out loud on every call —
               the disclosure starts here, not at the dial tone. */}
-          <p className="eyebrow" style={{ marginTop: 22 }}>
+          <p
+            className="eyebrow fade-up"
+            style={{ marginTop: 22, animationDelay: "70ms" }}
+          >
             An AI phone screening agent for recruiting teams
           </p>
 
           <h1
-            className="display"
+            className="display fade-up"
             style={{
+              animationDelay: "140ms",
               fontSize: "clamp(40px, 7.2vw, 92px)",
               margin: "14px 0 0",
             }}
@@ -139,7 +139,9 @@ export default function LandingPage() {
           </h1>
 
           <p
+            className="fade-up"
             style={{
+              animationDelay: "230ms",
               fontSize: "clamp(17px, 2.1vw, 21px)",
               color: "var(--ink-2)",
               maxWidth: 680,
@@ -147,24 +149,13 @@ export default function LandingPage() {
               lineHeight: 1.5,
             }}
           >
-            Let your agent make the first calls. You get your day back.
-          </p>
-
-          <p
-            style={{
-              fontSize: "clamp(15px, 1.7vw, 17px)",
-              color: "var(--ink-3)",
-              maxWidth: 600,
-              margin: "14px auto 0",
-              lineHeight: 1.5,
-            }}
-          >
-            No working down the list by hand. No voicemail tag. No candidate left
-            at the bottom because the day ran out.
+            Skip the calling. Keep the deciding.
           </p>
 
           <div
+            className="fade-up"
             style={{
+              animationDelay: "300ms",
               display: "flex",
               gap: 12,
               justifyContent: "center",
@@ -175,16 +166,12 @@ export default function LandingPage() {
             <Link href="/jobs">
               <Button size="lg">Open the console</Button>
             </Link>
-            <Link href="#boundaries">
-              <Button size="lg" variant="ghost">
-                <Icon name="shield" size={17} />
-                What it can&rsquo;t do
-              </Button>
-            </Link>
           </div>
 
           <p
+            className="fade-up"
             style={{
+              animationDelay: "370ms",
               marginTop: 16,
               fontSize: 13,
               color: "var(--ink-3)",
@@ -195,303 +182,206 @@ export default function LandingPage() {
             }}
           >
             <Icon name="check" size={14} style={{ color: "var(--green)" }} />
-            You read every script before it is spoken — nothing dials until you say so
+            Every profile read, matched to the job description, and called
           </p>
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Where OpenLine sits */}
       <section
         id="how-it-works"
-        style={{ padding: "100px 24px", maxWidth: "var(--maxw)", margin: "0 auto" }}
+        style={{
+          padding: "100px 24px",
+          maxWidth: "var(--maxw)",
+          margin: "0 auto",
+        }}
       >
-        <span className="eyebrow">How it works</span>
-        <h2
-          className="display"
-          style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
+        <Reveal
+          style={{ textAlign: "center", maxWidth: 760, margin: "0 auto 56px" }}
         >
-          From shortlist
-          <br />
-          <em className="hl">to answers, without dialing.</em>
-        </h2>
-        <p
-          style={{
-            fontSize: "clamp(16px, 1.8vw, 19px)",
-            color: "var(--ink-2)",
-            marginTop: 20,
-            maxWidth: 640,
-          }}
-        >
-          Four steps. You do the first and the last.
-        </p>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 18,
-            marginTop: 46,
-          }}
-        >
-          {STEPS.map((step) => (
-            <div
-              key={step.n}
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--line)",
-                borderRadius: "var(--radius)",
-                boxShadow: "var(--shadow-sm)",
-                padding: "30px 28px 34px",
-              }}
-            >
-              <div
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: 13,
-                  background: "var(--accent-tint)",
-                  color: "var(--accent)",
-                  display: "grid",
-                  placeItems: "center",
-                  marginBottom: 18,
-                }}
-              >
-                <Icon name={step.icon} size={20} />
-              </div>
-              <div
-                className="mono"
-                style={{
-                  fontSize: 13,
-                  color: "var(--accent)",
-                  fontWeight: 700,
-                  marginBottom: 8,
-                }}
-              >
-                {step.n}
-              </div>
-              <h3
-                style={{
-                  fontSize: 20,
-                  fontWeight: 700,
-                  letterSpacing: "-.02em",
-                  marginBottom: 8,
-                }}
-              >
-                {step.title}
-              </h3>
-              <p style={{ fontSize: 14.5, color: "var(--ink-2)", lineHeight: 1.55 }}>
-                {step.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Manifesto */}
-      <section style={{ padding: "0 24px 100px" }}>
-        <div
-          style={{
-            maxWidth: "var(--maxw)",
-            margin: "0 auto",
-            background: "var(--ink)",
-            color: "var(--bg-2)",
-            borderRadius: 34,
-            padding: "clamp(48px, 7vw, 96px)",
-            textAlign: "center",
-          }}
-        >
-          <span className="eyebrow" style={{ color: "var(--accent-soft)" }}>
-            The promise
-          </span>
-          <p
-            style={{
-              fontSize: "clamp(22px, 3.2vw, 38px)",
-              fontWeight: 600,
-              letterSpacing: "-.025em",
-              lineHeight: 1.22,
-              maxWidth: 900,
-              margin: "22px auto 0",
-            }}
-          >
-            Deciding who to call is judgement. Working down the list is not.
-            Only one of those is worth a recruiter&rsquo;s afternoon.
-          </p>
-          <p
-            style={{
-              fontSize: 15.5,
-              color: "#D8D2A4",
-              maxWidth: 640,
-              margin: "26px auto 0",
-              lineHeight: 1.6,
-            }}
-          >
-            You still choose the shortlist, approve the questions, and make every
-            decision. OpenLine does the part that was only ever slow because one
-            person can hold one phone at a time.
-          </p>
-        </div>
-      </section>
-
-      {/* Boundaries */}
-      <section
-        id="boundaries"
-        style={{ padding: "0 24px 100px", maxWidth: "var(--maxw)", margin: "0 auto" }}
-      >
-        <div style={{ maxWidth: 720 }}>
-          <span className="eyebrow">Boundaries</span>
+          <span className="eyebrow">Where OpenLine sits</span>
           <h2
             className="display"
             style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
           >
-            What it will never
+            The ATS hands you a list.
             <br />
-            <em className="hl">do on your behalf.</em>
+            <em className="hl">Then the real work starts.</em>
           </h2>
           <p
             style={{
               fontSize: "clamp(16px, 1.8vw, 19px)",
               color: "var(--ink-2)",
               marginTop: 20,
+              lineHeight: 1.55,
             }}
           >
-            Automating the dialing should not mean handing over the judgement. Each
-            of these is a check in the code, not a line in a policy document.
+            Calling, screening, scheduling — that is the week. OpenLine takes
+            the screening off it entirely, so what is left on your desk is
+            deciding what happens next.
           </p>
-        </div>
+        </Reveal>
 
-        <ul
+        {/* A drawn rule per column, so this does not read as a second copy of
+            the Features card grid below. */}
+        <div
           style={{
-            listStyle: "none",
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 12,
-            marginTop: 40,
+            gap: "44px 44px",
           }}
         >
-          {BOUNDARIES.map((item) => (
-            <li
-              key={item}
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "flex-start",
-                background: "var(--surface)",
-                border: "1px solid var(--line)",
-                borderRadius: "var(--radius-sm)",
-                padding: "16px 18px",
-              }}
-            >
-              <Icon
-                name="ban"
-                size={18}
-                style={{ color: "var(--accent)", flexShrink: 0, marginTop: 1 }}
-              />
-              <span style={{ fontSize: 14.5, color: "var(--ink)" }}>{item}</span>
-            </li>
+          {WHAT_IT_TAKES_OVER.map((item, i) => (
+            <Reveal key={item.title} rule delay={i * 90}>
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                  fontSize: "clamp(20px, 2vw, 23px)",
+                  fontWeight: 700,
+                  letterSpacing: "-.025em",
+                  marginBottom: 12,
+                }}
+              >
+                <Icon
+                  name={item.icon}
+                  size={21}
+                  style={{ color: "var(--accent)", flexShrink: 0 }}
+                />
+                {item.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: 15.5,
+                  color: "var(--ink-2)",
+                  lineHeight: 1.6,
+                }}
+              >
+                {item.body}
+              </p>
+            </Reveal>
           ))}
-        </ul>
+        </div>
       </section>
 
       {/* Features */}
       <section
         id="features"
-        style={{ padding: "0 24px 100px", maxWidth: "var(--maxw)", margin: "0 auto" }}
+        style={{
+          padding: "0 24px 100px",
+          position: "relative",
+          overflow: "hidden",
+        }}
       >
-        <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 48px" }}>
-          <span className="eyebrow">Features</span>
-          <h2
-            className="display"
-            style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
-          >
-            Built for the recruiter
-            <br />
-            <em className="hl">who has to trust it.</em>
-          </h2>
-        </div>
-
+        <div aria-hidden className="aqua-sheen low" />
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 18,
+            maxWidth: "var(--maxw)",
+            margin: "0 auto",
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--line)",
-                borderRadius: "var(--radius)",
-                padding: "28px 26px 30px",
-                boxShadow: "var(--shadow-sm)",
-              }}
+          <Reveal
+            style={{
+              textAlign: "center",
+              maxWidth: 760,
+              margin: "0 auto 56px",
+            }}
+          >
+            <span className="eyebrow">Features</span>
+            <h2
+              className="display"
+              style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
             >
-              <div
+              Built for the recruiter
+              <br />
+              <em className="hl">who has to trust it.</em>
+            </h2>
+          </Reveal>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: 18,
+            }}
+          >
+            {FEATURES.map((f, i) => (
+              <Reveal
+                key={f.title}
+                delay={i * 80}
+                className="lift"
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 11,
-                  background: "var(--surface-2)",
+                  background: "var(--surface)",
                   border: "1px solid var(--line)",
-                  color: "var(--accent)",
-                  display: "grid",
-                  placeItems: "center",
-                  marginBottom: 18,
+                  borderRadius: "var(--radius)",
+                  padding: "28px 26px 30px",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
-                <Icon name={f.icon} size={18} />
-              </div>
-              <h3
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  letterSpacing: "-.02em",
-                  marginBottom: 7,
-                }}
-              >
-                {f.title}
-              </h3>
-              <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.55 }}>
-                {f.body}
-              </p>
-            </div>
-          ))}
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 11,
+                    background: "var(--accent-tint)",
+                    border: "1px solid var(--accent-wash)",
+                    color: "var(--accent-deep)",
+                    display: "grid",
+                    placeItems: "center",
+                    marginBottom: 18,
+                  }}
+                >
+                  <Icon name={f.icon} size={18} />
+                </div>
+                <h3
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    letterSpacing: "-.02em",
+                    marginBottom: 7,
+                  }}
+                >
+                  {f.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: "var(--ink-2)",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {f.body}
+                </p>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* Closing statement. The hero carries the page's only call to action. */}
       <section style={{ textAlign: "center", padding: "20px 24px 110px" }}>
-        <h2
-          className="display"
-          style={{ fontSize: "clamp(38px, 6.5vw, 78px)" }}
-        >
-          The shortlist is done.
-          <br />
-          <em className="hl">Let it call itself.</em>
-        </h2>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            justifyContent: "center",
-            marginTop: 40,
-            flexWrap: "wrap",
-          }}
-        >
-          <Link href="/jobs">
-            <Button size="lg">Open the console</Button>
-          </Link>
-          <Link href="/calls">
-            <Button size="lg" variant="ghost">
-              See a real script
-            </Button>
-          </Link>
-        </div>
+        <Reveal>
+          <h2
+            className="display"
+            style={{ fontSize: "clamp(38px, 6.5vw, 78px)" }}
+          >
+            The shortlist is done.
+            <br />
+            <em className="hl">Let it call itself.</em>
+          </h2>
+        </Reveal>
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: "1px solid var(--line)", padding: "48px 24px 40px" }}>
+      <footer
+        style={{
+          borderTop: "1px solid var(--line)",
+          padding: "48px 24px 40px",
+        }}
+      >
         <div style={{ maxWidth: "var(--maxw)", margin: "0 auto" }}>
           <CalleCredit />
         </div>

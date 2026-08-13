@@ -29,9 +29,6 @@ export async function listJobs() {
         select count(*)::int from ${candidates} c
         where c.job_id = jobs.id and c.shortlisted and c.phone_e164 is not null
       )`,
-      callCount: sql<number>`(
-        select count(*)::int from ${screeningCalls} sc where sc.job_id = jobs.id
-      )`,
     })
     .from(jobs)
     .orderBy(desc(jobs.createdAt));

@@ -131,26 +131,39 @@ button, input, textarea { font-family: inherit; }
 .hl {
   font-style: normal;
   color: inherit;
-  /* The gradient is tripled and oversized so a slow background-position sweep
-     reads as light travelling along the underline rather than a color swap. */
+  /*
+   * A solid aqua underline with one bright glint travelling along it.
+   *
+   * Three things keep the loop seamless, and breaking any one of them makes
+   * the line flicker or vanish mid-sweep: the gradient opens and closes on the
+   * same colour, the image is exactly twice the element (one full period), and
+   * it tiles — a no-repeat image slides off the end and leaves bare text.
+   */
   background-image: linear-gradient(
     90deg,
-    #35B5C2, #63CBA8, #4A9FD8, #7FD3D8, #35B5C2, #63CBA8, #4A9FD8
+    #1E8F98 0%,
+    #1E8F98 34%,
+    #63CBA8 44%,
+    #BFEDE4 50%,
+    #63CBA8 56%,
+    #1E8F98 66%,
+    #1E8F98 100%
   );
-  background-repeat: no-repeat;
-  background-size: 300% 0.08em;
+  background-repeat: repeat-x;
+  background-size: 200% 0.08em;
   background-position: 0 97%;
   padding-bottom: 0.06em;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .hl {
-    animation: hl-shimmer 7s linear infinite;
+    animation: hl-shimmer 6s linear infinite;
   }
 }
 
+/* Exactly one period, so the wrap lands on an identical frame. */
 @keyframes hl-shimmer {
-  from { background-position: 0% 97%; }
+  from { background-position: 0 97%; }
   to   { background-position: -200% 97%; }
 }
 
@@ -175,9 +188,23 @@ button, input, textarea { font-family: inherit; }
   opacity: 0.8;
 }
 
+/* The same sky, lower down the page and quieter — it sits behind the cards. */
+.aqua-sheen.low {
+  inset: -6% -14%;
+  background:
+    radial-gradient(34% 40% at 82% 26%, rgba(127, 211, 216, 0.30), transparent 70%),
+    radial-gradient(28% 34% at 14% 72%, rgba(30, 143, 152, 0.16), transparent 72%);
+  opacity: 0.65;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .aqua-sheen {
     animation: sheen-drift 11s ease-in-out infinite alternate;
+  }
+
+  .aqua-sheen.low {
+    animation-duration: 15s;
+    animation-direction: alternate-reverse;
   }
 }
 
@@ -202,7 +229,57 @@ button, input, textarea { font-family: inherit; }
   .fade-up { animation: fadeUp .4s cubic-bezier(.2,.7,.3,1) both; }
 }
 
+/*
+ * Scroll reveal, one idea used everywhere: content arrives from below, and
+ * where a rule sits above it, the rule draws open left to right first. The
+ * product is called OpenLine — a line opening is the only flourish it needs.
+ *
+ * `.reveal` starts hidden, so `<noscript>` on the landing page unhides it.
+ */
+.reveal { opacity: 0; }
+
+.reveal.is-in {
+  animation: fadeUp .5s cubic-bezier(.2, .7, .3, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+.rule-open { position: relative; padding-top: 20px; }
+
+.rule-open::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-deep), var(--accent-soft));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.rule-open.is-in::before {
+  animation: rule-open .65s cubic-bezier(.2, .7, .3, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes rule-open {
+  to { transform: scaleX(1); }
+}
+
+/* Cards that respond to the pointer without moving the layout. */
+.lift {
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.lift:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-soft);
+  box-shadow: var(--shadow);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; }
+  .rule-open::before { transform: none; }
+  .lift:hover { transform: none; }
+
   *, *::before, *::after {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;

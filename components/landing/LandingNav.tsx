@@ -3,11 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
-import Button from "@/components/ui/Button";
 
 const LINKS = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "What it can't do", href: "#boundaries" },
+  { label: "Where it sits", href: "#how-it-works" },
   { label: "Features", href: "#features" },
 ];
 
@@ -41,7 +39,12 @@ export default function LandingNav() {
         <Logo size={28} word />
       </Link>
 
-      <div style={{ display: "flex", gap: 26, marginLeft: 18 }} className="nav-links">
+      {/* Pushed right: the nav carries no call to action — the hero's is the
+          only "Open the console" on the page. */}
+      <div
+        style={{ display: "flex", gap: 26, marginLeft: "auto" }}
+        className="nav-links"
+      >
         {LINKS.map((link) => (
           <a
             key={link.href}
@@ -62,12 +65,6 @@ export default function LandingNav() {
             {link.label}
           </a>
         ))}
-      </div>
-
-      <div style={{ marginLeft: "auto" }}>
-        <Link href="/jobs">
-          <Button size="sm">Open the console</Button>
-        </Link>
       </div>
     </nav>
   );

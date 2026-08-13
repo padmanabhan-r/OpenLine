@@ -129,9 +129,11 @@ export default async function JobPage({
               count={roster.length}
               explanation="The only people OpenLine will call. Build each script, read it, then place the call — nothing dials without a human having seen the words first."
             >
-              <Badge tone="good">{callable.length} callable</Badge>
+              <Badge tone="good">
+                {callable.length} with a phone number
+              </Badge>
               {unreachable.length > 0 && (
-                <Badge tone="warn">{unreachable.length} need a human</Badge>
+                <Badge tone="warn">{unreachable.length} missing a number</Badge>
               )}
             </SectionHeader>
 
@@ -142,7 +144,7 @@ export default async function JobPage({
 
               const dialDisabledReason = candidate.phoneE164
                 ? null
-                : "No callable number.";
+                : "No phone number for this candidate.";
 
               return (
                 <div
