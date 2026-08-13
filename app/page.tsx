@@ -55,7 +55,6 @@ export default function LandingPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--bg)",
         color: "var(--ink)",
       }}
     >
@@ -63,6 +62,19 @@ export default function LandingPage() {
       <noscript>
         <style>{".reveal{opacity:1}.rule-open::before{transform:none}"}</style>
       </noscript>
+      {/* The orb sits behind the whole page, not inside the hero — it stays put
+          while the page scrolls over it. `body` carries the yellow ground. */}
+      <video
+        aria-hidden
+        className="page-orb"
+        src="/orb.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+      />
+
       <LandingNav />
 
       {/* Hero */}
@@ -74,16 +86,6 @@ export default function LandingPage() {
           overflow: "hidden",
         }}
       >
-        <video
-          aria-hidden
-          className="hero-orb"
-          src="/orb.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        />
         <div aria-hidden className="aqua-sheen" />
         <div
           style={{

@@ -199,20 +199,39 @@ button, input, textarea { font-family: inherit; }
  * through instead of laying a grey rectangle over it, which is the same trick
  * the source page uses. Decorative: muted, looping, and ignored by the pointer.
  */
-.hero-orb {
-  position: absolute;
+/*
+ * Fixed, so it holds still while the page scrolls over it, and `z-index: -1`
+ * so it paints above the yellow canvas but under every section — which is what
+ * lets `multiply` blend it into the ground instead of stamping a panel on top.
+ *
+ * The orb is centred in its own frame, so `contain` keeps it whole and centred
+ * at every viewport size; `cover` would crop it off-centre on wide screens.
+ */
+.page-orb {
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  /* The orb is centred in its own frame, so the layer must not crop
-     asymmetrically — contain keeps it whole and centred at every width. */
   object-fit: contain;
   object-position: center;
   mix-blend-mode: multiply;
-  opacity: 0.4;
-  filter: saturate(1.05) contrast(1.03);
+  opacity: 0.5;
+  /* Softened just past the point of being an object, so it reads as weather. */
+  filter: blur(3px) saturate(1.05) contrast(1.02);
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
+}
+
+/* A long, unhurried drift on top of the clip's own motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-orb {
+    animation: orb-drift 26s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes orb-drift {
+  from { transform: translate3d(-1.5%, 1%, 0) scale(1.02) rotate(-1.5deg); }
+  to   { transform: translate3d(1.5%, -1%, 0) scale(1.12) rotate(1.5deg); }
 }
 
 /* The same sky, lower down the page and quieter — it sits behind the cards. */
