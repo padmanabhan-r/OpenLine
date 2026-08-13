@@ -21,7 +21,10 @@
   /* Ink */
   --ink: #1D1B10;
   --ink-2: #57522F;
-  --ink-3: #857C4E;
+  /* Muted, but still readable: the old #857C4E sat at 2.9:1 on the yellow
+     ground, and it carries 11–13px captions and labels. This clears 4.5:1
+     on every surface in the palette. */
+  --ink-3: #635D38;
 
   /* Borders */
   --line: rgba(29, 27, 16, 0.18);
@@ -215,7 +218,7 @@ button, input, textarea { font-family: inherit; }
   object-fit: contain;
   object-position: center;
   mix-blend-mode: multiply;
-  opacity: 0.5;
+  opacity: 0.68;
   /* Softened just past the point of being an object, so it reads as weather. */
   filter: blur(3px) saturate(1.05) contrast(1.02);
   pointer-events: none;
