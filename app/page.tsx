@@ -74,6 +74,16 @@ export default function LandingPage() {
           overflow: "hidden",
         }}
       >
+        <video
+          aria-hidden
+          className="hero-orb"
+          src="/orb.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
         <div aria-hidden className="aqua-sheen" />
         <div
           style={{
