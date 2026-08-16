@@ -1,10 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <!--
-    The OpenLine mark: an ink orb cut by an open line.
-    Black on yellow, so it reads as family to CALL-E's own mark and stays
-    legible at 16px in a browser tab.
+    The OpenLine mark: a brass orb cut by an open line, on bakelite — the same
+    gradient the Logo component draws (--cta-hover to --accent-soft), so the
+    browser tab matches the page at 16px.
   -->
-  <rect width="32" height="32" rx="7" fill="#F2D845"/>
-  <circle cx="16" cy="16" r="10" fill="#17160F"/>
-  <rect x="4" y="14.25" width="24" height="3.5" fill="#F2D845"/>
+  <defs>
+    <radialGradient id="brass" cx="0.32" cy="0.28" r="0.85">
+      <stop offset="0" stop-color="#DBAF52"/>
+      <stop offset="0.72" stop-color="#8A6E2F"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#17130E"/>
+  <circle cx="16" cy="16" r="10" fill="url(#brass)"/>
+  <rect x="4" y="14.25" width="24" height="3.5" fill="#17130E"/>
 </svg>

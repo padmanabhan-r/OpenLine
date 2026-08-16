@@ -7,6 +7,7 @@ import {
   screeningCalls,
 } from "@/lib/db/schema";
 import { callePortFromEnv } from "@/lib/calle/port";
+import { composeScript } from "@/lib/screening/preview";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { inspectTranscript, type InspectableTurn } from "@/lib/script/guard";
 import { needsHuman, type ScreeningResult } from "@/lib/script/schema";
@@ -163,12 +164,17 @@ export type NewAttemptOutcome =
   | { ok: false; reason: string };
 
 /**
- * Clone a finished call into a fresh, dialable row.
+ * Start a fresh, dialable row for a candidate who has already been called.
  *
  * A row that has been dialed is a record — its transcript and result must
- * survive — so calling someone again never reuses it. The clone carries the
- * same script under a new idempotency key, which is what makes the second
- * dial a genuinely new call instead of one CALL-E collapses into the first.
+ * survive — so calling someone again never reuses it. The new row's script is
+ * recomposed from the current template, not cloned from the finished call: a
+ * stale clone is how words the recruiter believes were replaced get spoken on
+ * a real phone line. When the recomposed script differs from what was last
+ * dialed, the row is created but not armed — the caller gets `ok: false` and
+ * the recruiter reviews the new words before anything rings. The fresh key is
+ * what makes the second dial a genuinely new call instead of one CALL-E
+ * collapses into the first.
  */
 export async function startNewAttempt(
   screeningCallId: string,
@@ -202,6 +208,34 @@ export async function startNewAttempt(
     );
   const nextVersion = (latest?.version ?? row.scriptVersion) + 1;
 
+  // A new attempt speaks the script as it stands TODAY, recomposed from the
+  // current template — never a clone of the finished call's words. A stale
+  // clone is how a script the recruiter believes was replaced gets spoken on a
+  // real phone line. The guard runs here and again in the port before dialing.
+  const [job] = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.id, row.jobId))
+    .limit(1);
+  const [candidate] = await db
+    .select()
+    .from(candidatesTable)
+    .where(eq(candidatesTable.id, row.candidateId))
+    .limit(1);
+  if (!job || !candidate) {
+    return { ok: false, reason: "The job or candidate for this call no longer exists." };
+  }
+
+  const { questions, task, guard } = composeScript(job, candidate);
+  if (!guard.ok) {
+    return {
+      ok: false,
+      reason: `The regenerated script failed the guard (${guard.findings
+        .map((f) => f.category)
+        .join(", ")}) — review it before calling again.`,
+    };
+  }
+
   const [created] = await db
     .insert(screeningCalls)
     .values({
@@ -210,11 +244,24 @@ export async function startNewAttempt(
       idempotencyKey: `${row.jobId}:${row.candidateId}:v${nextVersion}`,
       scriptVersion: nextVersion,
       status: "previewed",
-      task: row.task,
-      questions: row.questions,
+      task,
+      questions,
       guardFindings: [],
     })
     .returning({ id: screeningCalls.id });
+
+  // The recomposed script may not be the one that was approved and dialed
+  // last time — the template changed, or a recruiter's per-candidate edits
+  // did not survive recomposition. Those words have not been seen for THIS
+  // candidate, so the row exists but nothing dials: the caller surfaces the
+  // reason and the recruiter reviews the new script before placing the call.
+  if (task !== row.task) {
+    return {
+      ok: false,
+      reason:
+        "The script has changed since this candidate was last called. A fresh script is ready on their row — read it, then place the call.",
+    };
+  }
 
   return { ok: true, screeningCallId: created.id };
 }

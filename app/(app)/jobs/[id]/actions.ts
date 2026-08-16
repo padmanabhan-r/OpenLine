@@ -33,10 +33,19 @@ export async function callFromRow(jobId: string, screeningCallId: string) {
   return outcome;
 }
 
-/** Call a candidate again: clone the finished call, then dial the clone. */
+/**
+ * Call a candidate again: a fresh attempt recomposed from the current
+ * template, dialed immediately — unless the script changed since the last
+ * call, in which case the new row waits on the queue for review.
+ */
 export async function callAgainFromRow(jobId: string, screeningCallId: string) {
   const attempt = await startNewAttempt(screeningCallId);
-  if (!attempt.ok) return attempt;
+  if (!attempt.ok) {
+    // A fresh row may have been created for review — make it visible.
+    revalidatePath(`/jobs/${jobId}`);
+    revalidatePath("/calls");
+    return attempt;
+  }
 
   const outcome = await startCall(attempt.screeningCallId);
   if (outcome.ok) {

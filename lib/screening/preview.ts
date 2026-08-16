@@ -46,6 +46,26 @@ function questionsFor(job: Job): ScriptQuestion[] {
     .map((text, index) => ({ id: `q${index + 1}`, text }));
 }
 
+/**
+ * Compose the current script for one candidate: questions, task, guard result.
+ *
+ * The one place the words come from. Preview uses it, and call-again uses it
+ * too — a re-dial speaks the script as it stands today, never a stale clone of
+ * what was said last time.
+ */
+export function composeScript(job: Job, candidate: Candidate) {
+  const questions = questionsFor(job);
+  const task = assembleTask({
+    candidateName: candidate.name,
+    roleTitle: job.title,
+    companyName: job.companyName,
+    recruiterName: job.recruiterName,
+    questions,
+    factSheet: job.factSheet,
+  });
+  return { questions, task, guard: inspectScript(task) };
+}
+
 export interface PreviewOutcome {
   candidateId: string;
   name: string;
@@ -105,20 +125,10 @@ async function previewOne(
     };
   }
 
-  const questions = questionsFor(job);
-  const task = assembleTask({
-    candidateName: candidate.name,
-    roleTitle: job.title,
-    companyName: job.companyName,
-    recruiterName: job.recruiterName,
-    questions,
-    factSheet: job.factSheet,
-  });
-
   // The same guard that runs again at dial time. A violating script is stored
   // as refused with its findings visible, so the recruiter sees exactly what
   // was caught rather than a call that quietly never happens.
-  const guard = inspectScript(task);
+  const { questions, task, guard } = composeScript(job, candidate);
   const refused = !guard.ok;
   const refusalDetail = refused
     ? `Script contains ${guard.findings.length} prohibited question(s): ${guard.findings

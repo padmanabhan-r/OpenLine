@@ -26,12 +26,21 @@ export async function callCandidate(screeningCallId: string) {
   return outcome;
 }
 
-/** Clone a finished call and dial the clone. Returns the new call's id. */
+/**
+ * Start a fresh attempt (recomposed from the current template) and dial it —
+ * unless the script changed since the last call, in which case the new row
+ * waits for review instead of dialing.
+ */
 export async function callAgain(
   screeningCallId: string,
 ): Promise<{ ok: true; newCallId: string } | { ok: false; reason: string }> {
   const attempt = await startNewAttempt(screeningCallId);
-  if (!attempt.ok) return attempt;
+  if (!attempt.ok) {
+    // A fresh row may have been created for review — make it visible.
+    revalidatePath("/calls");
+    revalidatePath(`/calls/${screeningCallId}`);
+    return attempt;
+  }
 
   const outcome = await startCall(attempt.screeningCallId);
   if (!outcome.ok) return outcome;
