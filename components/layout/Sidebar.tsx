@@ -69,7 +69,7 @@ function SectionLabel({ label }: { label: string }) {
   return (
     <div
       style={{
-        fontSize: 10.5,
+        fontSize: 11,
         fontWeight: 700,
         letterSpacing: ".16em",
         textTransform: "uppercase",
@@ -83,7 +83,7 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ callsLive }: { callsLive: boolean }) {
   return (
     <aside
       style={{
@@ -117,7 +117,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* This app places real phone calls. That fact stays on screen. */}
+      {/* Whether this app can place real phone calls stays on screen — and it
+          has to be the truth, not an assertion. Red is reserved for the armed
+          state; the offline chip stays neutral so red keeps meaning danger. */}
       <div
         style={{
           marginTop: "auto",
@@ -126,8 +128,10 @@ export default function Sidebar() {
           gap: 10,
           padding: "11px 12px",
           borderRadius: 14,
-          border: "1px solid rgba(194,47,30,0.30)",
-          background: "var(--danger-wash)",
+          border: callsLive
+            ? "1px solid rgba(194,47,30,0.30)"
+            : "1px solid var(--line)",
+          background: callsLive ? "var(--danger-wash)" : "var(--surface-2)",
           boxShadow: "inset 0 1px 0 var(--glass-edge)",
         }}
       >
@@ -137,15 +141,17 @@ export default function Sidebar() {
             height: 8,
             borderRadius: "50%",
             flexShrink: 0,
-            background: "var(--danger)",
+            background: callsLive ? "var(--danger)" : "var(--ink-3)",
           }}
         />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
-            Calls are live
+            {callsLive ? "Calls are live" : "Calls are off"}
           </div>
           <div style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.35 }}>
-            A number on file is a number that rings
+            {callsLive
+              ? "A number on file is a number that rings"
+              : "No CALL-E key — scripts build, nobody dials"}
           </div>
         </div>
       </div>

@@ -72,7 +72,7 @@ export default function Logo({
             <span
               className="mono"
               style={{
-                fontSize: Math.max(7.5, size * 0.26),
+                fontSize: Math.max(11, size * 0.26),
                 fontWeight: 600,
                 letterSpacing: ".08em",
                 color: "var(--ink-3)",

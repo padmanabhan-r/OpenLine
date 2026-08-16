@@ -417,7 +417,7 @@ export default function LandingPage() {
             <span
               className="mono"
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 letterSpacing: ".1em",
                 padding: "3px 7px",
                 borderRadius: "var(--radius-pill)",

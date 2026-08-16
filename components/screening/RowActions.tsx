@@ -141,14 +141,26 @@ export default function RowActions({
   }
 
   if (dialDisabledReason) {
+    // The reason stays visible, not tucked into a hover title — a recruiter
+    // tabbing the queue and a screen reader both deserve to know why.
     return (
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        {rebuild}
-        <span title={dialDisabledReason}>
-          <Button size="sm" variant="ghost" disabled>
+      <div style={{ textAlign: "right" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            alignItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
+          {rebuild}
+          <Button size="sm" variant="soft" disabled>
             <Icon name="phone" size={14} /> Call
           </Button>
-        </span>
+        </div>
+        <p style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 4 }}>
+          {dialDisabledReason}
+        </p>
       </div>
     );
   }
@@ -156,7 +168,10 @@ export default function RowActions({
   return (
     <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
       {rebuild}
-      <Button size="sm" onClick={() => setConfirming("call")}>
+      {/* Soft at rest: nineteen black pills in a queue would flatten the one
+          that matters. The black pill is reserved for the confirm — the click
+          that actually spends money and rings a person. */}
+      <Button size="sm" variant="soft" onClick={() => setConfirming("call")}>
         <Icon name="phone" size={14} /> Call
       </Button>
       {error && (

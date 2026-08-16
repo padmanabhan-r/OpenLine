@@ -5,6 +5,10 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // The same rule start.sh's banner uses: a CALL-E key present means a
+  // candidate with a number on file will really be dialed.
+  const callsLive = Boolean(process.env.CALLE_API_KEY?.trim());
+
   return (
     <div
       style={{
@@ -95,7 +99,7 @@ export default function AppLayout({
           overflow: "hidden",
         }}
       >
-        <Sidebar />
+        <Sidebar callsLive={callsLive} />
         <main
           style={{
             flex: 1,

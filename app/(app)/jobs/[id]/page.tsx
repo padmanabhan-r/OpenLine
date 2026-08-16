@@ -229,8 +229,23 @@ export default async function JobPage({
                     </div>
                   </div>
 
-                  {/* The score that put them here — arguable, so shown. */}
+                  {/* The score that put them here — arguable, so shown, and
+                      named: a bare number in a queue is a guess for anyone
+                      who cannot hover. */}
                   <div style={{ width: 64, flexShrink: 0, textAlign: "right" }}>
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: ".1em",
+                        textTransform: "uppercase",
+                        color: "var(--ink-3)",
+                        marginBottom: 1,
+                      }}
+                    >
+                      match
+                    </div>
                     {candidate.matchScore != null ? (
                       <span
                         className="mono"
@@ -255,7 +270,7 @@ export default async function JobPage({
                     )}
                     {candidate.shortlistedBy === "human" && (
                       <div
-                        style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 1 }}
+                        style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 1 }}
                       >
                         added by you
                       </div>

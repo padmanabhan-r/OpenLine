@@ -52,7 +52,7 @@ export function PoweredByCalle({ height = 16 }: { height?: number }) {
       <span
         className="mono"
         style={{
-          fontSize: 9.5,
+          fontSize: 11,
           letterSpacing: ".12em",
           textTransform: "uppercase",
           color: "var(--ink-3)",

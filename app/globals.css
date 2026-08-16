@@ -48,7 +48,7 @@
   --danger-wash: #F6DCCB;
 
   /* Status */
-  --green: #55793B;
+  --green: #4E6F36; /* darkened from #55793B: 4.5:1+ on --green-wash */
   --green-wash: #E9EFC8;
   --amber: #A87A1D;
   --amber-wash: #F3E7B5;
