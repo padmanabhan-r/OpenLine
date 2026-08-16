@@ -30,11 +30,12 @@ const base: CSSProperties = {
 };
 
 const variants: Record<Variant, CSSProperties> = {
-  // Black pill, like the brand's LOGIN / START CALLING buttons.
+  // The brass plate: machined, bevelled, catching the tungsten light.
   primary: {
-    background: "var(--cta)",
+    background: "linear-gradient(180deg, var(--cta-hover), var(--cta))",
     color: "var(--cta-text)",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,.10)",
+    boxShadow:
+      "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.30), 0 1px 3px rgba(0,0,0,.45)",
   },
   dark: { background: "var(--cta)", color: "var(--cta-text)" },
   ghost: {

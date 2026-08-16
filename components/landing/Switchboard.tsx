@@ -109,6 +109,8 @@ export default function Switchboard({
     return { ...l, shown: full.slice(0, take), complete: take >= full.length };
   });
 
+  // A jewel lamp: deep glass dome in a brass bezel. Unlit it smoulders
+  // red-brown; lit it burns amber and throws light.
   const jack = (lit: boolean) => (
     <span
       aria-hidden
@@ -118,28 +120,67 @@ export default function Switchboard({
         borderRadius: "50%",
         flexShrink: 0,
         border: "2px solid var(--accent-soft)",
-        background:
-          "radial-gradient(circle at 35% 32%, #3A3226 0%, #0C0A07 62%)",
+        background: lit
+          ? "radial-gradient(circle at 35% 30%, #FFE9B0 0%, var(--amber) 38%, #7A4A12 100%)"
+          : "radial-gradient(circle at 35% 30%, #6E3A28 0%, #2A130C 62%, #170A06 100%)",
         boxShadow: lit
-          ? "0 0 0 2px rgba(211,166,72,0.35), 0 0 14px rgba(224,166,62,0.5), inset 0 1px 1px rgba(239,231,211,0.2)"
-          : "inset 0 1px 1px rgba(239,231,211,0.14), 0 1px 2px rgba(0,0,0,0.5)",
-        transition: "box-shadow .4s ease",
+          ? "0 0 0 2px rgba(211,166,72,0.35), 0 0 16px rgba(224,166,62,0.6), inset 0 -2px 3px rgba(0,0,0,.45)"
+          : "inset 0 2px 3px rgba(0,0,0,.55), inset 0 -1px 1px rgba(239,231,211,0.10), 0 1px 2px rgba(0,0,0,0.5)",
+        transition: "box-shadow .4s ease, background .4s ease",
       }}
     />
   );
 
+  // A slotted panel screw, one per corner of the board.
+  const screw = (pos: React.CSSProperties) => (
+    <span
+      aria-hidden
+      style={{
+        position: "absolute",
+        width: 11,
+        height: 11,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle at 35% 30%, var(--cta-hover), var(--accent-soft) 75%)",
+        boxShadow: "inset 0 1px 1px rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.6)",
+        ...pos,
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          left: 1.5,
+          right: 1.5,
+          top: 4.5,
+          height: 1.5,
+          background: "rgba(23,19,14,0.7)",
+          transform: "rotate(24deg)",
+        }}
+      />
+    </span>
+  );
+
   return (
     <div style={{ position: "relative" }}>
-      {/* The board is not a widget in a card — the bakelite page ground IS
-          the panel. Two rules delimit it, the way engraved lines delimit a
-          section of a real exchange board. */}
+      {/* The machined instrument panel — bakelite grain, bevelled edge, a
+          screw in each corner. Not a card shell: this is the subject itself,
+          the way the approved comp renders it. */}
       <div
         style={{
-          borderTop: "2px solid var(--accent-soft)",
-          borderBottom: "1px solid var(--line)",
-          padding: "10px 0 0",
+          position: "relative",
+          backgroundImage: "url(/textures/bakelite.webp)",
+          backgroundSize: "512px 512px",
+          border: "1px solid rgba(0,0,0,0.6)",
+          borderRadius: "var(--radius)",
+          boxShadow:
+            "inset 0 1px 0 rgba(239,231,211,0.09), inset 0 -2px 4px rgba(0,0,0,.5), var(--shadow-lg)",
+          padding: "10px 0 4px",
         }}
       >
+        {screw({ top: 7, left: 8 })}
+        {screw({ top: 7, right: 8 })}
+        {screw({ bottom: 7, left: 8 })}
+        {screw({ bottom: 7, right: 8 })}
         <div
           style={{
             display: "flex",
@@ -188,11 +229,18 @@ export default function Switchboard({
               <span
                 className="mono"
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: ".08em",
                   textTransform: "uppercase",
-                  color: "var(--ink-2)",
+                  color: "var(--cta-text)",
+                  backgroundImage: "url(/textures/brass-plate.webp)",
+                  backgroundSize: "cover",
+                  padding: "4px 12px",
+                  borderRadius: 4,
+                  boxShadow:
+                    "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)",
+                  textShadow: "0 1px 0 rgba(255,255,255,.22)",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -237,14 +285,23 @@ export default function Switchboard({
             <span
               className="mono"
               style={{
-                fontSize: 12.5,
+                fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: ".08em",
                 textTransform: "uppercase",
-                color: "var(--ink)",
+                color: "var(--cta-text)",
+                backgroundImage: "url(/textures/brass-plate.webp)",
+                backgroundSize: "cover",
+                padding: "4px 12px",
+                borderRadius: 4,
+                boxShadow: live
+                  ? "inset 0 1px 1px rgba(255,255,255,.38), 0 0 10px rgba(224,166,62,.35), 0 1px 2px rgba(0,0,0,.5)"
+                  : "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)",
+                textShadow: "0 1px 0 rgba(255,255,255,.22)",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                transition: "box-shadow .4s ease",
               }}
             >
               {liveName}
@@ -318,12 +375,47 @@ export default function Switchboard({
         </svg>
       </div>
 
-      {/* The ticker: cream tape with sprocket perforations, typewriter ink.
-          What prints is what was said. */}
+      {/* The ticker: cream paper tape on a dark platen bar, brass spool ends,
+          typewriter ink. What prints is what was said. */}
+      <div style={{ position: "relative" }}>
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: -8,
+            right: -8,
+            top: 16,
+            bottom: 16,
+            background: "linear-gradient(180deg, #2A241E, #0E0B08)",
+            borderRadius: 10,
+            boxShadow: "0 4px 12px rgba(0,0,0,.5)",
+          }}
+        />
+        {(["left", "right"] as const).map((side) => (
+          <span
+            key={side}
+            aria-hidden
+            style={{
+              position: "absolute",
+              [side]: -6,
+              top: "50%",
+              marginTop: -10,
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle at 35% 30%, var(--cta-hover), var(--accent-soft) 78%)",
+              boxShadow:
+                "inset 0 1px 1px rgba(255,255,255,.35), 0 1px 3px rgba(0,0,0,.6)",
+            }}
+          />
+        ))}
       <div
         style={{
           position: "relative",
-          background: "#EFE7D3",
+          backgroundImage: "url(/textures/tape-paper.webp)",
+          backgroundSize: "512px 256px",
+          backgroundColor: "#EFE7D3",
           color: "#1A1510",
           borderRadius: 3,
           boxShadow: "var(--shadow)",
@@ -401,6 +493,7 @@ export default function Switchboard({
             Demonstration call — fixture candidate. A human reads every word.
           </p>
         )}
+      </div>
       </div>
 
       {/* The one control. It runs the whole sequence, every time. */}
