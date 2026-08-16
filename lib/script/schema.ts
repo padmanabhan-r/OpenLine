@@ -33,6 +33,9 @@ export const SCREENING_RESULT_SCHEMA = {
     "reached_candidate",
     "consent_given",
     "answers",
+    "availability",
+    "notice_period",
+    "salary_expectation",
     "candidate_questions",
     "interest_level",
     "followup",
@@ -98,6 +101,11 @@ export const SCREENING_RESULT_SCHEMA = {
       description:
         "The notice period the candidate stated, for example `2 months` or `immediate`. Empty string if not discussed.",
     },
+    salary_expectation: {
+      type: "string",
+      description:
+        "The salary expectation the candidate stated, in their own words, for example `around 60 lakh` or `open to discussion`. Empty string if not stated. Never record their current salary.",
+    },
     candidate_questions: {
       type: "array",
       description:
@@ -161,6 +169,7 @@ export interface ScreeningResult {
   }>;
   availability?: string;
   notice_period?: string;
+  salary_expectation?: string;
   candidate_questions: Array<{
     question: string;
     was_answered: "yes" | "partially" | "no" | "unknown";

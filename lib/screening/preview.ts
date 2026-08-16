@@ -1,9 +1,8 @@
-import OpenAI from "openai";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
-import { assembleTask, createOpenAIQuestionGenerator, type ScriptQuestion } from "@/lib/script/build";
+import { assembleTask, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
 import { STAGES, isShortlisted } from "@/lib/candidates/stage";
 
@@ -19,55 +18,30 @@ const SHORTLISTED_STAGES = STAGES.filter(isShortlisted);
  */
 
 /**
- * Used when no OpenAI key is configured.
+ * The basic screen, fixed for every candidate.
  *
- * Deliberately generic and deliberately lawful: these are the questions any
- * screening call needs, and they let the whole pipeline be exercised without a
- * second API dependency.
+ * A live call proved model-written "fit" questions turn a two-minute screen
+ * into an interview and leave the structured result blank. These five map
+ * one-to-one onto what the recruiter actually reads back — interest, current
+ * work, notice period, start date, salary expectation — so the same call
+ * fills the same fields every time. No model writes them; a recruiter can
+ * still edit them per candidate afterwards.
  */
-const REGION_NAMES: Record<string, string> = {
-  IN: "India",
-  US: "the United States",
-  GB: "the United Kingdom",
-  SG: "Singapore",
-  AU: "Australia",
-  AE: "the United Arab Emirates",
-  MY: "Malaysia",
-  MX: "Mexico",
-  BR: "Brazil",
-};
-
-export function defaultQuestions(roleTitle: string, region?: string | null): string[] {
-  // Work authorisation is lawful to ask; it has to name the right country to be
-  // a sensible question, so it follows the job's region.
-  const country = region ? REGION_NAMES[region] : null;
-
+export function basicScreenQuestions(roleTitle: string, companyName: string): string[] {
   return [
-    `What drew you to apply for the ${roleTitle} role?`,
-    "Walk me through a system you owned end to end. What was your part in it?",
-    "What is your notice period, and when could you realistically start?",
+    `Are you still interested in the ${roleTitle} role at ${companyName}?`,
+    "Briefly, what are you working on in your current role?",
+    "What is your notice period?",
+    "When could you realistically start?",
     "What are your salary expectations for this role?",
-    country
-      ? `Are you authorised to work in ${country}?`
-      : "Are you authorised to work in the country this role is based in?",
   ];
 }
 
-async function questionsFor(job: Job, candidate: Candidate): Promise<ScriptQuestion[]> {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  const raw = apiKey
-    ? await createOpenAIQuestionGenerator(new OpenAI({ apiKey })).generate({
-        roleTitle: job.title,
-        jobDescription: job.description,
-        candidateSummary: candidate.summary ?? "No background summary available.",
-        count: 5,
-      })
-    : defaultQuestions(job.title, job.defaultRegion);
-
-  // Questions are filtered individually, so one bad suggestion costs a question
-  // rather than the whole call. The assembled script is checked again below.
-  return raw
+function questionsFor(job: Job): ScriptQuestion[] {
+  // The guard still inspects every question — the template is trusted no more
+  // than the model was. One bad question costs a question, not the call, and
+  // the assembled script is checked again below.
+  return basicScreenQuestions(job.title, job.companyName)
     .filter((text) => inspectScript(text).ok)
     .map((text, index) => ({ id: `q${index + 1}`, text }));
 }
@@ -131,7 +105,7 @@ async function previewOne(
     };
   }
 
-  const questions = await questionsFor(job, candidate);
+  const questions = questionsFor(job);
   const task = assembleTask({
     candidateName: candidate.name,
     roleTitle: job.title,

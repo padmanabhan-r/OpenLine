@@ -79,6 +79,7 @@ export default function CallResult({
       >
         <Field label="Notice period" value={result.notice_period ?? ""} />
         <Field label="Availability" value={result.availability ?? ""} />
+        <Field label="Salary expectation" value={result.salary_expectation ?? ""} />
         <div>
           <div
             className="mono"

@@ -27,6 +27,15 @@ describe("assembleTask", () => {
     expect(disclosureAt).toBeLessThan(firstQuestionAt);
   });
 
+  it("frames the call as a short basic screen, not an interview", () => {
+    // A live call proved the agent rambles without this. The brevity
+    // instruction is safety-adjacent: a call that overstays its welcome is a
+    // call that starts improvising.
+    const task = assembleTask(input()).toLowerCase();
+    expect(task).toMatch(/basic screen, not an interview/);
+    expect(task).toMatch(/no small talk/);
+  });
+
   it("asks permission to continue and stops if refused", () => {
     const task = assembleTask(input()).toLowerCase();
     expect(task).toContain("good time");

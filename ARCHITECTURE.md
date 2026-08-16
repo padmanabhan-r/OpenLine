@@ -12,7 +12,7 @@ judgement stays with a person.**
 ## The flow
 
 **1. A recruiter creates a job and uploads resumes.**
-The job carries a description (which drives the screening questions) and a short
+The job carries a description (which drives resume scoring) and a short
 *fact sheet* — the only things the agent is allowed to state on a call, because
 CALL-E can't look anything up mid-conversation. Uploaded PDFs are kept in storage
 so any parse can be checked against what the candidate actually wrote.
@@ -62,7 +62,7 @@ the agent *actually said* on the line.
 | Console & pipeline | Next.js |
 | Data | Neon Postgres |
 | Resume originals | Cloudflare R2 |
-| Parsing, scoring, question drafting | OpenAI |
+| Resume parsing and scoring | OpenAI |
 | The phone call itself | CALL-E |
 
 ## What it will not do
