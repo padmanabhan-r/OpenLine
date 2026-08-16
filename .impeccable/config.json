@@ -1,3 +1,69 @@
 {
-  "buildPath": "comp"
+  "buildPath": "comp",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font-size",
+        "value": "16px",
+        "createdAt": "2026-08-16T04:59:26.217Z",
+        "reason": "html base rem anchor, browser-surface not type ramp"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "4px",
+        "createdAt": "2026-08-16T04:59:26.252Z",
+        "reason": "focus-visible ring radius, browser-surface theming"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "8px",
+        "createdAt": "2026-08-16T04:59:26.285Z",
+        "reason": "scrollbar thumb radius, browser-surface theming"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "3px",
+        "createdAt": "2026-08-16T04:59:26.317Z",
+        "reason": "ticker tape machined edge, finish-review fix round decision"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0,0,0,0.18)",
+        "createdAt": "2026-08-16T04:59:26.348Z",
+        "reason": "plate inner shade, documented black-shadow vocabulary"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0,0,0,.5)",
+        "createdAt": "2026-08-16T04:59:26.384Z",
+        "reason": "lamp inset shadow, documented black-shadow vocabulary"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(255,255,255,.45)",
+        "createdAt": "2026-08-16T04:59:26.419Z",
+        "reason": "lamp glass highlight, lit-glass jewel-lamp treatment"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "54px",
+        "createdAt": "2026-08-16T04:59:26.451Z",
+        "reason": "fluid hero display clamp endpoint, Persuade landing scale"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "38px",
+        "createdAt": "2026-08-16T04:59:26.490Z",
+        "reason": "fluid section display clamp endpoint, Persuade landing scale"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "44px",
+        "createdAt": "2026-08-16T04:59:26.523Z",
+        "reason": "fluid close display clamp endpoint, Persuade landing scale"
+      }
+    ]
+  }
 }

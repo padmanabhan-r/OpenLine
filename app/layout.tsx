@@ -1,18 +1,25 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Archivo, Big_Shoulders, Courier_Prime } from "next/font/google";
 import "./globals.css";
 
-const hanken = Hanken_Grotesk({
+const archivo = Archivo({
   subsets: ["latin"],
   variable: "--sans",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const jetbrains = JetBrains_Mono({
+const bigShoulders = Big_Shoulders({
+  subsets: ["latin"],
+  variable: "--display-face",
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const courier = Courier_Prime({
   subsets: ["latin"],
   variable: "--mono",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -28,8 +35,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${hanken.variable} ${jetbrains.variable}`}>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${archivo.variable} ${bigShoulders.variable} ${courier.variable}`}
+    >
+      <body>
+        {/* The direction contract must survive the production build as a real
+            HTML comment, so it is emitted rather than written as JSX. */}
+        <div
+          style={{ display: "contents" }}
+          dangerouslySetInnerHTML={{
+            __html: `<!--
+THESIS: Every screening call is a patch on the exchange board; OpenLine is the operator who never sleeps. Refuses the AI-SaaS gradient hero and the card-grid feature list.
+OWN-WORLD: Bakelite near-black ground, brass jacks and cords, cream engraved labels, jewel-lamp status colors; condensed display caps, typewriter mono; no enclosure - plates, rules, and leader lines, never cards.
+STORY: A judge watches the machine place a call - disclose itself, ask permission - and understands a human reads every word; they open the console.
+FIRST VIEWPORT: Full-bleed switchboard; jack rows of the real shortlist; one patched cord glows amber into a ticker printing the disclosure transcript; condensed headline "THE OPERATOR WHO NEVER SLEEPS"; one brass pill CTA "Open the console".
+FORM: The Exchange - own-list candidate 1 of 7; seed 34d229b9.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
+-->`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

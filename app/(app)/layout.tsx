@@ -19,7 +19,9 @@ export default function AppLayout({
         background: "var(--bg)",
       }}
     >
-      {/* Blob field. The glass panels need something to refract. */}
+      {/* The exchange floor at night: two tungsten pools over the bakelite,
+          and a faint jack-field grid. The glass panels need something to
+          refract; nothing here moves — the room is still until a line is. */}
       <div
         aria-hidden
         style={{
@@ -30,46 +32,28 @@ export default function AppLayout({
           overflow: "hidden",
         }}
       >
-        {/* The patch of sky — CALL-E's aqua drifting through the yellow. */}
-        <div
-          style={{
-            position: "absolute",
-            width: 560,
-            height: 560,
-            borderRadius: "50%",
-            top: -140,
-            left: "12%",
-            background: "rgba(101,199,214,0.45)",
-            filter: "blur(90px)",
-            animation: "blobDrift 28s ease-in-out infinite",
-          }}
-        />
-        {/* Warmer, lighter yellow pooling low. */}
         <div
           style={{
             position: "absolute",
             width: 620,
             height: 620,
             borderRadius: "50%",
-            bottom: -160,
-            right: -160,
-            background: "rgba(255,241,150,0.55)",
-            filter: "blur(90px)",
-            animation: "blobDrift 34s ease-in-out infinite reverse",
+            top: -180,
+            left: "10%",
+            background: "rgba(200,155,60,0.10)",
+            filter: "blur(100px)",
           }}
         />
-        {/* A faint white bloom keeping the middle airy. */}
         <div
           style={{
             position: "absolute",
-            width: 420,
-            height: 420,
+            width: 560,
+            height: 560,
             borderRadius: "50%",
-            top: "38%",
-            left: "34%",
-            background: "rgba(255,253,235,0.35)",
-            filter: "blur(90px)",
-            animation: "blobDrift 22s ease-in-out infinite 4s",
+            bottom: -200,
+            right: -140,
+            background: "rgba(226,89,63,0.05)",
+            filter: "blur(110px)",
           }}
         />
         <div
@@ -77,8 +61,8 @@ export default function AppLayout({
             position: "absolute",
             inset: 0,
             backgroundImage: [
-              "linear-gradient(rgba(29,27,16,0.05) 1px, transparent 1px)",
-              "linear-gradient(90deg, rgba(29,27,16,0.05) 1px, transparent 1px)",
+              "linear-gradient(rgba(239,231,211,0.045) 1px, transparent 1px)",
+              "linear-gradient(90deg, rgba(239,231,211,0.045) 1px, transparent 1px)",
             ].join(", "),
             backgroundSize: "42px 42px",
             WebkitMaskImage:

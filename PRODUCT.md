@@ -63,12 +63,13 @@ The safety model and shortlist throughput are supporting facts, not the pitch.
 
 ## Brand Commitments
 
-- Name: **OpenLine**. Built visibly *on* CALL-E — the design language is
-  deliberately CALL-E-native (butter-yellow ground, aqua accent, black pills)
-  so the build reads as native to their platform. `PoweredByCalle` is an
-  existing component.
-- The incumbent visual system is recorded in DESIGN.md and `app/globals.css`;
-  it is confirmed design authority, not a placeholder.
+- Name: **OpenLine**. Built visibly *on* CALL-E — the attribution
+  (`PoweredByCalle`, the CALL-E mark, the hackathon line) stays on screen.
+- Visual world (user decision, 2026-08-16, replacing the earlier
+  CALL-E-native yellow/aqua look): **The Exchange** — an electromechanical
+  telephone-switchboard world (bakelite near-black, brass, cream engraved
+  labels, jewel lamps) across landing and console. Recorded in DESIGN.md and
+  `app/globals.css`.
 - Red means danger only; one aqua accent per view; phone numbers always masked.
 
 ## Evidence on Hand

@@ -1,438 +1,460 @@
 import Link from "next/link";
 import LandingNav from "@/components/landing/LandingNav";
 import Reveal from "@/components/landing/Reveal";
+import Switchboard, { type BoardRow } from "@/components/landing/Switchboard";
 import Button from "@/components/ui/Button";
-import Icon from "@/components/ui/Icon";
 import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
+import { APPLICANTS } from "@/data/applicants";
+import { COMPANY_NAME, JOB_TITLE } from "@/data/job";
+import { normalizePhone } from "@/lib/phone/normalize";
 
-/**
- * Deliberately not numbered. These are not steps a recruiter performs — they
- * are the screening work OpenLine takes off the week, which is why the section
- * reads as claims rather than a setup guide.
+/*
+ * The landing is the exchange floor: the board, the cord, the tape. Every
+ * claim on this page traces to code or to the seeded demo fixtures — the
+ * transcript is the real disclosure grammar, the board is the real shortlist.
  */
-const WHAT_IT_TAKES_OVER = [
-  {
-    icon: "doc",
-    title: "It reads before it dials",
-    body: "Every resume is parsed and set against the job description, so the questions come from what that specific profile raises. Not a template and not a technical test — the fit questions a recruiter would spend fifteen minutes finding out.",
-  },
-  {
-    icon: "phone",
-    title: "It calls all of them",
-    body: "Not the first few before the day runs out. Every shortlisted candidate with a working number is reached, and anyone who cannot be is surfaced rather than quietly dropped.",
-  },
-  {
-    icon: "quote",
-    title: "It answers their questions too",
-    body: "Salary band, location policy, team, timelines. Candidates get real answers from a fact sheet you write. A screening call that only takes is a bad first impression.",
-  },
-];
 
-/**
- * Only what the section above does not already say — reach and the two-way
- * call live there.
- */
-const FEATURES = [
+/** Each transcript moment, annotated with the rule that governs it. */
+const RULES = [
   {
-    icon: "eye",
-    title: "Every script is yours to read",
-    body: "Each candidate gets their own questions, and you can read the exact words before the call, edit any of them, or throw them out and rebuild. What is on screen is the string sent to CALL-E.",
+    line: "“…this is an AI assistant calling for the recruiting team at Northwind Payments.”",
+    rule: "Discloses itself",
+    detail:
+      "The disclosure lives in assembleTask(), pure and unit-tested, so it cannot vary between candidates or runs.",
   },
   {
-    icon: "quote",
-    title: "Answers you can act on",
-    body: "Notice period, availability, interest, and each screening answer come back as structured fields — paired with the candidate's verbatim words, so you can check any of it in a second.",
+    line: "“Is now a good time for a few questions? You can stop me at any point.”",
+    rule: "Asks permission first",
+    detail:
+      "A no ends the call. The candidate is thanked, told a human will follow up, and nothing is asked.",
   },
   {
-    icon: "ban",
-    title: "It abstains rather than guesses",
-    body: "When a transcript does not support an answer, the field comes back empty instead of invented, and the call is routed to you. Nothing uncertain becomes a confident record.",
+    line: "“What notice period would you need?” — and never anything else",
+    rule: "Every question guard-checked",
+    detail:
+      "Age, marital status, religion, current salary and the rest are forbidden topics. The guard runs three times: on each question, on the assembled script, and again before dialing.",
+  },
+  {
+    line: "“…I don't want to answer that.” — recorded exactly as said",
+    rule: "It abstains rather than guesses",
+    detail:
+      "A declined answer is information too. Anything uncertain routes to a human for review — no code path rejects a candidate.",
   },
 ];
 
 export default function LandingPage() {
+  // CAND_0000001 is the one real person in the fixtures (the maintainer,
+  // seeded for the live demo call). A published landing page shows only the
+  // invented candidates — a real name here would be doxxing.
+  const shortlisted = APPLICANTS.filter(
+    (a) => a.screening.shortlisted && a.candidateId !== "CAND_0000001",
+  );
+
+  const roster = shortlisted.map((a) => ({
+    name: a.profile.anonymizedName,
+    headline: a.profile.currentTitle,
+    score: a.screening.matchScore,
+    hasPhone: normalizePhone(a.rawPhone, "IN").ok,
+  }));
+
+  // The hero board shows a handful of lines; the live one must be dialable.
+  const liveIndex = roster.findIndex((r) => r.hasPhone);
+  const live = roster[liveIndex];
+  const heroRows: BoardRow[] = roster
+    .filter((_, i) => i !== liveIndex)
+    .slice(0, 6);
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        color: "var(--ink)",
-      }}
-    >
-      {/* Scroll reveal hides its content until observed; without JS it stays. */}
+    <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
+      {/* Reveal animations start hidden; without JS they must not stay hidden. */}
       <noscript>
-        <style>{".reveal{opacity:1}.rule-open::before{transform:none}"}</style>
+        <style>{`.reveal { opacity: 1 !important; }`}</style>
       </noscript>
-      {/* The orb sits behind the whole page, not inside the hero — it stays put
-          while the page scrolls over it. `body` carries the yellow ground. */}
-      <video
-        aria-hidden
-        className="page-orb"
-        src="/orb.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-      />
 
       <LandingNav />
 
-      {/* Hero */}
-      <section
+      {/* ── Hero: the exchange floor ─────────────────────────────────── */}
+      <header
         style={{
-          textAlign: "center",
-          padding: "56px 24px 0",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div aria-hidden className="aqua-sheen" />
-        <div
-          style={{
-            maxWidth: "var(--maxw)",
-            margin: "0 auto",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          {/* Credit pill, in the shape CALL-E uses for its own partner badge. */}
-          <a
-            href="https://www.heycall-e.com/"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="fade-up"
-            style={{
-              animationDelay: "0ms",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "9px 18px",
-              borderRadius: "var(--radius-pill)",
-              background: "var(--surface-2)",
-              border: "1px solid var(--line)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <span
-              className="mono"
-              style={{
-                fontSize: 11,
-                letterSpacing: ".13em",
-                textTransform: "uppercase",
-                color: "var(--ink-2)",
-              }}
-            >
-              Powered by
-            </span>
-            <CalleMark height={19} />
-          </a>
-
-          {/* Category line: what this is and who it is for, before the pitch.
-              It says "AI" because the agent says it out loud on every call —
-              the disclosure starts here, not at the dial tone. */}
-          <p
-            className="eyebrow fade-up"
-            style={{ marginTop: 22, animationDelay: "70ms" }}
-          >
-            An AI phone screening agent for recruiting teams
-          </p>
-
-          <h1
-            className="display fade-up"
-            style={{
-              animationDelay: "140ms",
-              fontSize: "clamp(40px, 7.2vw, 92px)",
-              margin: "14px 0 0",
-            }}
-          >
-            Screen your whole shortlist
-            <br />
-            <em className="hl">by phone, without dialing.</em>
-          </h1>
-
-          <p
-            className="fade-up"
-            style={{
-              animationDelay: "230ms",
-              fontSize: "clamp(17px, 2.1vw, 21px)",
-              color: "var(--ink-2)",
-              maxWidth: 680,
-              margin: "26px auto 0",
-              lineHeight: 1.5,
-            }}
-          >
-            Skip the calling. Keep the deciding.
-          </p>
-
-          <div
-            className="fade-up"
-            style={{
-              animationDelay: "300ms",
-              display: "flex",
-              gap: 12,
-              justifyContent: "center",
-              marginTop: 34,
-              flexWrap: "wrap",
-            }}
-          >
-            <Link href="/jobs">
-              <Button size="lg">Open the console</Button>
-            </Link>
-          </div>
-
-          <p
-            className="fade-up"
-            style={{
-              animationDelay: "370ms",
-              marginTop: 16,
-              fontSize: 13,
-              color: "var(--ink-3)",
-              display: "flex",
-              gap: 7,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="check" size={14} style={{ color: "var(--green)" }} />
-            Every profile read, matched to the job description, and called
-          </p>
-        </div>
-      </section>
-
-      {/* Where OpenLine sits */}
-      <section
-        id="how-it-works"
-        style={{
-          padding: "100px 24px",
           maxWidth: "var(--maxw)",
           margin: "0 auto",
+          padding: "64px 34px 90px",
         }}
       >
-        <Reveal
-          style={{ textAlign: "center", maxWidth: 760, margin: "0 auto 56px" }}
-        >
-          <span className="eyebrow">Where OpenLine sits</span>
-          <h2
-            className="display"
-            style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
-          >
-            The ATS hands you a list.
-            <br />
-            <em className="hl">Then the real work starts.</em>
-          </h2>
-          <p
-            style={{
-              fontSize: "clamp(16px, 1.8vw, 19px)",
-              color: "var(--ink-2)",
-              marginTop: 20,
-              lineHeight: 1.55,
-            }}
-          >
-            Calling, screening, scheduling — that is the week. OpenLine takes
-            the screening off it entirely, so what is left on your desk is
-            deciding what happens next.
-          </p>
-        </Reveal>
-
-        {/* A drawn rule per column, so this does not read as a second copy of
-            the Features card grid below. */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "44px 44px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gap: 56,
+            alignItems: "start",
           }}
         >
-          {WHAT_IT_TAKES_OVER.map((item, i) => (
-            <Reveal key={item.title} rule delay={i * 90}>
-              <h3
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 11,
-                  fontSize: "clamp(20px, 2vw, 23px)",
-                  fontWeight: 700,
-                  letterSpacing: "-.025em",
-                  marginBottom: 12,
-                }}
-              >
-                <Icon
-                  name={item.icon}
-                  size={21}
-                  style={{ color: "var(--accent)", flexShrink: 0 }}
-                />
-                {item.title}
-              </h3>
-              <p
-                style={{
-                  fontSize: 15.5,
-                  color: "var(--ink-2)",
-                  lineHeight: 1.6,
-                }}
-              >
-                {item.body}
-              </p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+          <div>
+            <a
+              className="plate fade-up"
+              href="https://www.heycall-e.com/"
+              target="_blank"
+              rel="noreferrer noopener"
+              style={{ color: "var(--ink-2)" }}
+            >
+              An AI phone-screening agent · built on
+              <span style={{ display: "inline-flex" }}>
+                <CalleMark height={13} />
+              </span>
+            </a>
 
-      {/* Features */}
+            <h1
+              className="display fade-up"
+              style={{
+                fontSize: "clamp(54px, 7.4vw, 108px)",
+                margin: "26px 0 0",
+                animationDelay: "70ms",
+              }}
+            >
+              The operator
+              <br />
+              who never{" "}
+              <span style={{ color: "var(--accent-deep)" }}>sleeps.</span>
+            </h1>
+
+            <p
+              className="fade-up"
+              style={{
+                fontSize: 17,
+                lineHeight: 1.65,
+                color: "var(--ink-2)",
+                maxWidth: "44ch",
+                margin: "26px 0 0",
+                animationDelay: "150ms",
+              }}
+            >
+              OpenLine places the first screening call for every name on your
+              shortlist — discloses itself, asks permission, and hands you the
+              transcript with structured answers. Skip the calling. Keep the
+              deciding.
+            </p>
+
+            <div
+              className="fade-up"
+              style={{ margin: "30px 0 0", animationDelay: "230ms" }}
+            >
+              <Link href="/jobs">
+                <Button size="lg">Open the console</Button>
+              </Link>
+            </div>
+
+            <p
+              className="mono fade-up"
+              style={{
+                fontSize: 12,
+                letterSpacing: ".08em",
+                color: "var(--ink-3)",
+                margin: "22px 0 0",
+                animationDelay: "300ms",
+              }}
+            >
+              NO MACHINE EVER REJECTS A CANDIDATE. UNCERTAIN CALLS GO TO A
+              HUMAN.
+            </p>
+          </div>
+
+          {/* The board bleeds to the viewport's right edge — the exchange
+              panel is the ground, not a widget inside the column. */}
+          <div
+            className="fade-up"
+            style={{
+              animationDelay: "160ms",
+              marginRight: "calc((100vw - min(100vw, var(--maxw))) / -2 - 34px)",
+            }}
+          >
+            <Switchboard
+              rows={heroRows}
+              liveName={live?.name ?? "Asha Nair"}
+              company={COMPANY_NAME}
+              jobTitle={JOB_TITLE}
+            />
+            <noscript>
+              <p
+                className="mono"
+                style={{
+                  fontSize: 12,
+                  color: "var(--ink-3)",
+                  marginTop: 12,
+                  lineHeight: 1.7,
+                }}
+              >
+                The demonstration call: “Hi — this is an AI assistant calling
+                for the recruiting team at {COMPANY_NAME}. Is now a good time
+                for a few questions about your {JOB_TITLE} application?”
+              </p>
+            </noscript>
+          </div>
+        </div>
+      </header>
+
+      {/* ── The rules, annotated on the call itself ─────────────────── */}
       <section
-        id="features"
+        id="the-rules"
         style={{
-          padding: "0 24px 100px",
-          position: "relative",
-          overflow: "hidden",
+          borderTop: "1px solid var(--line-2)",
+          background: "var(--bg-2)",
         }}
       >
-        <div aria-hidden className="aqua-sheen low" />
         <div
           style={{
             maxWidth: "var(--maxw)",
             margin: "0 auto",
-            position: "relative",
-            zIndex: 1,
+            padding: "84px 34px 90px",
           }}
         >
-          <Reveal
-            style={{
-              textAlign: "center",
-              maxWidth: 760,
-              margin: "0 auto 56px",
-            }}
-          >
-            <span className="eyebrow">Features</span>
+          <Reveal rule>
             <h2
               className="display"
-              style={{ fontSize: "clamp(34px, 5vw, 58px)", margin: "16px 0 0" }}
+              style={{ fontSize: "clamp(38px, 4.6vw, 64px)", margin: "12px 0 0" }}
             >
-              Built for the recruiter
-              <br />
-              <em className="hl">who has to trust it.</em>
+              Wired in, not promised.
             </h2>
+            <p
+              style={{
+                fontSize: 15.5,
+                lineHeight: 1.65,
+                color: "var(--ink-2)",
+                maxWidth: "62ch",
+                margin: "16px 0 0",
+              }}
+            >
+              Four moments from the same call, each tied to the code that
+              enforces it. This is the machine ringing real people, so none of
+              this is decoration.
+            </p>
           </Reveal>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: 18,
-            }}
-          >
-            {FEATURES.map((f, i) => (
-              <Reveal
-                key={f.title}
-                delay={i * 80}
-                className="lift"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--line)",
-                  borderRadius: "var(--radius)",
-                  padding: "28px 26px 30px",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
+          <div style={{ marginTop: 46 }}>
+            {RULES.map((r, i) => (
+              <Reveal key={r.rule} delay={i * 90}>
                 <div
                   style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 11,
-                    background: "var(--accent-tint)",
-                    border: "1px solid var(--accent-wash)",
-                    color: "var(--accent-deep)",
-                    display: "grid",
-                    placeItems: "center",
-                    marginBottom: 18,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "baseline",
+                    gap: 14,
+                    padding: "22px 0",
+                    borderBottom: "1px solid var(--line-2)",
                   }}
                 >
-                  <Icon name={f.icon} size={18} />
+                  <p
+                    className="mono"
+                    style={{
+                      fontSize: 13.5,
+                      lineHeight: 1.7,
+                      color: "var(--ink)",
+                      flex: "1 1 340px",
+                      maxWidth: "52ch",
+                    }}
+                  >
+                    {r.line}
+                  </p>
+                  <span
+                    aria-hidden
+                    style={{
+                      flex: "1 1 60px",
+                      borderBottom: "1px dotted var(--line)",
+                      alignSelf: "center",
+                      minWidth: 40,
+                    }}
+                  />
+                  <div style={{ flex: "1 1 300px", maxWidth: "46ch" }}>
+                    <span className="plate" style={{ color: "var(--accent-deep)" }}>
+                      {r.rule}
+                    </span>
+                    <p
+                      style={{
+                        fontSize: 13.5,
+                        lineHeight: 1.65,
+                        color: "var(--ink-3)",
+                        margin: "10px 0 0",
+                      }}
+                    >
+                      {r.detail}
+                    </p>
+                  </div>
                 </div>
-                <h3
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    letterSpacing: "-.02em",
-                    marginBottom: 7,
-                  }}
-                >
-                  {f.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: 14,
-                    color: "var(--ink-2)",
-                    lineHeight: 1.55,
-                  }}
-                >
-                  {f.body}
-                </p>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Closing statement. The hero carries the page's only call to action. */}
-      <section style={{ textAlign: "center", padding: "20px 24px 110px" }}>
-        <Reveal>
-          <h2
-            className="display"
-            style={{ fontSize: "clamp(38px, 6.5vw, 78px)" }}
-          >
-            The shortlist is done.
-            <br />
-            <em className="hl">Let it call itself.</em>
-          </h2>
-        </Reveal>
-      </section>
-
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: "1px solid var(--line)",
-          padding: "48px 24px 40px",
-        }}
-      >
-        <div style={{ maxWidth: "var(--maxw)", margin: "0 auto" }}>
-          <CalleCredit />
-        </div>
+      {/* ── The board at full density ────────────────────────────────── */}
+      <section id="the-board">
         <div
           style={{
             maxWidth: "var(--maxw)",
-            margin: "26px auto 0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 24,
-            flexWrap: "wrap",
-            fontSize: 13,
-            color: "var(--ink-3)",
+            margin: "0 auto",
+            padding: "84px 34px 90px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontWeight: 800, fontSize: 16, color: "var(--ink)" }}>
-              OpenLine
-            </span>
-            <span
-              className="mono"
+          <Reveal rule>
+            <h2
+              className="display"
+              style={{ fontSize: "clamp(38px, 4.6vw, 64px)", margin: "12px 0 0" }}
+            >
+              It calls all of them.
+            </h2>
+            <p
               style={{
-                fontSize: 11,
-                letterSpacing: ".1em",
-                padding: "3px 7px",
-                borderRadius: "var(--radius-pill)",
-                background: "var(--surface-2)",
-                border: "1px solid var(--line)",
+                fontSize: 15.5,
+                lineHeight: 1.65,
                 color: "var(--ink-2)",
+                maxWidth: "62ch",
+                margin: "16px 0 0",
               }}
             >
-              ALPHA
+              The shortlist is the bottleneck, so OpenLine works the whole
+              board — one confirmed call at a time, never without a human
+              having read the script first. This is the demo job&apos;s real
+              seeded shortlist, gaps included.
+            </p>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <div
+              style={{
+                marginTop: 40,
+                columnGap: 56,
+                columns: "2 380px",
+              }}
+            >
+              {roster.map((r, i) => (
+                <div
+                  key={r.name}
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 12,
+                    padding: "10px 0",
+                    borderBottom: "1px solid var(--line-2)",
+                    breakInside: "avoid",
+                  }}
+                >
+                  <span
+                    className="mono"
+                    style={{ fontSize: 11, color: "var(--ink-3)", width: 22 }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: "var(--ink)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {r.name}
+                  </span>
+                  <span
+                    aria-hidden
+                    style={{
+                      flex: 1,
+                      borderBottom: "1px dotted var(--line-2)",
+                      minWidth: 16,
+                    }}
+                  />
+                  {r.hasPhone ? (
+                    <span
+                      className="mono"
+                      style={{ fontSize: 11.5, color: "var(--ink-3)" }}
+                    >
+                      MATCH {r.score}
+                    </span>
+                  ) : (
+                    <span
+                      className="mono"
+                      style={{ fontSize: 11.5, color: "var(--amber)" }}
+                    >
+                      NO NUMBER ON FILE
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Close ────────────────────────────────────────────────────── */}
+      <section
+        style={{
+          borderTop: "1px solid var(--line-2)",
+          background: "var(--bg-2)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "var(--maxw)",
+            margin: "0 auto",
+            padding: "110px 34px",
+            textAlign: "center",
+          }}
+        >
+          <Reveal>
+            <h2
+              className="display"
+              style={{ fontSize: "clamp(44px, 6vw, 92px)" }}
+            >
+              Every word,
+              <br />
+              <span style={{ color: "var(--accent-deep)" }}>
+                yours to read.
+              </span>
+            </h2>
+            <div style={{ marginTop: 34 }}>
+              <Link href="/jobs">
+                <Button size="lg">Open the console</Button>
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Footer ───────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: "1px solid var(--line-2)" }}>
+        <div
+          style={{
+            maxWidth: "var(--maxw)",
+            margin: "0 auto",
+            padding: "44px 34px 40px",
+          }}
+        >
+          <CalleCredit />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 14,
+              marginTop: 26,
+              fontSize: 13,
+              color: "var(--ink-3)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontWeight: 700, color: "var(--ink-2)" }}>
+                OpenLine
+              </span>
+              <span className="plate" style={{ fontSize: 10.5, padding: "2px 8px" }}>
+                Alpha
+              </span>
+              <span>· the screening call that goes both ways</span>
+            </div>
+            <span>
+              Built for the &ldquo;CALL-E: Your Code Is Calling&rdquo; hackathon
             </span>
-            <span>· the screening call that goes both ways</span>
           </div>
-          <span>
-            Built for the &ldquo;CALL-E: Your Code Is Calling&rdquo; hackathon
-          </span>
         </div>
       </footer>
     </div>

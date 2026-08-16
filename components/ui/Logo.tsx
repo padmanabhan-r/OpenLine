@@ -6,11 +6,10 @@ interface LogoProps {
 }
 
 /**
- * The OpenLine mark: an ink-black orb cut by a yellow open line.
+ * The OpenLine mark: a brass orb cut by a bakelite open line.
  *
- * Black on yellow is CALL-E's own voice, so the mark reads as family. The line
- * through the orb is the whole idea — the channel is open, and it runs both
- * ways.
+ * Brass on near-black is the exchange's own voice. The line through the orb
+ * is the whole idea — the channel is open, and it runs both ways.
  *
  * The ALPHA superscript follows CALL-E's own BETA treatment, and is honest:
  * this places real phone calls to real people, so nobody should be in doubt
@@ -29,7 +28,7 @@ export default function Logo({
           height: size,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle at 32% 28%, #35331F, var(--cta) 68%)",
+            "radial-gradient(circle at 32% 28%, var(--cta-hover), var(--accent-soft) 72%)",
           position: "relative",
           flexShrink: 0,
           overflow: "hidden",

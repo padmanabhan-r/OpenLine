@@ -17,7 +17,8 @@ const base: CSSProperties = {
   justifyContent: "center",
   gap: 8,
   border: "1px solid transparent",
-  fontWeight: 600,
+  // Courier Prime ships 400/700 only; 700 keeps the weight real, not faux.
+  fontWeight: 700,
   whiteSpace: "nowrap",
   cursor: "pointer",
   transition: "transform .12s ease, background .18s ease, border-color .18s",
@@ -37,7 +38,7 @@ const variants: Record<Variant, CSSProperties> = {
   },
   dark: { background: "var(--cta)", color: "var(--cta-text)" },
   ghost: {
-    background: "rgba(255,252,220,0.35)",
+    background: "color-mix(in srgb, var(--ink) 5%, transparent)",
     color: "var(--ink)",
     borderColor: "var(--line)",
   },

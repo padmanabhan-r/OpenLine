@@ -14,13 +14,11 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-/** Stable hue from a name, so the same person keeps the same colour. */
-export function nameToHue(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return Math.abs(hash) % 360;
-}
-
+/**
+ * One material, every person: a bakelite disc with a brass ring and cream
+ * initials. A per-name hue would put magenta on the exchange floor and hand
+ * every queue row its own accent — the world allows neither.
+ */
 export default function Avatar({
   name,
   size = "default",
@@ -36,13 +34,16 @@ export default function Avatar({
         width: px,
         height: px,
         borderRadius: "50%",
-        background: `oklch(0.62 0.13 ${nameToHue(name)})`,
+        background:
+          "radial-gradient(circle at 34% 30%, var(--surface-2), var(--bg-2) 70%)",
+        border: "1px solid color-mix(in srgb, var(--accent) 45%, transparent)",
+        boxShadow: "inset 0 1px 1px rgba(239,231,211,0.10), 0 1px 2px rgba(0,0,0,.45)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontSize: font,
         fontWeight: 700,
-        color: "#fff",
+        color: "var(--ink-2)",
         flexShrink: 0,
       }}
     >

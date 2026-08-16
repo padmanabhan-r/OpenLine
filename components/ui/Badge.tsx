@@ -8,14 +8,17 @@ export type BadgeTone =
   | "neutral"
   | "danger";
 
+/* Borders derive from each tone's own color, so a retint never orphans them. */
+const edge = (tone: string) => `color-mix(in srgb, ${tone} 38%, transparent)`;
+
 const tones: Record<BadgeTone, CSSProperties> = {
-  accent: { color: "var(--accent-deep)", background: "var(--accent-tint)", borderColor: "#B9DFD6" },
-  good: { color: "var(--green)", background: "var(--green-wash)", borderColor: "#CBD7A4" },
-  warn: { color: "var(--amber)", background: "var(--amber-wash)", borderColor: "#DCC787" },
-  info: { color: "var(--blue)", background: "var(--blue-wash)", borderColor: "#BFD2C6" },
+  accent: { color: "var(--accent-deep)", background: "var(--accent-tint)", borderColor: edge("var(--accent)") },
+  good: { color: "var(--green)", background: "var(--green-wash)", borderColor: edge("var(--green)") },
+  warn: { color: "var(--amber)", background: "var(--amber-wash)", borderColor: edge("var(--amber)") },
+  info: { color: "var(--blue)", background: "var(--blue-wash)", borderColor: edge("var(--blue)") },
   neutral: { color: "var(--ink-3)", background: "var(--bg-2)", borderColor: "var(--line)" },
-  // Danger stays red. A guard violation in cheerful aqua would be a lie.
-  danger: { color: "var(--danger-deep)", background: "var(--danger-wash)", borderColor: "#E5BEA8" },
+  // Danger stays red. A guard violation in a cheerful tone would be a lie.
+  danger: { color: "var(--danger-deep)", background: "var(--danger-wash)", borderColor: edge("var(--danger)") },
 };
 
 export default function Badge({
@@ -45,11 +48,13 @@ export default function Badge({
     >
       {dot && (
         <span
+          // The dot is a jewel lamp now — lit glass, not a flat disc.
           style={{
             width: 7,
             height: 7,
             borderRadius: "50%",
             background: "currentColor",
+            boxShadow: "0 0 5px 1px currentColor",
             flexShrink: 0,
           }}
         />
@@ -81,7 +86,9 @@ export function Chip({
         whiteSpace: "nowrap",
         color: accent ? "var(--accent-deep)" : "var(--ink-2)",
         background: accent ? "var(--accent-tint)" : "var(--surface)",
-        borderColor: accent ? "#B9DFD6" : "var(--line)",
+        borderColor: accent
+          ? "color-mix(in srgb, var(--accent) 38%, transparent)"
+          : "var(--line)",
         ...style,
       }}
     >

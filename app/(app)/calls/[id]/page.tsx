@@ -138,7 +138,7 @@ export default async function CallPage({
                       padding: "11px 13px",
                       borderRadius: "var(--radius-sm)",
                       background: "var(--danger-wash)",
-                      border: "1px solid #E5BEA8",
+                      border: "1px solid color-mix(in srgb, var(--danger) 35%, transparent)",
                     }}
                   >
                     <span
@@ -257,7 +257,7 @@ export default async function CallPage({
                           background: isAgent
                             ? "var(--surface-2)"
                             : "var(--accent-tint)",
-                          border: `1px solid ${isAgent ? "var(--line-2)" : "#B9DFD6"}`,
+                          border: `1px solid ${isAgent ? "var(--line-2)" : "color-mix(in srgb, var(--accent) 35%, transparent)"}`,
                         }}
                       >
                         <div

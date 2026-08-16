@@ -7,8 +7,9 @@ import Image from "next/image";
  * on screen rather than buried in a README, and the hackathon this was built
  * for should be visible to anyone who lands on the page.
  *
- * The mark is CALL-E's own SVG, used unmodified, in black on our yellow — the
- * pairing their own site uses.
+ * The mark is CALL-E's own SVG. Their artwork is black; on the exchange's
+ * bakelite ground it is inverted to cream so the credit stays legible without
+ * redrawing their mark.
  */
 
 const CALLE_URL = "https://www.heycall-e.com/";
@@ -22,7 +23,7 @@ export function CalleMark({ height = 20 }: { height?: number }) {
       alt="CALL-E"
       width={width}
       height={height}
-      style={{ display: "block" }}
+      style={{ display: "block", filter: "invert(0.9)" }}
       priority={false}
     />
   );

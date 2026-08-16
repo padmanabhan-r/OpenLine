@@ -66,7 +66,7 @@ export default async function JobsPage() {
                     background: "var(--bg-glass)",
                     backdropFilter: "var(--blur)",
                     WebkitBackdropFilter: "var(--blur)",
-                    border: "1px solid rgba(29,27,16,0.14)",
+                    border: "1px solid var(--line-2)",
                     borderRadius: "var(--radius)",
                     boxShadow: "var(--shadow-sm), inset 0 1px 0 var(--glass-edge)",
                     padding: "20px 22px",

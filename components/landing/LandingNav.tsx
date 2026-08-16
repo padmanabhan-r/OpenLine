@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 
-const LINKS = [
-  { label: "Where it sits", href: "#how-it-works" },
-  { label: "Features", href: "#features" },
-];
-
+/**
+ * Sticky nav over the exchange floor: smoked bakelite once the page scrolls,
+ * a hairline rule marking the edge. One quiet console link on the right.
+ */
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -23,48 +23,69 @@ export default function LandingNav() {
       style={{
         position: "sticky",
         top: 0,
-        zIndex: 50,
+        zIndex: 20,
         display: "flex",
+        flexWrap: "wrap",
         alignItems: "center",
-        gap: 28,
-        padding: "16px 28px",
-        background: "color-mix(in srgb, var(--bg) 80%, transparent)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        borderBottom: `1px solid ${scrolled ? "var(--line)" : "transparent"}`,
-        transition: "border-color .2s",
+        justifyContent: "space-between",
+        gap: 12,
+        padding: "14px clamp(16px, 3vw, 34px)",
+        background: scrolled ? "var(--bg-glass)" : "transparent",
+        backdropFilter: scrolled ? "var(--blur)" : "none",
+        WebkitBackdropFilter: scrolled ? "var(--blur)" : "none",
+        borderBottom: scrolled ? "1px solid var(--line-2)" : "1px solid transparent",
+        transition: "background .25s ease, border-color .25s ease",
       }}
     >
-      <Link href="/">
+      <Link href="/" aria-label="OpenLine home">
         <Logo size={28} word />
       </Link>
 
-      {/* Pushed right: the nav carries no call to action — the hero's is the
-          only "Open the console" on the page. */}
-      <div
-        style={{ display: "flex", gap: 26, marginLeft: "auto" }}
-        className="nav-links"
-      >
-        {LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            style={{
-              fontSize: 14.5,
-              fontWeight: 500,
-              color: "var(--ink-2)",
-              transition: "color .15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "var(--ink)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--ink-2)";
-            }}
-          >
-            {link.label}
-          </a>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+        <a
+          href="#the-rules"
+          className="mono"
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: ".12em",
+            textTransform: "uppercase",
+            color: "var(--ink-3)",
+          }}
+        >
+          The rules
+        </a>
+        <a
+          href="#the-board"
+          className="mono"
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: ".12em",
+            textTransform: "uppercase",
+            color: "var(--ink-3)",
+          }}
+        >
+          The board
+        </a>
+        {/* Plate, not pill: the hero's brass CTA stands alone in the viewport. */}
+        <Link
+          href="/jobs"
+          className="mono"
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: ".12em",
+            textTransform: "uppercase",
+            color: "var(--ink-2)",
+            border: "1px solid var(--line)",
+            borderRadius: "var(--radius-sm)",
+            padding: "8px 14px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Open the console
+        </Link>
       </div>
     </nav>
   );

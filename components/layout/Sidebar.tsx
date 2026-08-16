@@ -37,16 +37,16 @@ function NavItem({
         fontSize: 14,
         fontWeight: active ? 600 : 500,
         color: active ? "var(--accent-deep)" : "var(--ink-2)",
-        background: active ? "rgba(30,143,152,0.12)" : "transparent",
+        background: active ? "var(--accent-wash)" : "transparent",
         border: active
-          ? "1px solid rgba(30,143,152,0.30)"
+          ? "1px solid color-mix(in srgb, var(--accent) 35%, transparent)"
           : "1px solid transparent",
-        boxShadow: active ? "inset 0 1px 0 rgba(255,255,255,0.40)" : "none",
+        boxShadow: active ? "inset 0 1px 0 var(--glass-edge)" : "none",
         transition: "background .15s, color .15s, border-color .15s",
       }}
       onMouseEnter={(e) => {
         if (active) return;
-        e.currentTarget.style.background = "rgba(255,253,248,0.45)";
+        e.currentTarget.style.background = "var(--surface-2)";
         e.currentTarget.style.color = "var(--ink)";
       }}
       onMouseLeave={(e) => {
@@ -95,9 +95,9 @@ export default function Sidebar({ callsLive }: { callsLive: boolean }) {
         background: "var(--bg-glass)",
         backdropFilter: "var(--blur)",
         WebkitBackdropFilter: "var(--blur)",
-        borderRight: "1px solid rgba(29,27,16,0.14)",
+        borderRight: "1px solid var(--line-2)",
         boxShadow:
-          "2px 0 24px rgba(95,80,8,.07), inset -1px 0 0 var(--glass-edge)",
+          "2px 0 24px rgba(0,0,0,.30), inset -1px 0 0 var(--glass-edge)",
         padding: "22px 16px",
         display: "flex",
         flexDirection: "column",
@@ -129,19 +129,18 @@ export default function Sidebar({ callsLive }: { callsLive: boolean }) {
           padding: "11px 12px",
           borderRadius: 14,
           border: callsLive
-            ? "1px solid rgba(194,47,30,0.30)"
+            ? "1px solid color-mix(in srgb, var(--danger) 35%, transparent)"
             : "1px solid var(--line)",
           background: callsLive ? "var(--danger-wash)" : "var(--surface-2)",
           boxShadow: "inset 0 1px 0 var(--glass-edge)",
         }}
       >
         <span
+          className={callsLive ? "lamp live" : "lamp"}
           style={{
             width: 8,
             height: 8,
-            borderRadius: "50%",
-            flexShrink: 0,
-            background: callsLive ? "var(--danger)" : "var(--ink-3)",
+            color: callsLive ? "var(--danger)" : "var(--ink-3)",
           }}
         />
         <div style={{ minWidth: 0 }}>
