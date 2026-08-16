@@ -63,6 +63,36 @@
         "value": "44px",
         "createdAt": "2026-08-16T04:59:26.523Z",
         "reason": "fluid close display clamp endpoint, Persuade landing scale"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#ffe9b0",
+        "createdAt": "2026-08-16T07:44:40.407Z",
+        "reason": "lit jewel-lamp glass highlight, approved comp A material"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#6e3a28",
+        "createdAt": "2026-08-16T07:44:40.438Z",
+        "reason": "unlit jewel-lamp glass ramp, approved comp A material"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#2a130c",
+        "createdAt": "2026-08-16T07:44:40.466Z",
+        "reason": "unlit jewel-lamp glass ramp, approved comp A material"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#170a06",
+        "createdAt": "2026-08-16T07:44:40.495Z",
+        "reason": "unlit jewel-lamp glass ramp, approved comp A material"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0,0,0,0.6)",
+        "createdAt": "2026-08-16T07:44:40.524Z",
+        "reason": "machined panel edge line, approved comp A material"
       }
     ]
   }
