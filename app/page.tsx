@@ -1,7 +1,5 @@
-import Link from "next/link";
 import LandingNav from "@/components/landing/LandingNav";
 import Switchboard, { type BoardRow } from "@/components/landing/Switchboard";
-import Button from "@/components/ui/Button";
 import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
 import { APPLICANTS } from "@/data/applicants";
 import { COMPANY_NAME, JOB_TITLE } from "@/data/job";
@@ -15,16 +13,10 @@ import { normalizePhone } from "@/lib/phone/normalize";
  */
 
 /**
- * The call in order: it says what it is, asks before starting, stays inside the
- * guard, and hands anything uncertain to a person. No count of guard passes —
- * the prose that used to carry one had drifted out of step with the README.
+ * The landing runs wider than the console's 1180. The board and the tape both
+ * get shorter as they get wider, and this page has to land inside one screen.
  */
-const RULES = [
-  "Discloses it's an AI",
-  "Asks permission first",
-  "Every question guard-checked",
-  "No machine rejects anyone",
-];
+const SHELL = { maxWidth: 1340, margin: "0 auto" } as const;
 
 export default function LandingPage() {
   // CAND_0000001 is the one real person in the fixtures (the maintainer,
@@ -41,12 +33,9 @@ export default function LandingPage() {
     hasPhone: normalizePhone(a.rawPhone, "IN").ok,
   }));
 
-  // The hero board shows a handful of lines; the live one must be dialable.
-  const liveIndex = roster.findIndex((r) => r.hasPhone);
-  const live = roster[liveIndex];
-  const heroRows: BoardRow[] = roster
-    .filter((_, i) => i !== liveIndex)
-    .slice(0, 6);
+  // Five lines on the board. Which one gets called is the visitor's choice,
+  // not ours — the switchboard holds the selection.
+  const heroRows: BoardRow[] = roster.slice(0, 5);
 
   return (
     <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
@@ -55,16 +44,15 @@ export default function LandingPage() {
       {/* ── Hero: the exchange floor, and the whole page ──────────────── */}
       <header
         style={{
-          maxWidth: "var(--maxw)",
-          margin: "0 auto",
-          padding: "40px 34px 56px",
+          ...SHELL,
+          padding: "26px 30px 22px",
         }}
       >
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-            gap: 48,
+            gap: 44,
             alignItems: "start",
           }}
         >
@@ -100,8 +88,8 @@ export default function LandingPage() {
             <h1
               className="display fade-up"
               style={{
-                fontSize: "clamp(40px, 5vw, 68px)",
-                margin: "24px 0 0",
+                fontSize: "clamp(44px, 5.2vw, 76px)",
+                margin: "26px 0 0",
                 animationDelay: "70ms",
               }}
             >
@@ -115,52 +103,18 @@ export default function LandingPage() {
             <p
               className="fade-up"
               style={{
-                fontSize: 16,
-                lineHeight: 1.65,
+                fontSize: 22,
+                lineHeight: 1.7,
                 color: "var(--ink-2)",
-                maxWidth: "46ch",
-                margin: "22px 0 0",
+                maxWidth: "38ch",
+                margin: "30px 0 0",
                 animationDelay: "150ms",
               }}
             >
-              OpenLine places the first screening call to the whole shortlist,
-              however long it is, and comes back with what you need to act on:
-              interview, or drop. It takes the repetitive calling so your time
-              goes to the work that matters.
+              OpenLine runs your first-round screening calls, so you don&apos;t have to. It speaks with candidates, captures the signals that matter, and gives recruiters concise summaries and next steps—freeing your team to focus on hiring the right people, not chasing calls.
             </p>
 
-            <div
-              className="fade-up"
-              style={{ margin: "26px 0 0", animationDelay: "230ms" }}
-            >
-              <Link href="/jobs">
-                <Button size="lg">Open the console</Button>
-              </Link>
-            </div>
 
-            {/* What the call obeys, in the order it obeys it. It lives in this
-                column, not under the grid: the tape grows when the call plays,
-                and anything below the board gets pushed off the screen with
-                it. It also fills the column, which was ending at the CTA. */}
-            <ul
-              className="mono fade-up"
-              style={{
-                listStyle: "none",
-                marginTop: 34,
-                paddingTop: 22,
-                borderTop: "1px solid var(--line-2)",
-                fontSize: 12,
-                letterSpacing: ".1em",
-                lineHeight: 2.05,
-                textTransform: "uppercase",
-                color: "var(--ink-3)",
-                animationDelay: "300ms",
-              }}
-            >
-              {RULES.map((rule) => (
-                <li key={rule}>{rule}</li>
-              ))}
-            </ul>
           </div>
 
           {/* The board sits inside the column with the copy. The old full-bleed
@@ -171,7 +125,6 @@ export default function LandingPage() {
           <div className="fade-up" style={{ animationDelay: "160ms" }}>
             <Switchboard
               rows={heroRows}
-              liveName={live?.name ?? "Asha Nair"}
               company={COMPANY_NAME}
               jobTitle={JOB_TITLE}
             />
@@ -199,9 +152,8 @@ export default function LandingPage() {
       <footer style={{ borderTop: "1px solid var(--line-2)" }}>
         <div
           style={{
-            maxWidth: "var(--maxw)",
-            margin: "0 auto",
-            padding: "36px 34px 34px",
+            ...SHELL,
+            padding: "16px 30px 18px",
           }}
         >
           <CalleCredit />
@@ -212,8 +164,8 @@ export default function LandingPage() {
               alignItems: "center",
               justifyContent: "space-between",
               gap: 14,
-              marginTop: 26,
-              fontSize: 13,
+              marginTop: 16,
+              fontSize: 12.5,
               color: "var(--ink-3)",
             }}
           >
@@ -225,9 +177,6 @@ export default function LandingPage() {
                 Alpha
               </span>
             </div>
-            <span>
-              Built for the &ldquo;CALL-E: Your Code Is Calling&rdquo; hackathon
-            </span>
           </div>
         </div>
       </footer>

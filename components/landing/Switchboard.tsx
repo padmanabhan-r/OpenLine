@@ -19,16 +19,22 @@ export interface BoardRow {
  */
 export default function Switchboard({
   rows,
-  liveName,
   company,
   jobTitle,
 }: {
   rows: BoardRow[];
-  liveName: string;
   company: string;
   jobTitle: string;
 }) {
-  const firstName = liveName.split(" ")[0];
+  // Which jack the cord is in. A candidate with no number on file cannot be
+  // patched through — the board refuses rather than dialling nothing.
+  const firstDialable = Math.max(
+    0,
+    rows.findIndex((r) => r.hasPhone),
+  );
+  const [selected, setSelected] = useState(firstDialable);
+  const chosen = rows[selected];
+  const firstName = (chosen?.name ?? "").split(" ")[0];
   const lines = [
     {
       speaker: "OPENLINE",
@@ -55,6 +61,14 @@ export default function Switchboard({
     (n, l) => n + l.speaker.length + 3 + l.text.length,
     0,
   );
+
+  const select = (i: number) => {
+    if (!rows[i]?.hasPhone || i === selected) return;
+    clearTimers();
+    setSelected(i);
+    setPhase("idle");
+    setPrinted(0);
+  };
 
   const clearTimers = () => {
     timers.current.forEach((t) => window.clearTimeout(t));
@@ -126,7 +140,7 @@ export default function Switchboard({
 
   // A jewel lamp: deep glass dome in a brass bezel. Unlit it smoulders
   // red-brown; lit it burns amber and throws light.
-  const jack = (lit: boolean) => (
+  const jack = (lit: boolean, armed = false) => (
     <span
       aria-hidden
       style={{
@@ -134,7 +148,7 @@ export default function Switchboard({
         height: 22,
         borderRadius: "50%",
         flexShrink: 0,
-        border: "2px solid var(--accent-soft)",
+        border: `2px solid ${armed ? "var(--accent-deep)" : "var(--accent-soft)"}`,
         background: lit
           ? "radial-gradient(circle at 35% 30%, #FFE9B0 0%, var(--amber) 38%, #7A4A12 100%)"
           : "radial-gradient(circle at 35% 30%, #6E3A28 0%, #2A130C 62%, #170A06 100%)",
@@ -145,6 +159,27 @@ export default function Switchboard({
       }}
     />
   );
+
+  // The engraved brass nameplate. Armed means the cord is in this jack.
+  const nameplate = (armed: boolean): React.CSSProperties => ({
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: ".08em",
+    textTransform: "uppercase",
+    color: "var(--cta-text)",
+    backgroundImage: "url(/textures/brass-plate.webp)",
+    backgroundSize: "cover",
+    padding: "4px 12px",
+    borderRadius: 4,
+    boxShadow: armed
+      ? "inset 0 1px 1px rgba(255,255,255,.38), 0 0 10px rgba(224,166,62,.35), 0 1px 2px rgba(0,0,0,.5)"
+      : "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)",
+    textShadow: "0 1px 0 rgba(255,255,255,.22)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    transition: "box-shadow .4s ease",
+  });
 
   // A slotted panel screw, one per corner of the board.
   const screw = (pos: React.CSSProperties) => (
@@ -241,120 +276,67 @@ export default function Switchboard({
           </span>
         </div>
 
-        <ul style={{ listStyle: "none" }}>
-          {rows.map((r) => (
-            <li
-              key={r.name}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                padding: "9px 22px",
-                borderBottom: "1px solid var(--line-2)",
-              }}
-            >
-              {jack(false)}
-              <span
-                className="mono"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: ".08em",
-                  textTransform: "uppercase",
-                  color: "var(--cta-text)",
-                  backgroundImage: "url(/textures/brass-plate.webp)",
-                  backgroundSize: "cover",
-                  padding: "4px 12px",
-                  borderRadius: 4,
-                  boxShadow:
-                    "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)",
-                  textShadow: "0 1px 0 rgba(255,255,255,.22)",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {r.name}
-              </span>
-              <span
-                style={{
-                  flex: 1,
-                  borderBottom: "1px dotted var(--line)",
-                  minWidth: 24,
-                }}
-              />
-              {r.hasPhone ? (
-                <span className="mono" style={{ fontSize: 11.5, color: "var(--ink-3)" }}>
-                  MATCH {r.score ?? "—"}
-                </span>
-              ) : (
-                <span
-                  className="mono"
-                  style={{ fontSize: 11.5, color: "var(--amber)" }}
+        {/* One cord, one jack at a time — so the board is a radio group.
+            A line with no number on file cannot be patched through. */}
+        <ul
+          role="radiogroup"
+          aria-label="Shortlist board — choose the line to call"
+          style={{ listStyle: "none" }}
+        >
+          {rows.map((r, i) => {
+            const armed = i === selected;
+            return (
+              <li key={r.name}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={armed}
+                  disabled={!r.hasPhone}
+                  onClick={() => select(i)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    width: "100%",
+                    padding: "9px 22px",
+                    background: armed ? "var(--accent-tint)" : "transparent",
+                    border: "none",
+                    borderBottom:
+                      i < rows.length - 1
+                        ? "1px solid var(--line-2)"
+                        : "1px solid transparent",
+                    color: "inherit",
+                    textAlign: "left",
+                    cursor: r.hasPhone ? "pointer" : "default",
+                    transition: "background .35s ease",
+                  }}
                 >
-                  NO NUMBER ON FILE
-                </span>
-              )}
-            </li>
-          ))}
-
-          {/* The live line — the cord patches here. */}
-          <li
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              padding: "11px 22px 13px",
-              background: live ? "var(--accent-tint)" : "transparent",
-              transition: "background .5s ease",
-            }}
-          >
-            {jack(live)}
-            <span
-              className="mono"
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: ".08em",
-                textTransform: "uppercase",
-                color: "var(--cta-text)",
-                backgroundImage: "url(/textures/brass-plate.webp)",
-                backgroundSize: "cover",
-                padding: "4px 12px",
-                borderRadius: 4,
-                boxShadow: live
-                  ? "inset 0 1px 1px rgba(255,255,255,.38), 0 0 10px rgba(224,166,62,.35), 0 1px 2px rgba(0,0,0,.5)"
-                  : "inset 0 1px 1px rgba(255,255,255,.30), inset 0 -1px 2px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)",
-                textShadow: "0 1px 0 rgba(255,255,255,.22)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                transition: "box-shadow .4s ease",
-              }}
-            >
-              {liveName}
-            </span>
-            <span
-              style={{
-                flex: 1,
-                borderBottom: "1px dotted var(--line)",
-                minWidth: 24,
-              }}
-            />
-            <span
-              className="mono"
-              style={{
-                fontSize: 11.5,
-                color: live ? "var(--amber)" : "var(--ink-3)",
-                // "LINE 07 — LIVE" is longer than "LINE 07"; in a narrow row it
-                // wrapped and nudged the whole board down as the call started.
-                whiteSpace: "nowrap",
-                transition: "color .4s ease",
-              }}
-            >
-              {live ? "LINE 07 — LIVE" : "LINE 07"}
-            </span>
-          </li>
+                  {jack(armed && live, armed)}
+                  <span className="mono" style={nameplate(armed)}>
+                    {r.name}
+                  </span>
+                  <span
+                    aria-hidden
+                    style={{
+                      flex: 1,
+                      borderBottom: "1px dotted var(--line)",
+                      minWidth: 24,
+                    }}
+                  />
+                  <span
+                    className="mono"
+                    style={{
+                      fontSize: 11.5,
+                      color: r.hasPhone ? "var(--ink-3)" : "var(--amber)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {r.hasPhone ? `MATCH ${r.score ?? "—"}` : "NO NUMBER ON FILE"}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
@@ -365,12 +347,12 @@ export default function Switchboard({
           display: "flex",
           justifyContent: "flex-start",
           paddingLeft: 30,
-          height: 54,
+          height: 38,
         }}
       >
-        <svg width="120" height="54" viewBox="0 0 120 54" fill="none">
+        <svg width="120" height="38" viewBox="0 0 120 38" fill="none">
           <path
-            d="M3 0 C 3 30, 60 18, 78 52"
+            d="M3 0 C 3 21, 60 13, 78 36"
             stroke="#6B5E4E"
             strokeWidth="6"
             strokeLinecap="round"
@@ -382,7 +364,7 @@ export default function Switchboard({
           />
           {/* Woven wrap: a dashed band over the cord reads as cotton braid. */}
           <path
-            d="M3 0 C 3 30, 60 18, 78 52"
+            d="M3 0 C 3 21, 60 13, 78 36"
             stroke="rgba(23,19,14,0.55)"
             strokeWidth="6"
             strokeLinecap="butt"
@@ -391,7 +373,7 @@ export default function Switchboard({
             style={{ transition: "opacity .4s ease .4s" }}
           />
           <path
-            d="M3 0 C 3 30, 60 18, 78 52"
+            d="M3 0 C 3 21, 60 13, 78 36"
             stroke="var(--amber)"
             strokeWidth="2"
             strokeLinecap="round"
@@ -450,7 +432,7 @@ export default function Switchboard({
           color: "#1A1510",
           borderRadius: 3,
           boxShadow: "var(--shadow)",
-          padding: "18px 34px 16px",
+          padding: "14px 28px 13px",
         }}
       >
         {(["left", "right"] as const).map((side) => (
@@ -490,7 +472,7 @@ export default function Switchboard({
             Demonstration call — fixture candidate. A human reads every word.
           </p>
         </div>
-        <div style={{ position: "absolute", inset: "18px 34px 16px" }}>
+        <div style={{ position: "absolute", inset: "14px 28px 13px" }}>
         {printedLines.map((l, i) =>
           l.shown ? (
             <p
@@ -540,7 +522,9 @@ export default function Switchboard({
       <div style={{ marginTop: 16 }}>
         <button
           onClick={run}
-          disabled={phase === "patching" || phase === "typing"}
+          disabled={
+            phase === "patching" || phase === "typing" || !chosen?.hasPhone
+          }
           className="mono"
           style={{
             fontSize: 12.5,

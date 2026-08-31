@@ -74,48 +74,43 @@ export function CalleCredit() {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 18,
+        gap: 16,
         flexWrap: "wrap",
-        padding: "18px 22px",
+        padding: "12px 16px",
         borderRadius: "var(--radius)",
         background: "var(--surface-2)",
         border: "1px solid var(--line)",
       }}
     >
       <a href={CALLE_URL} target="_blank" rel="noreferrer noopener">
-        <CalleMark height={30} />
+        <CalleMark height={22} />
       </a>
-      <div style={{ minWidth: 0 }}>
-        <div
-          className="mono"
-          style={{
-            fontSize: 10.5,
-            letterSpacing: ".13em",
-            textTransform: "uppercase",
-            color: "var(--ink-3)",
-            marginBottom: 3,
-          }}
+      {/* Only what this block alone says: who actually places the calls, and
+          what this was built for. The call's own disclosure is demonstrated on
+          the tape above, which is stronger than restating it here. */}
+      <p
+        style={{
+          fontSize: 12.5,
+          color: "var(--ink-2)",
+          lineHeight: 1.5,
+          minWidth: 0,
+        }}
+      >
+        Every call on this page is placed by{" "}
+        <a
+          href={CALLE_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          style={{ color: "var(--accent-deep)", fontWeight: 600 }}
         >
-          Powered by CALL-E
-        </div>
-        <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.5 }}>
-          Every call on this page is placed by{" "}
-          <a
-            href={CALLE_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            style={{ color: "var(--accent-deep)", fontWeight: 600 }}
-          >
-            CALL-E
-          </a>
-          . Built for the{" "}
-          <strong style={{ color: "var(--ink)", fontWeight: 600 }}>
-            CALL-E: Your Code Is Calling
-          </strong>{" "}
-          hackathon. OpenLine places real phone calls — every script is read by
-          a human before it is spoken, and no machine ever rejects a candidate.
-        </p>
-      </div>
+          CALL-E
+        </a>
+        . Built for the{" "}
+        <strong style={{ color: "var(--ink)", fontWeight: 600 }}>
+          CALL-E: Your Code Is Calling
+        </strong>{" "}
+        hackathon.
+      </p>
     </div>
   );
 }

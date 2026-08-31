@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
 
 /**
@@ -42,23 +43,10 @@ export default function LandingNav() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-        {/* Plate, not pill: the hero's brass CTA stands alone in the viewport. */}
-        <Link
-          href="/jobs"
-          className="mono"
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: ".12em",
-            textTransform: "uppercase",
-            color: "var(--ink-2)",
-            border: "1px solid var(--line)",
-            borderRadius: "var(--radius-sm)",
-            padding: "8px 14px",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Open the console
+        {/* The console link is the page's only call to action now that the
+            hero carries none, so it takes the brass rather than a plate. */}
+        <Link href="/jobs">
+          <Button size="sm">Open the console</Button>
         </Link>
       </div>
     </nav>
