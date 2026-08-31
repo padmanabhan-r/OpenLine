@@ -158,15 +158,12 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* The board bleeds to the viewport's right edge — the exchange
-              panel is the ground, not a widget inside the column. */}
-          <div
-            className="fade-up"
-            style={{
-              animationDelay: "160ms",
-              marginRight: "calc((100vw - min(100vw, var(--maxw))) / -2 - 34px)",
-            }}
-          >
+          {/* The board sits inside the column with the copy. The old full-bleed
+              pulled it past the right edge with a 100vw calc, which counts the
+              scrollbar the container does not — so the gutter read as 173px of
+              air on the left against nothing on the right, and the panel's own
+              edge was clipped. */}
+          <div className="fade-up" style={{ animationDelay: "160ms" }}>
             <Switchboard
               rows={heroRows}
               liveName={live?.name ?? "Asha Nair"}
