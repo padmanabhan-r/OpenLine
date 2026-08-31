@@ -137,6 +137,30 @@ export default function LandingPage() {
                 <Button size="lg">Open the console</Button>
               </Link>
             </div>
+
+            {/* What the call obeys, in the order it obeys it. It lives in this
+                column, not under the grid: the tape grows when the call plays,
+                and anything below the board gets pushed off the screen with
+                it. It also fills the column, which was ending at the CTA. */}
+            <ul
+              className="mono fade-up"
+              style={{
+                listStyle: "none",
+                marginTop: 34,
+                paddingTop: 22,
+                borderTop: "1px solid var(--line-2)",
+                fontSize: 12,
+                letterSpacing: ".1em",
+                lineHeight: 2.05,
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+                animationDelay: "300ms",
+              }}
+            >
+              {RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
           </div>
 
           {/* The board sits inside the column with the copy. The old full-bleed
@@ -169,38 +193,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ── The floor rule: what the call obeys, in the order it obeys it ── */}
-        <div
-          className="mono fade-up"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: "10px 22px",
-            marginTop: 40,
-            paddingTop: 26,
-            borderTop: "1px solid var(--line-2)",
-            fontSize: 12,
-            letterSpacing: ".1em",
-            textTransform: "uppercase",
-            color: "var(--ink-3)",
-            animationDelay: "300ms",
-          }}
-        >
-          {RULES.map((rule, i) => (
-            <span
-              key={rule}
-              style={{ display: "inline-flex", alignItems: "center", gap: 22 }}
-            >
-              {i > 0 && (
-                <span aria-hidden style={{ color: "var(--line)" }}>
-                  ·
-                </span>
-              )}
-              {rule}
-            </span>
-          ))}
-        </div>
       </header>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
