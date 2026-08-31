@@ -42,32 +42,6 @@ export default function LandingNav() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-        <a
-          href="#the-rules"
-          className="mono"
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: ".12em",
-            textTransform: "uppercase",
-            color: "var(--ink-3)",
-          }}
-        >
-          The rules
-        </a>
-        <a
-          href="#the-board"
-          className="mono"
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: ".12em",
-            textTransform: "uppercase",
-            color: "var(--ink-3)",
-          }}
-        >
-          The board
-        </a>
         {/* Plate, not pill: the hero's brass CTA stands alone in the viewport. */}
         <Link
           href="/jobs"
