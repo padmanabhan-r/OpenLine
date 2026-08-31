@@ -88,16 +88,16 @@ export default function LandingPage() {
             <h1
               className="display fade-up"
               style={{
-                fontSize: "clamp(44px, 5.2vw, 76px)",
+                fontSize: "clamp(44px, 6vw, 86px)",
                 margin: "26px 0 0",
                 animationDelay: "70ms",
               }}
             >
-              An agent calls
+              First-round
               <br />
-              <span style={{ color: "var(--accent-deep)" }}>every name</span>
+              screens,
               <br />
-              on the shortlist.
+              <span style={{ color: "var(--accent-deep)" }}>on autopilot.</span>
             </h1>
 
             <p
