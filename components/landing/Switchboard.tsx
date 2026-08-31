@@ -100,6 +100,21 @@ export default function Switchboard({
   const live = phase !== "idle";
   const patched = phase === "typing" || phase === "done";
 
+  // The tape is a fixed piece of paper. These two styles are shared with the
+  // hidden measuring copy below, so the printed text lays out identically.
+  const tapeLine: React.CSSProperties = {
+    fontSize: 13,
+    lineHeight: 1.8,
+    wordBreak: "break-word",
+  };
+  const tapeNote: React.CSSProperties = {
+    fontSize: 11.5,
+    marginTop: 10,
+    letterSpacing: ".1em",
+    textTransform: "uppercase",
+    opacity: 0.65,
+  };
+
   // Slice the transcript to the printed character count.
   let budget = printed;
   const printedLines = lines.map((l) => {
@@ -203,13 +218,26 @@ export default function Switchboard({
                       : "var(--ink-3)",
               }}
             />
-            {phase === "done"
-              ? "Transcript ready"
-              : phase === "typing"
-                ? "On the line"
-                : phase === "patching"
-                  ? "Patching"
-                  : "Standing by"}
+            {/* Stack the longest label under the live one so the plate keeps
+                one width through all four phases. It grows otherwise, and in a
+                narrow header that re-wraps the board's title. */}
+            <span style={{ display: "inline-grid" }}>
+              <span
+                aria-hidden
+                style={{ gridArea: "1 / 1", visibility: "hidden" }}
+              >
+                Transcript ready
+              </span>
+              <span style={{ gridArea: "1 / 1" }}>
+                {phase === "done"
+                  ? "Transcript ready"
+                  : phase === "typing"
+                    ? "On the line"
+                    : phase === "patching"
+                      ? "Patching"
+                      : "Standing by"}
+              </span>
+            </span>
           </span>
         </div>
 
@@ -318,6 +346,9 @@ export default function Switchboard({
               style={{
                 fontSize: 11.5,
                 color: live ? "var(--amber)" : "var(--ink-3)",
+                // "LINE 07 — LIVE" is longer than "LINE 07"; in a narrow row it
+                // wrapped and nudged the whole board down as the call started.
+                whiteSpace: "nowrap",
                 transition: "color .4s ease",
               }}
             >
@@ -420,7 +451,6 @@ export default function Switchboard({
           borderRadius: 3,
           boxShadow: "var(--shadow)",
           padding: "18px 34px 16px",
-          minHeight: 128,
         }}
       >
         {(["left", "right"] as const).map((side) => (
@@ -443,12 +473,30 @@ export default function Switchboard({
             }}
           />
         ))}
+        {/*
+         * The tape is cut to length before the call, not while it prints.
+         * This copy of the finished transcript is laid out but never painted,
+         * so the paper is already the right height in every state and at every
+         * width — pressing the control prints into reserved space instead of
+         * pushing whatever sits below the board off the screen.
+         */}
+        <div aria-hidden style={{ visibility: "hidden" }}>
+          {lines.map((l, i) => (
+            <p key={i} className="mono" style={tapeLine}>
+              {`${l.speaker} — ${l.text}`}
+            </p>
+          ))}
+          <p className="mono" style={tapeNote}>
+            Demonstration call — fixture candidate. A human reads every word.
+          </p>
+        </div>
+        <div style={{ position: "absolute", inset: "18px 34px 16px" }}>
         {printedLines.map((l, i) =>
           l.shown ? (
             <p
               key={i}
               className="mono"
-              style={{ fontSize: 13, lineHeight: 1.8, wordBreak: "break-word" }}
+              style={tapeLine}
             >
               {l.mark && l.complete ? (
                 <>
@@ -480,19 +528,11 @@ export default function Switchboard({
           </p>
         )}
         {phase === "done" && (
-          <p
-            className="mono"
-            style={{
-              fontSize: 11.5,
-              marginTop: 10,
-              letterSpacing: ".1em",
-              textTransform: "uppercase",
-              opacity: 0.65,
-            }}
-          >
+          <p className="mono" style={tapeNote}>
             Demonstration call — fixture candidate. A human reads every word.
           </p>
         )}
+        </div>
       </div>
       </div>
 
