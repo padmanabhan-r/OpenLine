@@ -43,8 +43,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Working notes, hackathon research, CALL-E doc mirrors, demo films — local only
+docs/
+
 # Vendored CALL-E reference repos (cloned separately, each has its own .git)
-docs/calle-docs/
 misc/call-e-resources/awesome-phone-call-agents/
 misc/call-e-resources/call-e-integrations/
 image.png
