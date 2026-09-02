@@ -12,6 +12,8 @@ import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { inspectTranscript, type InspectableTurn } from "@/lib/script/guard";
 import { needsHuman, type ScreeningResult } from "@/lib/script/schema";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
+import { checkDialIntent, type DialIntent } from "@/lib/screening/gate";
+import { operatorStatus } from "@/lib/operator";
 
 /**
  * Placing a real call and recording what came back.
@@ -65,7 +67,14 @@ export type StartOutcome =
  */
 export async function startCall(
   screeningCallId: string,
+  intent: DialIntent,
 ): Promise<StartOutcome> {
+  // Whoever is pressing the button must hold the console. Checked here, on
+  // the server, so a locked deployment cannot be dialed from by anyone who
+  // finds the URL — the button in the UI is a courtesy, not the gate.
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false, reason: operator.reason };
+
   const db = getDb();
 
   const [row] = await db
@@ -74,6 +83,11 @@ export async function startCall(
     .where(eq(screeningCalls.id, screeningCallId))
     .limit(1);
   if (!row) return { ok: false, reason: "No such screening call." };
+
+  // The recruiter confirmed these words for this person. If the row moved
+  // underneath them, they read the new words before anything rings.
+  const confirmed = checkDialIntent(row, intent);
+  if (!confirmed.ok) return { ok: false, reason: confirmed.reason };
 
   if (row.guardFindings.length > 0) {
     return {
@@ -160,7 +174,7 @@ export async function startCall(
 }
 
 export type NewAttemptOutcome =
-  | { ok: true; screeningCallId: string }
+  | { ok: true; screeningCallId: string; intent: DialIntent }
   | { ok: false; reason: string };
 
 /**
@@ -263,7 +277,13 @@ export async function startNewAttempt(
     };
   }
 
-  return { ok: true, screeningCallId: created.id };
+  // The words are the ones the recruiter last approved and dialed, so this
+  // row carries its own confirmation into `startCall`.
+  return {
+    ok: true,
+    screeningCallId: created.id,
+    intent: { candidateId: row.candidateId, scriptVersion: nextVersion },
+  };
 }
 
 /**

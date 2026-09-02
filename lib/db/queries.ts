@@ -187,6 +187,7 @@ export async function listJobCandidates(jobId: string) {
       candidateId: screeningCalls.candidateId,
       status: screeningCalls.status,
       guardFindings: screeningCalls.guardFindings,
+      scriptVersion: screeningCalls.scriptVersion,
     })
     .from(screeningCalls)
     .where(eq(screeningCalls.jobId, jobId))

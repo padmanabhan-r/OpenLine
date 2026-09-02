@@ -2,20 +2,25 @@ import { describe, expect, it } from "vitest";
 import { normalizePhone } from "./normalize";
 
 describe("normalizePhone", () => {
-  describe("Indian résumé formats (the common real-world case)", () => {
+  // The fixtures are from the ACMA range Australia reserves for fiction
+  // (0491 570 006 and friends), which can never connect. The seeded roster
+  // is Indian, but India publishes no reserved range, so a plausible +91
+  // number in a public repository is probably somebody's phone. Australian
+  // numbers exercise the same résumé habits — a trunk "0", an IDD prefix
+  // instead of "+", brackets, spaces — against a real numbering plan.
+  describe("résumé formats: trunk prefix, IDD prefix, brackets, spaces", () => {
     it.each([
-      ["+91 98765 43210", "+919876543210"],
-      ["+919876543210", "+919876543210"],
-      ["+91-9876543210", "+919876543210"],
-      ["9876543210", "+919876543210"],
-      ["+91 (98765) 43210", "+919876543210"],
-      ["98765 43210", "+919876543210"],
-      // Trunk prefix, as typed on most Indian résumés.
-      ["09876543210", "+919876543210"],
+      ["+61 491 570 006", "+61491570006"],
+      ["+61491570006", "+61491570006"],
+      ["+61-491-570-006", "+61491570006"],
+      ["491 570 006", "+61491570006"],
+      ["+61 (491) 570 006", "+61491570006"],
+      // Trunk prefix, as typed on most résumés.
+      ["0491 570 006", "+61491570006"],
       // IDD prefix instead of "+".
-      ["0091 98765 43210", "+919876543210"],
+      ["0011 61 491 570 006", "+61491570006"],
     ])("normalizes %s to %s", (raw, expected) => {
-      const result = normalizePhone(raw, "IN");
+      const result = normalizePhone(raw, "AU");
       expect(result).toEqual({ ok: true, e164: expected });
     });
   });
@@ -34,16 +39,16 @@ describe("normalizePhone", () => {
       ["   ", "empty"],
       ["not a phone number", "unparseable"],
       ["12345", "invalid"],
-      ["+91 12345", "invalid"],
+      ["+61 12345", "invalid"],
     ])("rejects %j", (raw) => {
       const result = normalizePhone(raw, "IN");
       expect(result.ok).toBe(false);
     });
 
     it("rejects a bare national number when no default region is known", () => {
-      // Without a region, "9876543210" is ambiguous. Guessing here would dial a
-      // stranger in another country, so we refuse.
-      const result = normalizePhone("9876543210", undefined);
+      // Without a region, a national number is ambiguous. Guessing here would
+      // dial a stranger in another country, so we refuse.
+      const result = normalizePhone("0491 570 006", undefined);
       expect(result).toEqual({ ok: false, reason: "no_region" });
     });
 
@@ -54,9 +59,9 @@ describe("normalizePhone", () => {
   });
 
   it("strips extensions rather than dialing them", () => {
-    expect(normalizePhone("+91 98765 43210 ext. 22", "IN")).toEqual({
+    expect(normalizePhone("+61 491 570 006 ext. 22", "AU")).toEqual({
       ok: true,
-      e164: "+919876543210",
+      e164: "+61491570006",
     });
   });
 });

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 import { ingestResume, type IngestOutcome } from "@/lib/resume/ingest";
+import { operatorStatus } from "@/lib/operator";
 
 /**
  * Multipart resume upload.
@@ -20,6 +21,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+
+  // Uploads spend storage and model calls, so they need the console unlocked
+  // just as dialing does.
+  const operator = await operatorStatus();
+  if (!operator.ok) {
+    return NextResponse.json({ error: operator.reason }, { status: 401 });
+  }
 
   const db = getDb();
   const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);

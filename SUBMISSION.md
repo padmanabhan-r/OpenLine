@@ -21,7 +21,7 @@ Sources: the Devpost requirements, the target repo's `README.md`, its
 
 ## 2. Contribution area
 
-**User-facing Apps** → `apps/web/openline/`.
+**User-facing Apps** → `apps/typescript/openline/`.
 
 The target repo takes three kinds of contribution:
 
@@ -88,13 +88,20 @@ is ever written to the database, logged, or sent to the browser. The CALL-E
 SDK is only ever constructed inside `lib/calle/port.ts`.
 
 ### Dry-run or preview behavior
-There is no dry-run mode — it was removed deliberately, because a
-half-connected pipeline is worse to demo than a real one. **Preview is the
-safeguard instead:** every call's exact spoken text is generated, guarded, and
-persisted as a readable record *before* anything dials. A human can read it,
-edit any question, or rebuild it; the assembled task is re-guarded on every
-edit and again inside the port at dial time. Nothing dials without a
-per-candidate confirmation naming the person.
+**Fake mode is the no-call path.** `OPENLINE_FAKE_CALLE=1` (or `./start.sh
+--fake`) swaps the SDK's transport for an in-process fake of the CALL-E API
+(`lib/calle/fake-server.ts`). Every dial completes in seconds with a canned
+transcript that follows the real script and a schema-valid structured result;
+the guard, the consent gate, the idempotency key, the needs-human routing and
+the pipeline advance all run unchanged. No key is used — the real key, if
+configured, is never handed to the fake transport. The banner and the sidebar
+chip both say "simulated" the whole time.
+
+**Preview is the second safeguard, in every mode:** every call's exact spoken
+text is generated, guarded, and persisted as a readable record *before*
+anything dials. A human can read it, edit any question, or rebuild it; the
+assembled task is re-guarded on every edit and again inside the port. With no
+key and no fake flag, the Call button produces a legible refusal row.
 
 ### Cancellation or rollback
 Calls are single-shot: no scheduler, no recurring jobs, nothing queued for
@@ -148,7 +155,7 @@ the callable set entirely. Records are never deleted by any of this.
 ## 6. Open decision: vendor or link
 
 Their `apps/` spec lists **source code files** as required, so the default is
-to vendor the app into `apps/web/openline/`.
+to vendor the app into `apps/typescript/openline/`.
 
 **Exclude from the vendored copy** — agent scaffolding and private notes that
 mean nothing to them:
@@ -196,8 +203,8 @@ nothing, and the CALL-E account has free calls for exactly this.
 
 1. Fork and clone `CALLE-AI/awesome-phone-call-agents`.
 2. `git checkout -b feat/openline-screening-console`
-3. Copy the app to `apps/web/openline/` per §6.
-4. Write `apps/web/openline/README.md` from §4.
+3. Copy the app to `apps/typescript/openline/` per §6.
+4. Write `apps/typescript/openline/README.md` from §4.
 5. Add the row to `apps/README.md`.
 6. `python3 scripts/validate_repository.py` — fix whatever it says.
 7. Commit as `feat(openline): add recruiter screening-call console`. No

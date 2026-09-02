@@ -9,6 +9,7 @@
 #   ./start.sh --test       run the full verification gate and exit
 #   ./start.sh --stop       stop a running dev server and exit
 #   ./start.sh --clean      discard the build cache first, then start
+#   ./start.sh --fake       run against an in-process fake CALL-E: no key, no phone rings
 #
 # The banner it prints before starting is the point: this application can place
 # real phone calls that cost money and reach real people, so whether *this*
@@ -30,6 +31,7 @@ MODE="dev"
 RUN_MIGRATIONS=false
 RESTART=false
 CLEAN=false
+FAKE=false
 PORT="${PORT:-3000}"
 
 while [ $# -gt 0 ]; do
@@ -40,9 +42,10 @@ while [ $# -gt 0 ]; do
     --restart)           RESTART=true ;;
     --stop)              MODE="stop" ;;
     --clean)             CLEAN=true ;;
+    --fake)              FAKE=true ;;
     --port)              shift; PORT="${1:?--port needs a number}" ;;
     -h|--help)
-      sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+      sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
       exit 0 ;;
     *) die "Unknown option: $1  (try --help)" ;;
   esac
@@ -132,6 +135,17 @@ env_value() {
 DATABASE_URL_VALUE="$(env_value DATABASE_URL)"
 CALLE_KEY_VALUE="$(env_value CALLE_API_KEY)"
 OPENAI_KEY_VALUE="$(env_value OPENAI_API_KEY)"
+# The process environment wins over .env, as it does for the app itself.
+OPERATOR_TOKEN_VALUE="${OPENLINE_OPERATOR_TOKEN:-$(env_value OPENLINE_OPERATOR_TOKEN)}"
+FAKE_VALUE="${OPENLINE_FAKE_CALLE:-$(env_value OPENLINE_FAKE_CALLE)}"
+
+# --fake on the command line, or OPENLINE_FAKE_CALLE in .env: the SDK runs
+# against an in-process fake and the real key, if any, is never sent anywhere.
+if [ "$FAKE" = true ]; then
+  export OPENLINE_FAKE_CALLE=1
+elif [ -n "$FAKE_VALUE" ] && [ "$FAKE_VALUE" != "0" ] && [ "$FAKE_VALUE" != "false" ]; then
+  FAKE=true
+fi
 
 # ── Dependencies ─────────────────────────────────────────────────────────────
 
@@ -180,15 +194,21 @@ fi
 printf '\n%s\n' "${BOLD}OpenLine${RESET} ${DIM}— the screening call that goes both ways${RESET}"
 printf '%s\n' "${DIM}────────────────────────────────────────────────────────${RESET}"
 
-if [ -n "$CALLE_KEY_VALUE" ]; then
+if [ "$FAKE" = true ]; then
+  printf '  %s\n' "${GREEN}${BOLD}CALLS ARE SIMULATED${RESET} ${GREEN}— an in-process fake answers every dial. No phone rings, no key is used.${RESET}"
+elif [ -n "$CALLE_KEY_VALUE" ]; then
   printf '  %s\n' "${RED}${BOLD}CALLS ARE LIVE${RESET} ${RED}— a candidate with a number on file will really be dialed.${RESET}"
+  if [ -z "$OPERATOR_TOKEN_VALUE" ]; then
+    printf '  %s\n' "${YELLOW}No OPENLINE_OPERATOR_TOKEN — fine on this machine; a public deployment refuses to dial without one.${RESET}"
+  fi
 else
   printf '  %s\n' "${YELLOW}No CALLE_API_KEY — scripts can be built, but no call can be placed.${RESET}"
 fi
 
 printf '  %s\n' "${DIM}Database:${RESET}  $([ -n "$DATABASE_URL_VALUE" ] && echo "${GREEN}configured${RESET}" || echo "${RED}missing — set DATABASE_URL${RESET}")"
-printf '  %s\n' "${DIM}CALL-E:${RESET}    $([ -n "$CALLE_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key${RESET}")"
-printf '  %s\n' "${DIM}OpenAI:${RESET}    $([ -n "$OPENAI_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (default questions will be used)${RESET}")"
+printf '  %s\n' "${DIM}CALL-E:${RESET}    $([ "$FAKE" = true ] && echo "${GREEN}fake (in-process)${RESET}" || { [ -n "$CALLE_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key${RESET}"; })"
+printf '  %s\n' "${DIM}Operator:${RESET}  $([ -n "$OPERATOR_TOKEN_VALUE" ] && echo "${GREEN}token set — unlock at /unlock${RESET}" || echo "${DIM}no token (console open)${RESET}")"
+printf '  %s\n' "${DIM}OpenAI:${RESET}    $([ -n "$OPENAI_KEY_VALUE" ] && echo "${GREEN}key present${RESET}" || echo "${DIM}no key (resume upload unavailable)${RESET}")"
 printf '%s\n\n' "${DIM}────────────────────────────────────────────────────────${RESET}"
 
 [ -n "$DATABASE_URL_VALUE" ] || warn "Without DATABASE_URL the app will start but cannot load jobs or candidates."

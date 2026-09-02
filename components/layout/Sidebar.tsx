@@ -83,7 +83,15 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-export default function Sidebar({ callsLive }: { callsLive: boolean }) {
+export default function Sidebar({
+  mode,
+  locked,
+}: {
+  mode: "live" | "fake" | "off";
+  /** A token is configured and this browser has not presented it. */
+  locked: boolean;
+}) {
+  const callsLive = mode === "live";
   return (
     <aside
       style={{
@@ -145,15 +153,40 @@ export default function Sidebar({ callsLive }: { callsLive: boolean }) {
         />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
-            {callsLive ? "Calls are live" : "Calls are off"}
+            {callsLive
+              ? "Calls are live"
+              : mode === "fake"
+                ? "Calls are simulated"
+                : "Calls are off"}
           </div>
           <div style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.35 }}>
             {callsLive
               ? "A number on file is a number that rings"
-              : "No CALL-E key — scripts build, nobody dials"}
+              : mode === "fake"
+                ? "In-process fake CALL-E — nobody dials"
+                : "No CALL-E key — scripts build, nobody dials"}
           </div>
         </div>
       </div>
+
+      {/* The lock is a fact about this browser, not the deployment, so it sits
+          under the mode chip rather than inside it. */}
+      <Link
+        href="/unlock"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginTop: 8,
+          padding: "8px 12px",
+          fontSize: 11.5,
+          fontWeight: 600,
+          color: locked ? "var(--ink)" : "var(--ink-3)",
+        }}
+      >
+        <Icon name={locked ? "lock" : "check"} size={14} />
+        {locked ? "Console locked — unlock to dial" : "Console unlocked"}
+      </Link>
 
       {/* The calls are CALL-E's. Credit stays on screen. */}
       <div

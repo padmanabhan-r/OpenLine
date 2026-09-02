@@ -13,6 +13,7 @@ import { jobRef } from "@/lib/jobs/ref";
 import { isShortlisted } from "@/lib/candidates/stage";
 import JobStatusControl from "@/components/jobs/JobStatusControl";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
+import { operatorStatus } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +108,9 @@ export default async function JobPage({
   if (!job) notFound();
 
   const applicants = await listJobCandidates(id);
+  // Whether this browser may dial. The server checks again in startCall; this
+  // only decides whether the button is worth offering.
+  const operator = await operatorStatus();
   const roster = applicants.filter((r) => isShortlisted(r.candidate.stage));
   const pool = applicants.filter((r) => !isShortlisted(r.candidate.stage));
   const callable = roster.filter((r) => r.candidate.phoneE164);
@@ -186,11 +190,13 @@ export default async function JobPage({
                 call && (call.guardFindings.length > 0 || call.status === "refused"),
               );
 
-              const dialDisabledReason = !acceptsCalls(job.status)
-                ? closedReason(job.status, job.statusReason)
-                : candidate.phoneE164
-                  ? null
-                  : "No phone number for this candidate.";
+              const dialDisabledReason = !operator.ok
+                ? operator.reason
+                : !acceptsCalls(job.status)
+                  ? closedReason(job.status, job.statusReason)
+                  : candidate.phoneE164
+                    ? null
+                    : "No phone number for this candidate.";
 
               return (
                 <div
@@ -306,7 +312,12 @@ export default async function JobPage({
                         candidateName={candidate.name}
                         call={
                           call
-                            ? { id: call.id, status: call.status, blocked }
+                            ? {
+                                id: call.id,
+                                status: call.status,
+                                blocked,
+                                scriptVersion: call.scriptVersion,
+                              }
                             : null
                         }
                         dialDisabledReason={dialDisabledReason}

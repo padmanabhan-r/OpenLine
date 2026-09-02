@@ -3,8 +3,8 @@ import { parsePhoneNumberWithError, type CountryCode } from "libphonenumber-js";
 /**
  * Phone normalization for OpenLine.
  *
- * Résumé phone numbers arrive as free text — "+91 98765 43210", "9876543210",
- * "091-98765-43210". CALL-E requires strict E.164 (`^\+[1-9]\d{6,14}$`), so every
+ * Résumé phone numbers arrive as free text — "+91 XXXXX XXXXX", "XXXXXXXXXX",
+ * "091-XXXXX-XXXXX". CALL-E requires strict E.164 (`^\+[1-9]\d{6,14}$`), so every
  * number is normalized before it can be dialed.
  *
  * The governing rule is: never guess. A number we cannot confidently resolve is

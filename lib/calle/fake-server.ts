@@ -14,17 +14,24 @@ export interface FakeCalleOptions {
   /** Structured result returned on the terminal call. */
   structuredResult?: Record<string, unknown> | null;
   /** Transcript turns to return on the recipient's attempt. */
-  transcriptTurns?: Array<{
-    offset_seconds: number;
-    speaker: "bot" | "user" | "unknown";
-    text: string;
-  }>;
+  transcriptTurns?: FakeTurn[];
+  /**
+   * Derive the transcript from the task text instead — how the app's fake
+   * mode greets the candidate by the name the script actually used.
+   */
+  transcriptFor?: (task: string) => FakeTurn[];
   /** Terminal status. Defaults to `completed`. */
   status?: "completed" | "failed";
   /** Make the API reject the create request. */
   failWith?: { status: number; code: string; message?: string };
   /** Post-summary confidence. */
   confidence?: { score: number; label: "low" | "medium" | "high" };
+}
+
+export interface FakeTurn {
+  offset_seconds: number;
+  speaker: "bot" | "user" | "unknown";
+  text: string;
 }
 
 export interface FakeCalleFetch {
@@ -50,6 +57,7 @@ export function createFakeCalleFetch(
       { offset_seconds: 0, speaker: "bot" as const, text: "Hello, is this Priya?" },
       { offset_seconds: 3, speaker: "user" as const, text: "Yes, speaking." },
     ],
+    transcriptFor,
     status = "completed",
     failWith,
     confidence = { score: 0.92, label: "high" as const },
@@ -57,6 +65,9 @@ export function createFakeCalleFetch(
 
   let lastIdempotencyKey: string | null = null;
   const createdCalls: Array<Record<string, unknown>> = [];
+  // Remembered so a later GET (the waiter, the reconciler) reads back the
+  // same task the create request carried, as the real API would.
+  const tasks = new Map<string, { task: string; phone: string }>();
 
   const buildCallTask = (id: string, task: string, phone: string) => ({
     id,
@@ -80,7 +91,7 @@ export function createFakeCalleFetch(
             started_at: "2026-08-09T10:00:00Z",
             completed_at: "2026-08-09T10:02:00Z",
             summary: "Fake attempt summary.",
-            transcript_turns: transcriptTurns,
+            transcript_turns: transcriptFor ? transcriptFor(task) : transcriptTurns,
             provider_call_id: "provider_fake_1",
             failure_code: null,
             failure_message: null,
@@ -128,15 +139,17 @@ export function createFakeCalleFetch(
         (body.recipient as { phones?: string[] } | undefined)?.phones?.[0] ??
         "+10000000000";
 
-      return json(
-        buildCallTask("call_fake_1", String(body.task ?? ""), phone),
-        201,
-      );
+      const task = String(body.task ?? "");
+      tasks.set("call_fake_1", { task, phone });
+      return json(buildCallTask("call_fake_1", task, phone), 201);
     }
 
     const getCall = pathname.match(/^\/v1\/calls\/([^/]+)$/);
     if (input.method === "GET" && getCall) {
-      return json(buildCallTask(getCall[1], "Fake task", "+14155550114"));
+      const known = tasks.get(getCall[1]);
+      return json(
+        buildCallTask(getCall[1], known?.task ?? "Fake task", known?.phone ?? "+14155550114"),
+      );
     }
 
     const listEvents = pathname.match(/^\/v1\/calls\/([^/]+)\/events$/);

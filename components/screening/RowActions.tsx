@@ -28,7 +28,7 @@ export default function RowActions({
   jobId: string;
   candidateId: string;
   candidateName: string;
-  call: { id: string; status: string; blocked: boolean } | null;
+  call: { id: string; status: string; blocked: boolean; scriptVersion: number } | null;
   /** Why the call button is disabled, or null when it may dial. */
   dialDisabledReason: string | null;
 }) {
@@ -102,9 +102,14 @@ export default function RowActions({
           onClick={() => {
             setError(null);
             startTransition(async () => {
+              // The confirmation names this person and this version of the
+              // words; the server refuses if either moved since the page loaded.
               const outcome = again
                 ? await callAgainFromRow(jobId, call.id)
-                : await callFromRow(jobId, call.id);
+                : await callFromRow(jobId, call.id, {
+                    candidateId,
+                    scriptVersion: call.scriptVersion,
+                  });
               if (!outcome.ok) setError(outcome.reason);
               setConfirming(null);
             });

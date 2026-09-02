@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createCallePort } from "./port";
+import { callePortFromEnv, createCallePort, resolveCalleMode } from "./port";
 import { createFakeCalleFetch } from "./fake-server";
 
 /**
@@ -48,7 +48,7 @@ describe("createCallePort — refuses rather than dialing", () => {
   });
 
   it("refuses a phone number that is not E.164", async () => {
-    const outcome = await livePort().dial(dialRequest({ phone: "9876543210" }));
+    const outcome = await livePort().dial(dialRequest({ phone: "555-0114" }));
     expect(outcome).toMatchObject({ ok: false, refusal: "invalid_phone" });
   });
 
@@ -124,6 +124,23 @@ describe("createCallePort — dialing through the fake CALL-E server", () => {
     expect(recipients[0]).not.toHaveProperty("locale");
   });
 
+  it("only ever sends the key to the official CALL-E origin", async () => {
+    // There is no baseUrl option on purpose. A key that can be redirected by
+    // an environment variable is a key that can be exfiltrated by one.
+    const seen: string[] = [];
+    const fake = createFakeCalleFetch();
+    const port = createCallePort({
+      apiKey: "test",
+      fetch: (input) => {
+        seen.push(new URL(input.url).origin);
+        return fake(input);
+      },
+    });
+
+    await port.dial(dialRequest());
+    expect(seen).toEqual(["https://api.heycall-e.com"]);
+  });
+
   it("surfaces a CALL-E API error as a refusal rather than throwing", async () => {
     const port = createCallePort({
       apiKey: "test",
@@ -150,5 +167,40 @@ describe("fetchCall — re-fetch used by the reconciler", () => {
     const call = await port.fetchCall("call_abc123");
     expect(call.id).toBe("call_abc123");
     expect(call.structuredResult).toEqual({ reached_candidate: "no" });
+  });
+});
+
+describe("resolveCalleMode — what this process may do", () => {
+  it("is off with no key, live with one, and fake when asked", () => {
+    expect(resolveCalleMode({})).toBe("off");
+    expect(resolveCalleMode({ CALLE_API_KEY: "k" })).toBe("live");
+    expect(resolveCalleMode({ CALLE_API_KEY: "k", OPENLINE_FAKE_CALLE: "1" })).toBe("fake");
+    expect(resolveCalleMode({ OPENLINE_FAKE_CALLE: "true" })).toBe("fake");
+    expect(resolveCalleMode({ OPENLINE_FAKE_CALLE: "0", CALLE_API_KEY: "k" })).toBe("live");
+  });
+});
+
+describe("callePortFromEnv — fake mode", () => {
+  it("completes a screening call in-process, greeting the candidate by name", async () => {
+    const port = callePortFromEnv({ OPENLINE_FAKE_CALLE: "1", CALLE_API_KEY: "must-not-be-used" });
+
+    const outcome = await port.dial(
+      dialRequest({
+        task: "You are calling Asha Menon about their application for the Senior AI Engineer role at Northwind Payments.\n\nAsk in order: - [q1] Are you still interested?",
+      }),
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const call = await port.waitForCall(outcome.call.id);
+    expect(call.status).toBe("completed");
+    expect(call.recipients[0].attempts[0].transcriptTurns[0].text).toBe("Hi, is this Asha Menon?");
+    expect(call.structuredResult).toMatchObject({ consent_given: "yes", reached_candidate: "yes" });
+  });
+
+  it("still refuses a script the guard rejects, even when nothing would ring", async () => {
+    const port = callePortFromEnv({ OPENLINE_FAKE_CALLE: "1" });
+    const outcome = await port.dial(dialRequest({ task: "Call Priya and ask how old she is." }));
+    expect(outcome).toMatchObject({ ok: false, refusal: "guard_violation" });
   });
 });

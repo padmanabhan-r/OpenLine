@@ -15,12 +15,17 @@ import { callCandidate } from "@/app/(app)/calls/[id]/actions";
  */
 export default function CallButton({
   screeningCallId,
+  candidateId,
   candidateName,
+  scriptVersion,
   disabled,
   disabledReason,
 }: {
   screeningCallId: string;
+  candidateId: string;
   candidateName: string;
+  /** The version of the words on screen — what the confirmation is for. */
+  scriptVersion: number;
   disabled?: boolean;
   disabledReason?: string;
 }) {
@@ -62,7 +67,10 @@ export default function CallButton({
             onClick={() => {
               setError(null);
               startTransition(async () => {
-                const result = await callCandidate(screeningCallId);
+                const result = await callCandidate(screeningCallId, {
+                  candidateId,
+                  scriptVersion,
+                });
                 if (!result.ok) setError(result.reason);
                 setConfirming(false);
               });

@@ -11,6 +11,7 @@ import DialingWatcher from "@/components/screening/DialingWatcher";
 import ScriptEditor from "@/components/screening/ScriptEditor";
 import { getCall } from "@/lib/db/queries";
 import { reconcileCall } from "@/lib/screening/reconcile";
+import { operatorStatus } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,10 @@ export default async function CallPage({
   const editableScript =
     (call.status === "previewed" || call.status === "refused") &&
     !call.calleCallId;
-  const cannotCall = blocked
+  const operator = await operatorStatus();
+  const cannotCall = !operator.ok
+    ? operator.reason
+    : blocked
     ? "The script is blocked, so it cannot dial."
     : dialing
       ? "The call is in progress."
@@ -68,7 +72,9 @@ export default async function CallPage({
             ) : (
               <CallButton
                 screeningCallId={call.id}
+                candidateId={candidate.id}
                 candidateName={candidate.name}
+                scriptVersion={call.scriptVersion}
                 disabled={Boolean(cannotCall)}
                 {...(cannotCall ? { disabledReason: cannotCall } : {})}
               />

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
 import { applyScriptEdit, type EditOutcome } from "@/lib/screening/edit";
+import type { DialIntent } from "@/lib/screening/gate";
 
 /**
  * Start the call and return immediately.
@@ -13,8 +14,8 @@ import { applyScriptEdit, type EditOutcome } from "@/lib/screening/edit";
  * conversation continues on its own. The page shows "dialing" and updates
  * itself when the result lands.
  */
-export async function callCandidate(screeningCallId: string) {
-  const outcome = await startCall(screeningCallId);
+export async function callCandidate(screeningCallId: string, intent: DialIntent) {
+  const outcome = await startCall(screeningCallId, intent);
 
   if (outcome.ok) {
     const calleCallId = outcome.calleCallId;
@@ -42,7 +43,7 @@ export async function callAgain(
     return attempt;
   }
 
-  const outcome = await startCall(attempt.screeningCallId);
+  const outcome = await startCall(attempt.screeningCallId, attempt.intent);
   if (!outcome.ok) return outcome;
 
   const newId = attempt.screeningCallId;

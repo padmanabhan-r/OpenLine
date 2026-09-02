@@ -1,13 +1,19 @@
 import Sidebar from "@/components/layout/Sidebar";
+import { resolveCalleMode } from "@/lib/calle/port";
+import { operatorStatus, operatorTokenConfigured } from "@/lib/operator";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // The same rule start.sh's banner uses: a CALL-E key present means a
   // candidate with a number on file will really be dialed.
-  const callsLive = Boolean(process.env.CALLE_API_KEY?.trim());
+  const mode = resolveCalleMode();
+  // Only worth a chip when there is a lock to open. With no token configured
+  // the verdict is either "open" or "no calls at all", and both are already
+  // said by the mode chip and the disabled buttons.
+  const locked = operatorTokenConfigured() && !(await operatorStatus()).ok;
 
   return (
     <div
@@ -83,7 +89,7 @@ export default function AppLayout({
           overflow: "hidden",
         }}
       >
-        <Sidebar callsLive={callsLive} />
+        <Sidebar mode={mode} locked={locked} />
         <main
           style={{
             flex: 1,

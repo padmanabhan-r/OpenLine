@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { previewJob } from "@/lib/screening/preview";
+import { operatorStatus } from "@/lib/operator";
 
 /**
  * Build call scripts for every candidate on a job.
@@ -8,15 +9,20 @@ import { previewJob } from "@/lib/screening/preview";
  * equivalent, for seeding a demo, driving CI, or checking a deployment without
  * a browser.
  *
- * It is safe to call on a public deployment: it goes through the same CallePort
- * as everything else. It writes scripts and dials nothing — dialing is a
- * separate, per-candidate decision.
+ * It writes scripts and dials nothing — dialing is a separate, per-candidate
+ * decision. It still asks who is calling: on a locked deployment, send the
+ * operator token as `x-openline-operator`.
  */
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+
+  const operator = await operatorStatus();
+  if (!operator.ok) {
+    return NextResponse.json({ error: operator.reason }, { status: 401 });
+  }
 
   try {
     const outcomes = await previewJob(id);

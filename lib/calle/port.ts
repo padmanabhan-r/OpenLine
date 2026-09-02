@@ -1,5 +1,7 @@
 import { CalleClient, type Call, type JsonObject } from "@call-e/calle";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
+import { createFakeCalleFetch } from "./fake-server";
+import { FAKE_SCREENING } from "./fake-demo";
 
 /**
  * The only way OpenLine places a phone call.
@@ -27,8 +29,31 @@ export interface CallePortConfig {
    * used for routing and compliance, and already implied by the E.164 number.
    */
   locale?: string;
-  baseUrl?: string;
+  /**
+   * Transport override. Only the fake server uses this; there is deliberately
+   * no `baseUrl` — the SDK's default is the official origin, and a key that
+   * can be pointed at any host is a key that can be stolen by an env var.
+   */
   fetch?: (input: Request) => Promise<Response>;
+}
+
+/**
+ * How this process may talk to CALL-E.
+ *
+ *   live — a key is set; a candidate with a number on file really gets dialed
+ *   fake — OPENLINE_FAKE_CALLE is set; the SDK runs against an in-process fake
+ *          and no key ever leaves the machine, even if one is configured
+ *   off  — neither; scripts can be built and read, and every dial is refused
+ */
+export type CalleMode = "live" | "fake" | "off";
+
+/** The subset of the environment the port reads. */
+export type CalleEnv = Record<string, string | undefined>;
+
+export function resolveCalleMode(env: CalleEnv = process.env): CalleMode {
+  const fake = env.OPENLINE_FAKE_CALLE?.trim().toLowerCase();
+  if (fake && fake !== "0" && fake !== "false") return "fake";
+  return env.CALLE_API_KEY?.trim() ? "live" : "off";
 }
 
 export interface DialRequest {
@@ -73,12 +98,11 @@ export interface CallePort {
 }
 
 export function createCallePort(config: CallePortConfig): CallePort {
-  const { apiKey, baseUrl, fetch } = config;
+  const { apiKey, fetch } = config;
 
   const client = () =>
     new CalleClient({
       apiKey,
-      ...(baseUrl ? { baseUrl } : {}),
       ...(fetch ? { fetch } : {}),
     });
 
@@ -164,14 +188,20 @@ export function createCallePort(config: CallePortConfig): CallePort {
 }
 
 /** Build a port from environment configuration. */
-export function callePortFromEnv(
-  env: NodeJS.ProcessEnv = process.env,
-): CallePort {
-  return createCallePort({
-    apiKey: env.CALLE_API_KEY ?? "",
-    // American English unless told otherwise. Configurable without a code
-    // change, since which voice sounds right is a judgement, not a constant.
-    locale: env.OPENLINE_CALL_LOCALE?.trim() || "en-US",
-    ...(env.CALLE_BASE_URL ? { baseUrl: env.CALLE_BASE_URL } : {}),
-  });
+export function callePortFromEnv(env: CalleEnv = process.env): CallePort {
+  // American English unless told otherwise. Configurable without a code
+  // change, since which voice sounds right is a judgement, not a constant.
+  const locale = env.OPENLINE_CALL_LOCALE?.trim() || "en-US";
+
+  if (resolveCalleMode(env) === "fake") {
+    // The real key, if any, is not passed: a fake transport must never be
+    // one env var away from receiving production credentials.
+    return createCallePort({
+      apiKey: "fake",
+      locale,
+      fetch: createFakeCalleFetch(FAKE_SCREENING),
+    });
+  }
+
+  return createCallePort({ apiKey: env.CALLE_API_KEY ?? "", locale });
 }

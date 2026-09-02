@@ -9,9 +9,15 @@ import { getDb } from "@/lib/db";
 import { candidates, jobs } from "@/lib/db/schema";
 import { isShortlisted, isStage } from "@/lib/candidates/stage";
 import { isJobStatus } from "@/lib/jobs/status";
+import type { DialIntent } from "@/lib/screening/gate";
+import { operatorStatus } from "@/lib/operator";
 
 /** Build (or rebuild) the script for one candidate — the per-row path. */
 export async function buildScriptFor(jobId: string, candidateId: string) {
+  const operator = await operatorStatus();
+  if (!operator.ok) {
+    return { candidateId, name: "", status: "skipped" as const, detail: operator.reason };
+  }
   const outcome = await previewCandidate(jobId, candidateId);
   revalidatePath(`/jobs/${jobId}`);
   revalidatePath("/calls");
@@ -19,8 +25,12 @@ export async function buildScriptFor(jobId: string, candidateId: string) {
 }
 
 /** Start a call from the shortlist row. Same detached-finish shape as the call page. */
-export async function callFromRow(jobId: string, screeningCallId: string) {
-  const outcome = await startCall(screeningCallId);
+export async function callFromRow(
+  jobId: string,
+  screeningCallId: string,
+  intent: DialIntent,
+) {
+  const outcome = await startCall(screeningCallId, intent);
 
   if (outcome.ok) {
     const calleCallId = outcome.calleCallId;
@@ -47,7 +57,7 @@ export async function callAgainFromRow(jobId: string, screeningCallId: string) {
     return attempt;
   }
 
-  const outcome = await startCall(attempt.screeningCallId);
+  const outcome = await startCall(attempt.screeningCallId, attempt.intent);
   if (outcome.ok) {
     const calleCallId = outcome.calleCallId;
     const newId = attempt.screeningCallId;
