@@ -189,6 +189,13 @@ export function createCallePort(config: CallePortConfig): CallePort {
 }
 
 /** Build a port from environment configuration. */
+/**
+ * One fake for the whole process. `startCall` and `finishCall` each build a
+ * port, and the fake remembers the task it was given so the later GET can
+ * greet the candidate by name — a fresh fake per port would have forgotten.
+ */
+let fakeFetch: ReturnType<typeof createFakeCalleFetch> | null = null;
+
 export function callePortFromEnv(env: CalleEnv = process.env): CallePort {
   // American English unless told otherwise. Configurable without a code
   // change, since which voice sounds right is a judgement, not a constant.
@@ -197,11 +204,8 @@ export function callePortFromEnv(env: CalleEnv = process.env): CallePort {
   if (resolveCalleMode(env) === "fake") {
     // The real key, if any, is not passed: a fake transport must never be
     // one env var away from receiving production credentials.
-    return createCallePort({
-      apiKey: "fake",
-      locale,
-      fetch: createFakeCalleFetch(FAKE_SCREENING),
-    });
+    fakeFetch ??= createFakeCalleFetch(FAKE_SCREENING);
+    return createCallePort({ apiKey: "fake", locale, fetch: fakeFetch });
   }
 
   return createCallePort({ apiKey: env.CALLE_API_KEY ?? "", locale });

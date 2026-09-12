@@ -49,7 +49,7 @@ export const FAKE_SCREENING: FakeCalleOptions = {
       {
         offset_seconds: 59,
         speaker: "bot",
-        text: "The role is hybrid in Bangalore, three days a week. I don't have the team size to hand — the recruiter will follow up on that.",
+        text: "The role is hybrid, two days a week in the Bangalore office. I don't have the team size to hand — the recruiter will follow up on that.",
       },
       { offset_seconds: 68, speaker: "user", text: "That's fine, thanks." },
       {

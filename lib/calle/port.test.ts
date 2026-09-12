@@ -198,7 +198,9 @@ describe("callePortFromEnv — fake mode", () => {
 
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
-    const call = await port.waitForCall(outcome.call.id);
+    // A second port, as finishCall builds one — it must remember the task.
+    const later = callePortFromEnv({ OPENLINE_FAKE_CALLE: "1" });
+    const call = await later.waitForCall(outcome.call.id);
     expect(call.status).toBe("completed");
     expect(call.recipients[0].attempts[0].transcriptTurns[0].text).toBe("Hi, is this Asha Menon?");
     expect(call.structuredResult).toMatchObject({ consent_given: "yes", reached_candidate: "yes" });
