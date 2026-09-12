@@ -3,7 +3,7 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { operatorStatus, operatorTokenConfigured } from "@/lib/operator";
 import { resolveCalleMode } from "@/lib/calle/port";
-import { lockConsole, unlockConsole } from "./actions";
+import { lockConsole, resetDemoData, unlockConsole } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -55,14 +55,30 @@ export default async function UnlockPage({
                   : "In production with a live CALL-E key, that means no call can be placed until one is set."}
               </p>
             ) : status.ok ? (
-              <form action={lockConsole}>
-                <p style={{ fontSize: 13.5, color: "var(--ink-2)", marginBottom: 12 }}>
-                  This browser holds the console. Lock it when you are done.
-                </p>
-                <Button size="sm" variant="ghost" type="submit">
-                  Lock this browser
-                </Button>
-              </form>
+              <div style={{ display: "grid", gap: 18 }}>
+                <form action={lockConsole}>
+                  <p style={{ fontSize: 13.5, color: "var(--ink-2)", marginBottom: 12 }}>
+                    This browser holds the console. Lock it when you are done.
+                  </p>
+                  <Button size="sm" variant="ghost" type="submit">
+                    Lock this browser
+                  </Button>
+                </form>
+                {mode === "fake" && (
+                  <form
+                    action={resetDemoData}
+                    style={{ borderTop: "1px solid var(--line-2)", paddingTop: 18 }}
+                  >
+                    <p style={{ fontSize: 13.5, color: "var(--ink-2)", marginBottom: 12 }}>
+                      Finished trying it? Put the shortlist back the way you found
+                      it: 50 applicants, 20 shortlisted, no calls placed.
+                    </p>
+                    <Button size="sm" variant="soft" type="submit">
+                      Reset demo data
+                    </Button>
+                  </form>
+                )}
+              </div>
             ) : (
               <form action={unlockConsole} style={{ display: "grid", gap: 12 }}>
                 <label style={{ display: "block" }}>

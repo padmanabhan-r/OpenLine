@@ -17,6 +17,35 @@ Built for the **CALL-E: Your Code Is Calling** hackathon.
 
 ---
 
+## For judges: 90 seconds, no account, no phone rings
+
+A public instance runs against an in-process fake of the CALL-E API, so you
+can screen the whole shortlist without credits and without anyone's phone
+ringing. Everything else — the guard, the consent gate, the idempotency key,
+the needs-human routing, the pipeline — is the real code.
+
+**https://openline-judge.vercel.app** · operator token: `judge-3654db892044`
+
+1. Open **Unlock** (bottom-left) and enter the token. Reading is open to
+   everyone; building scripts and placing calls need the token.
+2. Open the **Senior AI Engineer** job. Twenty people are shortlisted; two have
+   numbers that could not be resolved and say so.
+3. On any row, **Build script**, then **Review**. Read the exact words,
+   including the AI disclosure and the consent question. Edit a question —
+   try typing "Are you married?" — and watch the guard block the script.
+4. **Call**, confirm by name. The row goes dialing and completes in a few
+   seconds with a canned transcript that follows the real script and a
+   schema-valid structured result. One candidate question the fact sheet
+   cannot answer routes the call to a human.
+5. When you are done, **Reset demo data** on the Unlock page puts the
+   shortlist back for the next person.
+
+The production instance at https://openline-calle.vercel.app is the same code
+with a live CALL-E key. It is locked; nothing there can be dialed without the
+maintainer's operator token. The demo video shows one real call placed from it.
+
+---
+
 ## The problem
 
 An ATS hands a recruiter twenty names. Calling them is a day of work, so the

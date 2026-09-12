@@ -36,9 +36,14 @@ describe("assembleTask", () => {
     expect(task).toMatch(/no small talk/);
   });
 
-  it("asks permission to continue and stops if refused", () => {
+  it("asks explicit permission for screening questions and stops if refused", () => {
+    // "Is now a good time" is a convenience check, not consent. The schema's
+    // consent_given field means "agreed to be screened by an AI", so the
+    // script has to ask exactly that.
     const task = assembleTask(input()).toLowerCase();
-    expect(task).toContain("good time");
+    expect(task).toContain("permission");
+    expect(task).toContain("screening questions");
+    expect(task).not.toContain("good time");
     expect(task).toMatch(/if they (say no|decline|would rather not)/);
   });
 

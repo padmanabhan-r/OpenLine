@@ -47,9 +47,15 @@ describe("createCallePort — refuses rather than dialing", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("refuses a phone number that is not E.164", async () => {
-    const outcome = await livePort().dial(dialRequest({ phone: "555-0114" }));
+  it("refuses a phone number that is not E.164, without echoing it", async () => {
+    const outcome = await livePort().dial(dialRequest({ phone: "415-555-0114" }));
     expect(outcome).toMatchObject({ ok: false, refusal: "invalid_phone" });
+    // The refusal is stored on the row and shown to the recruiter, so it
+    // must not carry the number it refused.
+    if (!outcome.ok) {
+      expect(outcome.detail).not.toContain("415-555-0114");
+      expect(outcome.detail).toContain("0114");
+    }
   });
 
   it("refuses with no API key", async () => {

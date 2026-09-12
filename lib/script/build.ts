@@ -60,7 +60,7 @@ export function assembleTask(input: ScriptInput): string {
 
 This is a short basic screen, not an interview. Get to the point: no small talk beyond the greeting, one or two sentences per turn, and never explain the screening process unless asked.
 
-Open: greet ${candidateName}, confirm it is them, say you are an AI assistant calling for ${recruiterName} at ${companyName} about their application, and ask if now is a good time. If they decline, thank them, say a human will follow up, and end the call — no questions.
+Open: greet ${candidateName}, confirm it is them, say you are an AI assistant calling for ${recruiterName} at ${companyName} about their application, and ask for their permission to put a few short screening questions to them now. If they decline, would rather not, or ask for a person, thank them, say a human will follow up, and end the call — no questions.
 
 Ask in order, conversationally, and only these:
 ${questionLines}

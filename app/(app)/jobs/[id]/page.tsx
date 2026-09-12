@@ -34,12 +34,15 @@ function SectionHeader({
   title,
   count,
   explanation,
+  note,
   children,
 }: {
   eyebrow: string;
   title: string;
   count: number;
   explanation: string;
+  /** One more line under the explanation, for a number worth stating. */
+  note?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
@@ -93,7 +96,28 @@ function SectionHeader({
       >
         {explanation}
       </p>
+      {note && (
+        <p
+          style={{
+            fontSize: 13,
+            color: "var(--ink-2)",
+            marginTop: 6,
+            maxWidth: 640,
+          }}
+        >
+          {note}
+        </p>
+      )}
     </div>
+  );
+}
+
+/** Numbers in mono, as the console does everywhere. */
+function Num({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="mono" style={{ color: "var(--ink)" }}>
+      {children}
+    </span>
   );
 }
 
@@ -176,6 +200,27 @@ export default async function JobPage({
               title="Shortlisted"
               count={roster.length}
               explanation="The only people OpenLine will call. Build each script, read it, then place the call — nothing dials without a human having seen the words first."
+              note={
+                <>
+                  {callable.length > 0 && (
+                    <>
+                      Screening all <Num>{callable.length}</Num> takes about{" "}
+                      <Num>{callable.length * 2} minutes</Num> of machine time,
+                      in parallel — a basic screen runs two minutes. By hand,
+                      that is a day of dialing.
+                    </>
+                  )}
+                  {!operator.ok && (
+                    <>
+                      {" "}
+                      <Link href="/unlock" style={{ color: "var(--accent-deep)", fontWeight: 600 }}>
+                        Unlock the console
+                      </Link>{" "}
+                      to build scripts and place calls.
+                    </>
+                  )}
+                </>
+              }
             >
               <Badge tone="good">
                 {callable.length} with a phone number
@@ -191,7 +236,7 @@ export default async function JobPage({
               );
 
               const dialDisabledReason = !operator.ok
-                ? operator.reason
+                ? "Unlock the console to dial."
                 : !acceptsCalls(job.status)
                   ? closedReason(job.status, job.statusReason)
                   : candidate.phoneE164

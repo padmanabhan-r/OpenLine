@@ -1,5 +1,6 @@
 import { CalleClient, type Call, type JsonObject } from "@call-e/calle";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
+import { maskPhone } from "@/lib/phone/normalize";
 import { createFakeCalleFetch } from "./fake-server";
 import { FAKE_SCREENING } from "./fake-demo";
 
@@ -129,7 +130,7 @@ export function createCallePort(config: CallePortConfig): CallePort {
         return {
           ok: false,
           refusal: "invalid_phone",
-          detail: `"${request.phone}" is not an E.164 number.`,
+          detail: `The number on file (${maskPhone(request.phone)}) is not E.164, so it was not dialed.`,
         };
       }
 

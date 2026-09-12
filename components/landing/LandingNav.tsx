@@ -43,10 +43,12 @@ export default function LandingNav() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-        {/* The console link is the page's only call to action now that the
-            hero carries none, so it takes the brass rather than a plate. */}
+        {/* The hero carries the brass now ("Try the demo"); the console link
+            steps back so the page has one primary action. */}
         <Link href="/jobs">
-          <Button size="sm">Open the console</Button>
+          <Button size="sm" variant="ghost">
+            Open the console
+          </Button>
         </Link>
       </div>
     </nav>

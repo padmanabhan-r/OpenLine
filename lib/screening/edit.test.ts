@@ -18,7 +18,7 @@ describe("prepareEditedScript", () => {
     // The consent gate and disclosure survive any edit, because the human
     // never touches the assembled text — only the questions.
     expect(task).toContain("AI assistant");
-    expect(task.toLowerCase()).toContain("good time");
+    expect(task.toLowerCase()).toContain("permission");
     expect(task).toContain("What is your notice period?");
     expect(task).toContain("Salary band");
   });

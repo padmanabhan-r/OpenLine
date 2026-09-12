@@ -44,7 +44,7 @@ export default function Switchboard({
     },
     {
       speaker: "OPENLINE",
-      text: `Is now a good time for a few questions about your ${jobTitle} application? You can stop me at any point.`,
+      text: `May I ask you a few short screening questions about your ${jobTitle} application? You can stop me at any point.`,
       mark: null,
     },
     { speaker: firstName.toUpperCase(), text: "Sure — go ahead.", mark: null },

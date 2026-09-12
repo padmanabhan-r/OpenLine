@@ -27,7 +27,7 @@ export const FAKE_SCREENING: FakeCalleOptions = {
       {
         offset_seconds: 5,
         speaker: "bot",
-        text: `Hi ${first}. I'm an AI assistant calling on behalf of the recruiter about your application. Is now a good time for a couple of quick questions?`,
+        text: `Hi ${first}. I'm an AI assistant calling on behalf of the recruiter about your application. May I put a few short screening questions to you now?`,
       },
       { offset_seconds: 12, speaker: "user", text: "Sure, go ahead." },
       { offset_seconds: 14, speaker: "bot", text: "Are you still interested in the role?" },

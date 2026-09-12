@@ -12,6 +12,18 @@ import { parsePhoneNumberWithError, type CountryCode } from "libphonenumber-js";
  * stranger who never applied for the job.
  */
 
+/**
+ * A number as it may appear on screen or in a log: the last four digits and
+ * nothing else. Not a security measure — the console never renders numbers
+ * at all — but the one place a raw string could leak is an error message
+ * quoting the input that failed, and this is what those quote instead.
+ */
+export function maskPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length < 4) return "•••";
+  return `••• ${digits.slice(-4)}`;
+}
+
 export type RejectionReason =
   | "empty"
   | "unparseable"

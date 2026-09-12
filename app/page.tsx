@@ -1,5 +1,7 @@
+import Link from "next/link";
 import LandingNav from "@/components/landing/LandingNav";
 import Switchboard, { type BoardRow } from "@/components/landing/Switchboard";
+import Button from "@/components/ui/Button";
 import { CalleCredit, CalleMark } from "@/components/ui/PoweredByCalle";
 import { APPLICANTS } from "@/data/applicants";
 import { COMPANY_NAME, JOB_TITLE } from "@/data/job";
@@ -36,6 +38,20 @@ export default function LandingPage() {
   // Five lines on the board. Which one gets called is the visitor's choice,
   // not ours — the switchboard holds the selection.
   const heroRows: BoardRow[] = roster.slice(0, 5);
+
+  // The number the page makes: the whole seeded shortlist, screened in
+  // parallel, at the two minutes a basic screen takes. Derived from the same
+  // fixtures the console seeds, so the claim and the demo cannot drift apart.
+  const shortlistSize = APPLICANTS.filter((a) => a.screening.shortlisted).length;
+  const callable = APPLICANTS.filter(
+    (a) => a.screening.shortlisted && normalizePhone(a.rawPhone, "IN").ok,
+  ).length;
+  const machineMinutes = callable * 2;
+
+  // Where the buttons go. The judge instance and the video are set per
+  // deployment; without them the hero points at the console on this host.
+  const demoUrl = process.env.OPENLINE_DEMO_URL?.trim() || "/jobs";
+  const videoUrl = process.env.OPENLINE_VIDEO_URL?.trim();
 
   return (
     <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
@@ -111,8 +127,40 @@ export default function LandingPage() {
                 animationDelay: "150ms",
               }}
             >
-              OpenLine runs your first-round screening calls, so you don&apos;t have to. It speaks with candidates, captures the signals that matter, and gives recruiters concise summaries and next steps—freeing your team to focus on hiring the right people, not chasing calls.
+              A shortlist of{" "}
+              <span className="mono" style={{ color: "var(--ink)" }}>
+                {shortlistSize}
+              </span>{" "}
+              is a day of dialing. OpenLine screens all of them in about{" "}
+              <span className="mono" style={{ color: "var(--ink)" }}>
+                {machineMinutes} minutes
+              </span>{" "}
+              of machine time, in parallel, and hands you each transcript, the
+              structured answers, and a confidence score. The recruiter still
+              decides. Only the dialing moves.
             </p>
+
+            <div
+              className="fade-up"
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+                marginTop: 28,
+                animationDelay: "220ms",
+              }}
+            >
+              {/* The demo is the page's one action: a judge can screen the
+                  whole shortlist against a fake CALL-E without an account. */}
+              <Link href={demoUrl}>
+                <Button>Try the demo</Button>
+              </Link>
+              {videoUrl && (
+                <a href={videoUrl} target="_blank" rel="noreferrer noopener">
+                  <Button variant="ghost">Watch the video</Button>
+                </a>
+              )}
+            </div>
 
 
           </div>
@@ -139,8 +187,8 @@ export default function LandingPage() {
                 }}
               >
                 The demonstration call: “Hi — this is an AI assistant calling
-                for the recruiting team at {COMPANY_NAME}. Is now a good time
-                for a few questions about your {JOB_TITLE} application?”
+                for the recruiting team at {COMPANY_NAME}. May I ask you a few
+                short screening questions about your {JOB_TITLE} application?”
               </p>
             </noscript>
           </div>

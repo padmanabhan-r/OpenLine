@@ -1,10 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { OPERATOR_COOKIE } from "@/lib/operator";
+import { OPERATOR_COOKIE, operatorStatus } from "@/lib/operator";
 import { operatorVerdict } from "@/lib/screening/gate";
 import { resolveCalleMode } from "@/lib/calle/port";
+import { seedDemo } from "@/lib/db/seed";
 
 /**
  * Hand the console to whoever knows the operator token.
@@ -33,6 +35,24 @@ export async function unlockConsole(formData: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
+  redirect("/jobs");
+}
+
+/**
+ * Put the demo roster back the way it started.
+ *
+ * Only in fake mode, and only for whoever holds the console: a judge who
+ * screened half the shortlist should be able to hand the next judge a clean
+ * queue. On a live deployment this does nothing — the seeded roster there
+ * carries a real number, and wiping call records is not a button.
+ */
+export async function resetDemoData() {
+  if (resolveCalleMode() !== "fake") return;
+  const operator = await operatorStatus();
+  if (!operator.ok) return;
+
+  await seedDemo();
+  revalidatePath("/", "layout");
   redirect("/jobs");
 }
 
