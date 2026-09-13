@@ -1,58 +1,17 @@
 import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Button from "@/components/ui/Button";
+import Field, { FIELD_STYLE } from "@/components/jobs/FormField";
+import JobDraftFields from "@/components/jobs/JobDraftFields";
 import { createJob } from "../actions";
 
 export const dynamic = "force-dynamic";
-
-const FIELD_STYLE = {
-  width: "100%",
-  fontSize: 14,
-  fontFamily: "inherit",
-  padding: "10px 13px",
-  borderRadius: "var(--radius-sm)",
-  border: "1px solid var(--line)",
-  background: "var(--surface-2)",
-  color: "var(--ink)",
-} as const;
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label style={{ display: "block" }}>
-      <span style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 5 }}>
-        {label}
-      </span>
-      {hint && (
-        <span
-          style={{
-            fontSize: 12.5,
-            color: "var(--ink-3)",
-            display: "block",
-            marginBottom: 7,
-            maxWidth: 560,
-          }}
-        >
-          {hint}
-        </span>
-      )}
-      {children}
-    </label>
-  );
-}
 
 export default function NewJobPage() {
   return (
     <>
       <TopBar
         title="New job"
-        subtitle="Describe the role properly — the screening questions are drawn from it."
+        subtitle="Title, company, a brief — the draft does the rest, and you read it before it exists."
       />
       <Page>
         <Panel>
@@ -83,32 +42,7 @@ export default function NewJobPage() {
               </Field>
             </div>
 
-            <Field
-              label="Job description"
-              hint="Paste the real posting. Vague descriptions produce vague screening questions — the model reads this against each candidate's background."
-            >
-              <textarea
-                name="description"
-                required
-                rows={14}
-                placeholder={"About the role…\n\nWHAT WE NEED\n- …"}
-                style={{ ...FIELD_STYLE, resize: "vertical", lineHeight: 1.6 }}
-              />
-            </Field>
-
-            <Field
-              label="Fact sheet — what the agent may say"
-              hint={
-                "One fact per line as Label: Value. CALL-E cannot look anything up mid-call, so these are the ONLY things it may state when a candidate asks. Anything absent is deferred to a human, never guessed."
-              }
-            >
-              <textarea
-                name="factSheet"
-                rows={6}
-                placeholder={"Salary band: ₹55–75 lakh per annum\nLocation policy: Hybrid — two days a week in office\nInterview process: This call, then two technical rounds"}
-                style={{ ...FIELD_STYLE, resize: "vertical", lineHeight: 1.7 }}
-              />
-            </Field>
+            <JobDraftFields />
 
             <div>
               <Button size="lg" type="submit">

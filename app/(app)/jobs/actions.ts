@@ -2,9 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import OpenAI from "openai";
 import { getDb } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 import type { FactSheetEntry } from "@/lib/script/build";
+import { createJobDrafter } from "@/lib/jobs/draft";
+import { operatorStatus } from "@/lib/operator";
 
 /**
  * Parse "Label: Value" lines into fact sheet entries, leniently.
@@ -55,4 +58,43 @@ export async function createJob(formData: FormData) {
 
   revalidatePath("/jobs");
   redirect(`/jobs/${job.id}`);
+}
+
+/**
+ * Draft the description and fact sheet from a brief. Nothing is saved: the
+ * result fills the form for the recruiter to read and edit first. Behind the
+ * operator token like uploads, since it spends model calls.
+ */
+export async function draftJob(input: {
+  title: string;
+  companyName: string;
+  brief: string;
+}): Promise<
+  { ok: true; description: string; factSheet: string } | { ok: false; reason: string }
+> {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false, reason: operator.reason };
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return { ok: false, reason: "OPENAI_API_KEY is not set, so there is no model to draft with." };
+  }
+
+  const title = input.title.trim();
+  const companyName = input.companyName.trim();
+  const brief = input.brief.trim().slice(0, 4000);
+  if (!title || !companyName || !brief) {
+    return { ok: false, reason: "A title, a company, and a brief are needed to draft." };
+  }
+
+  const draft = await createJobDrafter(new OpenAI({ apiKey })).draft({ title, companyName, brief });
+  if (!draft) return { ok: false, reason: "The model did not return a usable draft. Try a fuller brief." };
+
+  return {
+    ok: true,
+    description: draft.description,
+    // The same "Label: Value" lines a recruiter would type, so createJob
+    // parses the draft exactly as it parses hand-written facts.
+    factSheet: draft.factSheet.map((f) => `${f.label}: ${f.value}`).join("\n"),
+  };
 }
