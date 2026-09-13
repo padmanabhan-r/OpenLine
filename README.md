@@ -162,7 +162,7 @@ Same steps, then:
 | `CALLE_API_KEY` | for real calls | **Calls are live whenever this is set** and `OPENLINE_FAKE_CALLE` is not. They ring real phones and cost money. |
 | `OPENLINE_FAKE_CALLE` | no | `1` to run against the in-process fake. Same as `./start.sh --fake`. |
 | `OPENLINE_OPERATOR_TOKEN` | on any public deployment | Unlocks dialing, uploads and script building. Production with a live key refuses to dial without it. |
-| `OPENLINE_CALL_LOCALE` | no | BCP 47, e.g. `en-US`. The only voice control CALL-E exposes. |
+| `OPENLINE_CALL_LOCALE` | no | BCP 47, e.g. `en-US`. Fallback voice locale; each job picks its own call language (English, Hindi, Tamil, Telugu, Kannada, Malayalam). |
 | `OPENLINE_DEMO_PHONE` | for the demo | The one number the seeded roster actually rings. Never committed. |
 | `OPENAI_API_KEY` | for resume upload | Resume parsing and scoring only. Screening questions do not use it. |
 | `OPENAI_MODEL` | no | Defaults to `gpt-4o-mini` |
