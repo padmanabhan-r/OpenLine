@@ -215,14 +215,15 @@ function applicant(input: {
 /**
  * The twenty the recruiter shortlisted, in the ATS's ranked order.
  *
- * The first entry is the only real person in this file — the maintainer, who
- * consented to be called on camera. Their number comes from the environment at
- * seed time and is never committed. Everyone else is invented.
+ * The first entry is the maintainer's slot. For the live demo the seed swaps
+ * in their real name and number from the environment (OPENLINE_DEMO_NAME and
+ * OPENLINE_DEMO_PHONE — never committed); everywhere else, including the
+ * public judge instance, the row is as invented as the rest of the file.
  */
 const SHORTLISTED: ApplicantSeed[] = [
   applicant({
     id: "CAND_0000001",
-    name: "Padmanabhan Rajendrakumar",
+    name: "Aravind Chandran",
     rawPhone: "+1 415 555 0101",
     email: "demo@example.com",
     headline: "AI Engineer | Retrieval systems, LLM evaluation, production ML",
