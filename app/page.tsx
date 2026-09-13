@@ -54,14 +54,23 @@ export default function LandingPage() {
   const videoUrl = process.env.OPENLINE_VIDEO_URL?.trim();
 
   return (
-    <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
+    <div
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        overflowX: "hidden",
+      }}
+    >
       <LandingNav />
 
       {/* ── Hero: the exchange floor, and the whole page ──────────────── */}
       <header
         style={{
           ...SHELL,
-          padding: "26px 30px 22px",
+          width: "100%",
+          flex: 1,
+          padding: "22px 30px 20px",
         }}
       >
         <div
@@ -104,8 +113,8 @@ export default function LandingPage() {
             <h1
               className="display fade-up"
               style={{
-                fontSize: "clamp(44px, 6vw, 86px)",
-                margin: "26px 0 0",
+                fontSize: "clamp(44px, 5.6vw, 80px)",
+                margin: "22px 0 0",
                 animationDelay: "70ms",
               }}
             >
@@ -119,11 +128,11 @@ export default function LandingPage() {
             <p
               className="fade-up"
               style={{
-                fontSize: 22,
-                lineHeight: 1.7,
+                fontSize: 20,
+                lineHeight: 1.6,
                 color: "var(--ink-2)",
-                maxWidth: "38ch",
-                margin: "30px 0 0",
+                maxWidth: "40ch",
+                margin: "24px 0 0",
                 animationDelay: "150ms",
               }}
             >
@@ -146,7 +155,7 @@ export default function LandingPage() {
                 display: "flex",
                 flexWrap: "wrap",
                 gap: 12,
-                marginTop: 28,
+                marginTop: 24,
                 animationDelay: "220ms",
               }}
             >
@@ -197,35 +206,12 @@ export default function LandingPage() {
       </header>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
+      {/* The credit only. The wordmark and the Alpha tag are in the nav
+          already; repeating them here was the row that pushed the page past
+          one screen. */}
       <footer style={{ borderTop: "1px solid var(--line-2)" }}>
-        <div
-          style={{
-            ...SHELL,
-            padding: "16px 30px 18px",
-          }}
-        >
+        <div style={{ ...SHELL, padding: "14px 30px 16px" }}>
           <CalleCredit />
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 14,
-              marginTop: 16,
-              fontSize: 12.5,
-              color: "var(--ink-3)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontWeight: 700, color: "var(--ink-2)" }}>
-                OpenLine
-              </span>
-              <span className="plate" style={{ fontSize: 10.5, padding: "2px 8px" }}>
-                Alpha
-              </span>
-            </div>
-          </div>
         </div>
       </footer>
     </div>
