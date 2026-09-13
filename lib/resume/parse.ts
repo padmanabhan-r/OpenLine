@@ -54,7 +54,9 @@ Return only the JSON object. No commentary.`;
 
 export interface ResumeParser {
   parse(input: {
-    resumeText: string;
+    /** The PDF itself. The model reads every page as text and as an image. */
+    pdf: Uint8Array;
+    filename: string;
     jobTitle: string;
     jobDescription: string;
   }): Promise<ParsedResume | null>;
@@ -66,28 +68,42 @@ export function createResumeParser(
 ): ResumeParser {
   return {
     async parse(input): Promise<ParsedResume | null> {
-      const response = await client.chat.completions.create({
+      // The PDF goes in whole, as a file input, so a scanned or image-only
+      // resume is read as pages rather than coming back as empty text. A file
+      // that is not a resume yields no name, which the coercion turns into
+      // null — the "could not produce a usable profile" outcome.
+      const response = await client.responses.create({
         model,
         temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: PARSE_SYSTEM_PROMPT },
+        instructions: PARSE_SYSTEM_PROMPT,
+        input: [
           {
             role: "user",
-            content: `Job: ${input.jobTitle}
+            content: [
+              {
+                type: "input_text",
+                // JSON mode insists the word appears in the input, not only
+                // in the instructions.
+                text: `Job: ${input.jobTitle}
 
 Job description:
 ${input.jobDescription}
 
-Resume:
-${input.resumeText.slice(0, 24_000)}`,
+Read the attached resume and return the JSON object described in the instructions.`,
+              },
+              {
+                type: "input_file",
+                filename: input.filename,
+                file_data: `data:application/pdf;base64,${Buffer.from(input.pdf).toString("base64")}`,
+              },
+            ],
           },
         ],
+        text: { format: { type: "json_object" } },
       });
 
-      const raw = response.choices[0]?.message?.content ?? "";
       try {
-        return coerceParsedResume(JSON.parse(raw));
+        return coerceParsedResume(JSON.parse(response.output_text));
       } catch {
         return null;
       }

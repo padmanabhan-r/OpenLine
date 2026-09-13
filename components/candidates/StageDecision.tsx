@@ -108,12 +108,11 @@ export default function StageDecision({
 
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-      <Badge tone={TONE[stage]} dot={isExit(stage)}>
-        {STAGE_LABELS[stage]}
-      </Badge>
-      {stage === "shortlisted" && shortlistedBy === "human" && (
-        <span style={{ fontSize: 11, color: "var(--ink-3)" }}>added by you</span>
-      )}
+      <span title={shortlistedBy === "human" ? "Shortlisted by a person, over the ATS score" : undefined}>
+        <Badge tone={TONE[stage]} dot={isExit(stage)}>
+          {STAGE_LABELS[stage]}
+        </Badge>
+      </span>
       <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
         {pending ? <Icon name="clock" size={13} style={{ color: "var(--ink-3)" }} /> : controls}
       </span>

@@ -102,7 +102,7 @@ smoother demo.
 ## How a call happens
 
 ```
-resume PDF → R2 → unpdf → OpenAI parse + score → candidate row
+resume PDF → R2 → OpenAI reads the pages (text or scanned) → parse + score → candidate row
                                                  (≥70 auto-shortlists, human overrides)
 shortlisted candidate
   → preview    five template questions → guard each one → assembleTask()

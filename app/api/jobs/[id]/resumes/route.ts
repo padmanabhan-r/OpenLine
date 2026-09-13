@@ -13,6 +13,10 @@ import { operatorStatus } from "@/lib/operator";
  * `formData()` just works and each file gets its own outcome in the response.
  */
 
+// A vision parse takes ten to thirty seconds a file and the batch runs in
+// sequence, so a full batch needs more than the platform default.
+export const maxDuration = 300;
+
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_FILES = 10;
 

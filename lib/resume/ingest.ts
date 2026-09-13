@@ -5,7 +5,6 @@ import type { CountryCode } from "libphonenumber-js";
 import { normalizePhone } from "@/lib/phone/normalize";
 import { summarizeForScript } from "@/lib/candidates/profile";
 import { putResume, resumeKey } from "@/lib/storage/r2";
-import { extractResumeText, MIN_RESUME_TEXT_CHARS } from "./extract";
 import { createResumeParser, shouldShortlist, toCandidateProfile } from "./parse";
 
 /**
@@ -13,8 +12,8 @@ import { createResumeParser, shouldShortlist, toCandidateProfile } from "./parse
  *
  * The ordering is deliberate on a database with no transactions:
  * R2 first (an orphaned object is harmless; a row pointing at nothing is not),
- * then extract, then parse, then the row — last, so a crash anywhere earlier
- * leaves no half-candidate. Failures still insert a row, visibly failed,
+ * then parse, then the row — last, so a crash anywhere earlier leaves no
+ * half-candidate. Failures still insert a row, visibly failed,
  * because a resume that silently vanishes from a hiring pipeline is the worst
  * outcome this system can produce.
  */
@@ -71,26 +70,8 @@ export async function ingestResume(input: {
     };
   }
 
-  // 2. Text out of the PDF.
-  let text: string;
-  try {
-    text = await extractResumeText(bytes);
-  } catch (error) {
-    const id = await insertFailedRow(
-      job, filename, key,
-      `The PDF could not be read: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    return { filename, status: "parse_failed", candidateId: id, reason: "The PDF could not be read." };
-  }
-
-  if (text.length < MIN_RESUME_TEXT_CHARS) {
-    const reason =
-      "Too little readable text — likely a scanned or image-only PDF.";
-    const id = await insertFailedRow(job, filename, key, reason);
-    return { filename, status: "parse_failed", candidateId: id, reason };
-  }
-
-  // 3. Model parse + score, defensively coerced.
+  // 2. Model reads the PDF — pages, not extracted text, so a scanned resume
+  //    works — then parses and scores, defensively coerced.
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     const reason = "OPENAI_API_KEY is not set, so resumes cannot be parsed.";
@@ -99,7 +80,8 @@ export async function ingestResume(input: {
   }
 
   const parsed = await createResumeParser(new OpenAI({ apiKey })).parse({
-    resumeText: text,
+    pdf: bytes,
+    filename,
     jobTitle: job.title,
     jobDescription: job.description,
   });
@@ -109,7 +91,7 @@ export async function ingestResume(input: {
     return { filename, status: "parse_failed", candidateId: id, reason };
   }
 
-  // 4. The model's phone claim goes through the same gate as every import —
+  // 3. The model's phone claim goes through the same gate as every import —
   //    normalized or refused, never guessed.
   // The job's region is stored as free text; libphonenumber narrows it. An
   // unrecognised value behaves like no region, which refuses rather than

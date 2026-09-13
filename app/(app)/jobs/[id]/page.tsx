@@ -253,7 +253,7 @@ export default async function JobPage({
                     display: "flex",
                     alignItems: "center",
                     gap: 14,
-                    padding: "13px 22px",
+                    padding: "9px 22px",
                     borderBottom: "1px solid var(--line-2)",
                   }}
                 >
@@ -297,49 +297,42 @@ export default async function JobPage({
 
                   {/* The score that put them here — arguable, so shown, and
                       named: a bare number in a queue is a guess for anyone
-                      who cannot hover. */}
-                  <div style={{ width: 64, flexShrink: 0, textAlign: "right" }}>
-                    <div
-                      className="mono"
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        letterSpacing: ".1em",
-                        textTransform: "uppercase",
-                        color: "var(--ink-3)",
-                        marginBottom: 1,
-                      }}
-                    >
-                      match
-                    </div>
+                      who cannot hover. One line, so the row stays one line. */}
+                  <div
+                    className="mono"
+                    style={{
+                      width: 78,
+                      flexShrink: 0,
+                      textAlign: "right",
+                      whiteSpace: "nowrap",
+                      fontSize: 11,
+                      letterSpacing: ".08em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-3)",
+                    }}
+                    title={
+                      candidate.shortlistedBy === "human"
+                        ? "ATS match score — a person shortlisted them anyway"
+                        : "ATS match score"
+                    }
+                  >
+                    match{" "}
                     {candidate.matchScore != null ? (
                       <span
-                        className="mono"
                         style={{
                           fontSize: 13.5,
                           fontWeight: 700,
+                          letterSpacing: 0,
                           color:
                             candidate.matchScore >= 85
                               ? "var(--accent-deep)"
                               : "var(--ink-2)",
                         }}
-                        title={
-                          candidate.shortlistedBy === "human"
-                            ? "ATS match score — a person shortlisted them anyway"
-                            : "ATS match score"
-                        }
                       >
                         {candidate.matchScore}
                       </span>
                     ) : (
-                      <span style={{ fontSize: 12, color: "var(--ink-3)" }}>—</span>
-                    )}
-                    {candidate.shortlistedBy === "human" && (
-                      <div
-                        style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 1 }}
-                      >
-                        added by you
-                      </div>
+                      <span style={{ fontSize: 12, letterSpacing: 0 }}>—</span>
                     )}
                   </div>
 
