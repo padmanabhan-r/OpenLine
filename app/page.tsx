@@ -21,9 +21,10 @@ import { normalizePhone } from "@/lib/phone/normalize";
 const SHELL = { maxWidth: 1340, margin: "0 auto" } as const;
 
 export default function LandingPage() {
-  // CAND_0000001 is the one real person in the fixtures (the maintainer,
-  // seeded for the live demo call). A published landing page shows only the
-  // invented candidates — a real name here would be doxxing.
+  // CAND_0000001 is the slot a local seed may put a real number and name on
+  // for the live demo call. The fixture itself is invented, but a published
+  // landing page still shows only the other candidates, so nothing real can
+  // ever land here by accident.
   const shortlisted = APPLICANTS.filter(
     (a) => a.screening.shortlisted && a.candidateId !== "CAND_0000001",
   );

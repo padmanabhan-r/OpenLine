@@ -5,8 +5,9 @@
  *
  * The logic lives in lib/db/seed.ts so the fake-mode judge instance can reset
  * itself from inside the app. This wrapper adds the one thing only a local run
- * should do: swap the first shortlisted candidate for the maintainer's real
- * number, read from OPENLINE_DEMO_PHONE and never committed.
+ * should do: swap the first shortlisted candidate for the demo number, read
+ * from OPENLINE_DEMO_PHONE and never committed. Without it every row is
+ * fiction, which is what any public deployment must be seeded with.
  *
  * The mock numbers are US fiction-reserved (555-01xx) even though this role is
  * based in India, and that is deliberate. India publishes no reserved range for
@@ -19,13 +20,16 @@ config({ path: ".env" });
 import { seedDemo } from "../lib/db/seed";
 
 const DEMO_PHONE = process.env.OPENLINE_DEMO_PHONE?.trim();
-const DEMO_NAME =
-  process.env.OPENLINE_DEMO_NAME?.trim() || "Padmanabhan Rajendrakumar";
+// No default: a real name belongs in the environment next to the real number,
+// never in the tree.
+const DEMO_NAME = process.env.OPENLINE_DEMO_NAME?.trim();
 
 async function main() {
   console.log("Clearing existing demo data…");
   const summary = await seedDemo(
-    DEMO_PHONE ? { demoPhone: DEMO_PHONE, demoName: DEMO_NAME } : {},
+    DEMO_PHONE
+      ? { demoPhone: DEMO_PHONE, ...(DEMO_NAME ? { demoName: DEMO_NAME } : {}) }
+      : {},
   );
 
   console.log(
