@@ -30,10 +30,11 @@ the needs-human routing, the pipeline — is the real code.
    everyone; building scripts and placing calls need the token.
 2. Open the **Senior AI Engineer** job. Twenty people are shortlisted; two have
    numbers that could not be resolved and say so.
-3. On any row, **Build script**, then **Review**. Read the exact words,
-   including the AI disclosure and the consent question. Edit a question —
-   try typing "Are you married?" — and watch the guard block the script.
-4. **Call**, confirm by name. The row goes dialing and completes in a few
+3. On any row, **Call**, then confirm by name. The script is a fixed template,
+   so nothing is built by hand; **Review** shows the exact words, including the
+   AI disclosure and the consent question. Edit a question there — try typing
+   "Are you married?" — and watch the guard block the script.
+4. The row goes dialing and completes in a few
    seconds with a canned transcript that follows the real script and a
    schema-valid structured result. One candidate question the fact sheet
    cannot answer routes the call to a human.
@@ -174,13 +175,15 @@ connect. Test fixtures use the ACMA range Australia reserves for fiction.
 
 1. Open the console and pick the seeded **Senior AI Engineer** job.
 2. Upload resume PDFs, or use the seeded roster.
-3. On a shortlisted row, **Build script** — then open it and read the exact
-   words, including the consent line.
-4. Edit a question if you want; the guard re-runs and the script version bumps.
-5. **Call** — a two-step confirm that names the person. The page shows the call
-   in progress and updates itself when the result lands.
-6. Review the transcript, the structured result, and anything flagged for a
-   human.
+3. On a shortlisted row, **Call** — a two-step confirm that names the person.
+   The first click prepares the script from the fixed template; **Review**
+   shows the exact words, including the consent line, and lets you edit a
+   question (the guard re-runs and the script version bumps).
+4. Confirm. The page shows the call in progress and updates itself when the
+   result lands.
+5. Read the transcript, the structured result, and anything flagged for a
+   human — then decide: **Interview** or **Reject**. OpenLine never makes that
+   call; a person does.
 
 ## Side effects, and how to stop it
 

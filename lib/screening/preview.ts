@@ -202,7 +202,7 @@ export async function previewJob(jobId: string): Promise<PreviewOutcome[]> {
   return outcomes;
 }
 
-/** Generate a preview for one candidate — the per-row "Build script" path. */
+/** Generate a preview for one candidate — what the first click of Call does. */
 export async function previewCandidate(
   jobId: string,
   candidateId: string,

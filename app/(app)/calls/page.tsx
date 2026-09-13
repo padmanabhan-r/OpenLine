@@ -3,6 +3,7 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
+import SignalChips from "@/components/screening/SignalChips";
 import { listCalls } from "@/lib/db/queries";
 import { reconcileStaleCalls } from "@/lib/screening/reconcile";
 import type { ScreeningCall } from "@/lib/db/schema";
@@ -38,47 +39,6 @@ function StatusBadge({ call }: { call: ScreeningCall }) {
     default:
       return <Badge tone="neutral">Script ready</Badge>;
   }
-}
-
-/**
- * What the call actually established, at a glance.
- *
- * These chips exist so the index answers "is this person worth my attention"
- * without opening the transcript.
- */
-function SignalChips({ call }: { call: ScreeningCall }) {
-  const result = call.structuredResult;
-  if (!result) return null;
-
-  const chips: Array<{ label: string; tone: "good" | "warn" | "info" | "neutral" }> = [];
-
-  if (result.reached_candidate && result.reached_candidate !== "yes") {
-    chips.push({ label: result.reached_candidate.replace("_", " "), tone: "warn" });
-  }
-  if (result.interest_level) {
-    chips.push({
-      label: `interest: ${result.interest_level.replace("_", " ")}`,
-      tone:
-        result.interest_level === "high"
-          ? "good"
-          : result.interest_level === "low"
-            ? "warn"
-            : "info",
-    });
-  }
-  if (result.notice_period) {
-    chips.push({ label: result.notice_period, tone: "neutral" });
-  }
-
-  return (
-    <span style={{ display: "inline-flex", gap: 6 }}>
-      {chips.slice(0, 3).map((chip) => (
-        <Badge key={chip.label} tone={chip.tone}>
-          {chip.label}
-        </Badge>
-      ))}
-    </span>
-  );
 }
 
 export default async function CallsPage() {
@@ -152,12 +112,12 @@ export default async function CallsPage() {
                       {jobTitle}
                     </div>
                   </div>
-                  <SignalChips call={call} />
-                  {call.needsHuman && call.status === "completed" && (
-                    <Badge tone="warn" dot>
-                      Needs you
-                    </Badge>
-                  )}
+                  <SignalChips
+                    reachedCandidate={call.structuredResult?.reached_candidate}
+                    interestLevel={call.structuredResult?.interest_level}
+                    noticePeriod={call.structuredResult?.notice_period}
+                    needsHuman={call.needsHuman && call.status === "completed"}
+                  />
                   <StatusBadge call={call} />
                   <Icon name="arrow-right" size={17} style={{ color: "var(--ink-3)" }} />
                 </div>

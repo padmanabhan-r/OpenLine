@@ -7,10 +7,11 @@ import Icon from "@/components/ui/Icon";
 import JobDescription from "@/components/jobs/JobDescription";
 import RowActions from "@/components/screening/RowActions";
 import ResumeUpload from "@/components/candidates/ResumeUpload";
-import StageControl from "@/components/candidates/StageControl";
+import StageDecision from "@/components/candidates/StageDecision";
+import SignalChips from "@/components/screening/SignalChips";
 import { getJob, listJobCandidates } from "@/lib/db/queries";
 import { jobRef } from "@/lib/jobs/ref";
-import { isShortlisted } from "@/lib/candidates/stage";
+import { isExit, isShortlisted } from "@/lib/candidates/stage";
 import JobStatusControl from "@/components/jobs/JobStatusControl";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { operatorStatus } from "@/lib/operator";
@@ -136,7 +137,9 @@ export default async function JobPage({
   // only decides whether the button is worth offering.
   const operator = await operatorStatus();
   const roster = applicants.filter((r) => isShortlisted(r.candidate.stage));
-  const pool = applicants.filter((r) => !isShortlisted(r.candidate.stage));
+  const pool = applicants.filter((r) => r.candidate.stage === "applied");
+  // Rejected or withdrew: off the list, still on the record, one click back.
+  const exited = applicants.filter((r) => isExit(r.candidate.stage));
   const callable = roster.filter((r) => r.candidate.phoneE164);
   const unreachable = roster.filter((r) => !r.candidate.phoneE164);
 
@@ -199,7 +202,7 @@ export default async function JobPage({
               eyebrow="The queue"
               title="Shortlisted"
               count={roster.length}
-              explanation="The only people OpenLine will call. Build each script, read it, then place the call — nothing dials without a human having seen the words first."
+              explanation="The only people OpenLine will call. Call each one, read what came back, then decide — the words the agent says are fixed and readable on Review before anything dials."
               note={
                 <>
                   {callable.length > 0 && (
@@ -216,7 +219,7 @@ export default async function JobPage({
                       <Link href="/unlock" style={{ color: "var(--accent-deep)", fontWeight: 600 }}>
                         Unlock the console
                       </Link>{" "}
-                      to build scripts and place calls.
+                      to place calls.
                     </>
                   )}
                 </>
@@ -278,6 +281,18 @@ export default async function JobPage({
                         ? `${candidate.headline} · ${candidate.yearsOfExperience} yrs`
                         : candidate.summary}
                     </div>
+                    {/* What the call found, on the row — the recruiter decides
+                        from here without opening every transcript. */}
+                    {call?.status === "completed" && (
+                      <div style={{ marginTop: 6 }}>
+                        <SignalChips
+                          reachedCandidate={call.reachedCandidate}
+                          interestLevel={call.interestLevel}
+                          noticePeriod={call.noticePeriod}
+                          needsHuman={call.needsHuman}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* The score that put them here — arguable, so shown, and
@@ -329,11 +344,13 @@ export default async function JobPage({
                   </div>
 
                   <div style={{ flexShrink: 0 }}>
-                    <StageControl
+                    <StageDecision
                       jobId={job.id}
                       candidateId={candidate.id}
+                      candidateName={candidate.name}
                       stage={candidate.stage}
                       shortlistedBy={candidate.shortlistedBy}
+                      callCompleted={call?.status === "completed"}
                     />
                   </div>
 
@@ -402,7 +419,7 @@ export default async function JobPage({
                 eyebrow="The rest of the pool"
                 title="Not shortlisted"
                 count={pool.length}
-                explanation="No call is scripted for these applicants. The reasons are on the record because a filter nobody can see is a filter nobody can correct — and some of these reasons deserve an argument."
+                explanation="Nobody here gets a call unless a person shortlists them. The reasons are on the record because a filter nobody can see is a filter nobody can correct — and some of these reasons deserve an argument."
               />
 
               {pool.map(({ candidate }) => (
@@ -440,11 +457,58 @@ export default async function JobPage({
                   >
                     {candidate.matchScore ?? "—"}
                   </span>
-                  <StageControl
+                  <StageDecision
                     jobId={job.id}
                     candidateId={candidate.id}
+                    candidateName={candidate.name}
                     stage={candidate.stage}
                     shortlistedBy={candidate.shortlistedBy}
+                    callCompleted={false}
+                  />
+                </div>
+              ))}
+            </Panel>
+          )}
+
+          {/* Decided against, or gone — kept in view, one click from back on. */}
+          {exited.length > 0 && (
+            <Panel padded={false}>
+              <SectionHeader
+                eyebrow="Closed"
+                title="Not proceeding"
+                count={exited.length}
+                explanation="A person moved each of these off the list. Restore puts them back on the shortlist; nothing about their calls is lost either way."
+              />
+
+              {exited.map(({ candidate }) => (
+                <div
+                  key={candidate.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "12px 22px",
+                    borderBottom: "1px solid var(--line-2)",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Link
+                      href={`/candidates/${candidate.id}`}
+                      style={{ fontSize: 13.5, fontWeight: 600 }}
+                    >
+                      {candidate.name}
+                    </Link>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 2 }}>
+                      {candidate.headline ?? candidate.summary}
+                    </div>
+                  </div>
+                  <StageDecision
+                    jobId={job.id}
+                    candidateId={candidate.id}
+                    candidateName={candidate.name}
+                    stage={candidate.stage}
+                    shortlistedBy={candidate.shortlistedBy}
+                    callCompleted={false}
                   />
                 </div>
               ))}

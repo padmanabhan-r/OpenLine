@@ -4,7 +4,7 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
-import StageControl from "@/components/candidates/StageControl";
+import StageDecision from "@/components/candidates/StageDecision";
 import { getCandidate, listApplicationsForCandidate } from "@/lib/db/queries";
 import { jobRef } from "@/lib/jobs/ref";
 import {
@@ -74,6 +74,7 @@ export default async function CandidatePage({
           )}
 
           <Applications
+            candidateName={candidate.name}
             applications={applications}
             currentCandidateId={candidate.id}
           />
@@ -140,9 +141,11 @@ export default async function CandidatePage({
 function Applications({
   applications,
   currentCandidateId,
+  candidateName,
 }: {
   applications: Awaited<ReturnType<typeof listApplicationsForCandidate>>;
   currentCandidateId: string;
+  candidateName: string;
 }) {
   if (applications.length === 0) return null;
 
@@ -195,12 +198,14 @@ function Applications({
             {app.matchScore ?? "—"}
           </span>
 
-          <StageControl
+          <StageDecision
             jobId={app.jobId}
             candidateId={app.id}
+            candidateName={candidateName}
             stage={app.stage}
             shortlistedBy={app.shortlistedBy}
-          />
+            callCompleted
+/>
         </div>
       ))}
     </Panel>

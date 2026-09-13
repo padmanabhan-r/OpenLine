@@ -4,24 +4,36 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { previewCandidate } from "@/lib/screening/preview";
 import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { candidates, jobs } from "@/lib/db/schema";
+import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
 import { isShortlisted, isStage } from "@/lib/candidates/stage";
 import { isJobStatus } from "@/lib/jobs/status";
 import type { DialIntent } from "@/lib/screening/gate";
 import { operatorStatus } from "@/lib/operator";
 
-/** Build (or rebuild) the script for one candidate — the per-row path. */
+/**
+ * Prepare the script for one candidate — the first click of Call.
+ *
+ * Returns the row it prepared so the confirm can bind to its id and version;
+ * the server-side gate checks both again at dial time.
+ */
 export async function buildScriptFor(jobId: string, candidateId: string) {
   const operator = await operatorStatus();
   if (!operator.ok) {
     return { candidateId, name: "", status: "skipped" as const, detail: operator.reason };
   }
   const outcome = await previewCandidate(jobId, candidateId);
+  const db = getDb();
+  const [row] = await db
+    .select({ id: screeningCalls.id, scriptVersion: screeningCalls.scriptVersion })
+    .from(screeningCalls)
+    .where(and(eq(screeningCalls.jobId, jobId), eq(screeningCalls.candidateId, candidateId)))
+    .orderBy(desc(screeningCalls.createdAt))
+    .limit(1);
   revalidatePath(`/jobs/${jobId}`);
   revalidatePath("/calls");
-  return outcome;
+  return { ...outcome, screeningCallId: row?.id ?? null, scriptVersion: row?.scriptVersion ?? null };
 }
 
 /** Start a call from the shortlist row. Same detached-finish shape as the call page. */

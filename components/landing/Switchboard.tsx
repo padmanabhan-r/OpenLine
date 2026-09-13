@@ -36,18 +36,20 @@ export default function Switchboard({
   const chosen = rows[selected];
   const firstName = (chosen?.name ?? "").split(" ")[0];
   const lines = [
+    // The one scripted line from assembleTask, split at its natural pause:
+    // disclosure first, then the role and the request for permission.
     {
       speaker: "OPENLINE",
-      text: `Hi ${firstName}? This is an AI assistant calling for the recruiting team at ${company}.`,
+      text: `Hi, is this ${firstName}? This is an AI assistant calling for the recruiting team at ${company}.`,
       // The disclosure is the dramatic beat — it gets the brass underline.
       mark: "an AI assistant",
     },
     {
       speaker: "OPENLINE",
-      text: `May I ask you a few short screening questions about your ${jobTitle} application? You can stop me at any point.`,
+      text: `You applied for the ${jobTitle} role, and this is a quick two-minute first screen. OK if I ask a few screening questions?`,
       mark: null,
     },
-    { speaker: firstName.toUpperCase(), text: "Sure — go ahead.", mark: null },
+    { speaker: firstName.toUpperCase(), text: "Yes, go ahead.", mark: null },
   ];
 
   type Phase = "idle" | "patching" | "typing" | "done";

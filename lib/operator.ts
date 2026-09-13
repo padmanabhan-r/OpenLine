@@ -20,7 +20,7 @@ async function presentedToken(): Promise<string | undefined> {
   return (await cookies()).get(OPERATOR_COOKIE)?.value;
 }
 
-/** May the current request place calls, upload resumes, or build scripts? */
+/** May the current request place calls or upload resumes? */
 export async function operatorStatus(): Promise<GateVerdict> {
   return operatorVerdict({
     configuredToken: process.env.OPENLINE_OPERATOR_TOKEN,

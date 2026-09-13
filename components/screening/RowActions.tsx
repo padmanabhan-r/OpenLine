@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
@@ -11,12 +12,14 @@ import {
 } from "@/app/(app)/jobs/[id]/actions";
 
 /**
- * The per-row controls on the shortlist: build or rebuild the script, place
- * the call, place it again.
+ * The one control on a shortlist row: Call.
  *
- * Every dial keeps the two-step confirm naming the person — this is still the
- * control that spends money and rings someone, and a smaller button is not a
- * smaller consequence.
+ * The script is a fixed template, so there is nothing for a recruiter to
+ * build by hand. The first click prepares the row's script (and shows the
+ * confirm); the second click dials. The confirm still names the person and
+ * the exact version of the words, and the server refuses if either moved —
+ * this is the click that spends money and rings someone, and a shorter path
+ * to it is not a smaller consequence. The words stay readable on Review.
  */
 export default function RowActions({
   jobId,
@@ -34,27 +37,10 @@ export default function RowActions({
 }) {
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState<"call" | "again" | null>(null);
+  // The row prepared on the first click, when none existed before.
+  const [prepared, setPrepared] = useState<{ id: string; scriptVersion: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const firstName = candidateName.split(" ")[0];
-
-  const rebuild = (
-    <Button
-      size="sm"
-      variant="ghost"
-      disabled={pending}
-      title="Regenerate this candidate's questions from the job description"
-      onClick={() => {
-        setError(null);
-        startTransition(async () => {
-          const outcome = await buildScriptFor(jobId, candidateId);
-          if (outcome.status === "skipped") setError(outcome.detail ?? "Skipped.");
-        });
-      }}
-    >
-      <Icon name={pending ? "clock" : "doc"} size={14} />
-      {pending ? "Building…" : "Rebuild"}
-    </Button>
-  );
 
   if (call?.status === "dialing") {
     return (
@@ -64,33 +50,17 @@ export default function RowActions({
     );
   }
 
-  if (!call) {
+  if (call?.blocked) {
     return (
-      <div style={{ textAlign: "right" }}>
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={pending}
-          onClick={() => {
-            setError(null);
-            startTransition(async () => {
-              const outcome = await buildScriptFor(jobId, candidateId);
-              if (outcome.status === "skipped") setError(outcome.detail ?? "Skipped.");
-            });
-          }}
-        >
-          <Icon name={pending ? "clock" : "doc"} size={14} />
-          {pending ? "Building…" : "Build script"}
-        </Button>
-        {error && (
-          <p style={{ fontSize: 11.5, color: "var(--danger)", marginTop: 4 }}>{error}</p>
-        )}
-      </div>
+      <Badge tone="danger" dot>
+        Blocked
+      </Badge>
     );
   }
 
   if (confirming) {
     const again = confirming === "again";
+    const target = call ?? prepared;
     return (
       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
         <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirming(null)}>
@@ -98,17 +68,18 @@ export default function RowActions({
         </Button>
         <Button
           size="sm"
-          disabled={pending}
+          disabled={pending || !target}
           onClick={() => {
+            if (!target) return;
             setError(null);
             startTransition(async () => {
               // The confirmation names this person and this version of the
               // words; the server refuses if either moved since the page loaded.
               const outcome = again
-                ? await callAgainFromRow(jobId, call.id)
-                : await callFromRow(jobId, call.id, {
+                ? await callAgainFromRow(jobId, target.id)
+                : await callFromRow(jobId, target.id, {
                     candidateId,
-                    scriptVersion: call.scriptVersion,
+                    scriptVersion: target.scriptVersion,
                   });
               if (!outcome.ok) setError(outcome.reason);
               setConfirming(null);
@@ -116,7 +87,7 @@ export default function RowActions({
           }}
         >
           <Icon name={pending ? "clock" : "phone"} size={14} />
-          {pending ? "Starting…" : `Call ${firstName}`}
+          {pending && !target ? "Preparing…" : pending ? "Starting…" : `Call ${firstName}`}
         </Button>
         {error && (
           <span style={{ fontSize: 11.5, color: "var(--danger)" }}>{error}</span>
@@ -126,22 +97,11 @@ export default function RowActions({
   }
 
   // A call already happened — offer another attempt.
-  if (call.status === "completed" || call.status === "failed") {
+  if (call && (call.status === "completed" || call.status === "failed")) {
     return (
       <Button size="sm" variant="ghost" onClick={() => setConfirming("again")}>
         <Icon name="phone" size={14} /> Call again
       </Button>
-    );
-  }
-
-  if (call.blocked) {
-    return (
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        <Badge tone="danger" dot>
-          Blocked
-        </Badge>
-        {rebuild}
-      </div>
     );
   }
 
@@ -150,19 +110,9 @@ export default function RowActions({
     // tabbing the queue and a screen reader both deserve to know why.
     return (
       <div style={{ textAlign: "right" }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          {rebuild}
-          <Button size="sm" variant="soft" disabled>
-            <Icon name="phone" size={14} /> Call
-          </Button>
-        </div>
+        <Button size="sm" variant="soft" disabled>
+          <Icon name="phone" size={14} /> Call
+        </Button>
         <p style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 4 }}>
           {dialDisabledReason}
         </p>
@@ -170,17 +120,41 @@ export default function RowActions({
     );
   }
 
+  const prepareAndConfirm = () => {
+    setError(null);
+    setConfirming("call");
+    if (call) return;
+    startTransition(async () => {
+      const outcome = await buildScriptFor(jobId, candidateId);
+      if (outcome.status === "previewed" && outcome.screeningCallId) {
+        setPrepared({ id: outcome.screeningCallId, scriptVersion: outcome.scriptVersion ?? 1 });
+        return;
+      }
+      setConfirming(null);
+      setError(outcome.detail ?? "The script could not be prepared.");
+    });
+  };
+
   return (
-    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-      {rebuild}
+    <div style={{ textAlign: "right" }}>
       {/* Soft at rest: nineteen black pills in a queue would flatten the one
           that matters. The black pill is reserved for the confirm — the click
           that actually spends money and rings a person. */}
-      <Button size="sm" variant="soft" onClick={() => setConfirming("call")}>
+      <Button size="sm" variant="soft" onClick={prepareAndConfirm}>
         <Icon name="phone" size={14} /> Call
       </Button>
       {error && (
-        <span style={{ fontSize: 11.5, color: "var(--danger)" }}>{error}</span>
+        <p style={{ fontSize: 11.5, color: "var(--danger)", marginTop: 4 }}>
+          {error}
+          {prepared === null && call === null && (
+            <>
+              {" "}
+              <Link href="/calls" style={{ color: "var(--accent-deep)", fontWeight: 600 }}>
+                Review
+              </Link>
+            </>
+          )}
+        </p>
       )}
     </div>
   );

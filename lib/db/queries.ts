@@ -188,6 +188,12 @@ export async function listJobCandidates(jobId: string) {
       status: screeningCalls.status,
       guardFindings: screeningCalls.guardFindings,
       scriptVersion: screeningCalls.scriptVersion,
+      needsHuman: screeningCalls.needsHuman,
+      // Three fields out of the result blob, not the blob: enough for a row
+      // to say what the call found without dragging the transcript along.
+      reachedCandidate: sql<string | null>`${screeningCalls.structuredResult}->>'reached_candidate'`,
+      interestLevel: sql<string | null>`${screeningCalls.structuredResult}->>'interest_level'`,
+      noticePeriod: sql<string | null>`${screeningCalls.structuredResult}->>'notice_period'`,
     })
     .from(screeningCalls)
     .where(eq(screeningCalls.jobId, jobId))

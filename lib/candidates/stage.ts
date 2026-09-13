@@ -60,16 +60,6 @@ export function isShortlisted(stage: Stage): boolean {
   return PROGRESSION.indexOf(stage) >= PROGRESSION.indexOf("shortlisted");
 }
 
-/** Stages a recruiter can move someone to from here. */
-export function nextStages(stage: Stage): Stage[] {
-  if (isExit(stage)) return ["applied"];
-
-  const i = PROGRESSION.indexOf(stage);
-  const forward = i >= 0 && i < PROGRESSION.length - 1 ? [PROGRESSION[i + 1]] : [];
-  const back = i > 0 ? [PROGRESSION[i - 1]] : [];
-  return [...forward, ...back, ...EXIT_STAGES];
-}
-
 export function isStage(value: string): value is Stage {
   return (STAGES as readonly string[]).includes(value);
 }

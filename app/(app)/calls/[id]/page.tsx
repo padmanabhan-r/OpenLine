@@ -5,6 +5,7 @@ import Icon from "@/components/ui/Icon";
 import ScriptView from "@/components/screening/ScriptView";
 import CallButton from "@/components/screening/CallButton";
 import CallAgainButton from "@/components/screening/CallAgainButton";
+import StageDecision from "@/components/candidates/StageDecision";
 import RebuildButton from "@/components/screening/RebuildButton";
 import CallResult from "@/components/screening/CallResult";
 import DialingWatcher from "@/components/screening/DialingWatcher";
@@ -64,6 +65,15 @@ export default async function CallPage({
         subtitle={`${job.title} · ${job.companyName}`}
         actions={
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* The decision lives where the evidence is: next to the transcript. */}
+            <StageDecision
+              jobId={job.id}
+              candidateId={candidate.id}
+              candidateName={candidate.name}
+              stage={candidate.stage}
+              shortlistedBy={candidate.shortlistedBy}
+              callCompleted
+/>
             {call.status === "completed" || call.status === "failed" ? (
               <CallAgainButton
                 screeningCallId={call.id}

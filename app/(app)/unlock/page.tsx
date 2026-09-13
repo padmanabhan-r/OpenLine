@@ -28,7 +28,7 @@ export default async function UnlockPage({
     <>
       <TopBar
         title="Unlock the console"
-        subtitle="Reading is open to everyone. Dialing, uploading, and building scripts need the operator token."
+        subtitle="Reading is open to everyone. Dialing and uploading need the operator token."
       />
       <Page>
         <Panel>

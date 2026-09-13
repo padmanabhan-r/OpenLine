@@ -21,7 +21,7 @@ const input = (overrides: Partial<ScriptInput> = {}): ScriptInput => ({
 describe("assembleTask", () => {
   it("discloses that the caller is an AI before anything else", () => {
     const task = assembleTask(input());
-    const disclosureAt = task.toLowerCase().indexOf("ai");
+    const disclosureAt = task.toLowerCase().indexOf("ai assistant");
     const firstQuestionAt = task.indexOf("q1");
     expect(disclosureAt).toBeGreaterThan(-1);
     expect(disclosureAt).toBeLessThan(firstQuestionAt);
