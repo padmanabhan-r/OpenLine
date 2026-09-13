@@ -60,10 +60,22 @@ describe("assembleTask", () => {
     expect(task).toContain("Hybrid, two days a week in Bangalore");
   });
 
-  it("invites the candidate's own questions", () => {
-    expect(assembleTask(input()).toLowerCase()).toContain(
-      "questions",
+  it("says one scripted opening line: disclosure, who for, which role, and consent", () => {
+    expect(assembleTask(input())).toContain(
+      '"Hi, is this Priya? This is an AI assistant calling for Sam at Northwind. You applied for the Senior Backend Engineer role, and this is a quick two-minute first screen. OK if I ask a few screening questions?"',
     );
+  });
+
+  it("accepts the first answer and never follows up", () => {
+    const task = assembleTask(input()).toLowerCase();
+    expect(task).toMatch(/no follow-ups/);
+    expect(task).not.toContain("ask once");
+  });
+
+  it("answers a candidate's question only from the fact sheet, and never solicits one", () => {
+    const task = assembleTask(input()).toLowerCase();
+    expect(task).toMatch(/answer only from/);
+    expect(task).not.toContain("any quick questions");
   });
 
   it("forbids answering beyond the fact sheet rather than improvising", () => {

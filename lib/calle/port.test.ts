@@ -202,7 +202,7 @@ describe("callePortFromEnv — fake mode", () => {
     const later = callePortFromEnv({ OPENLINE_FAKE_CALLE: "1" });
     const call = await later.waitForCall(outcome.call.id);
     expect(call.status).toBe("completed");
-    expect(call.recipients[0].attempts[0].transcriptTurns[0].text).toBe("Hi, is this Asha Menon?");
+    expect(call.recipients[0].attempts[0].transcriptTurns[0].text).toMatch(/^Hi, is this Asha Menon\?/);
     expect(call.structuredResult).toMatchObject({ consent_given: "yes", reached_candidate: "yes" });
   });
 
