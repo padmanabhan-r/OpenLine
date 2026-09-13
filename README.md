@@ -15,6 +15,8 @@ Built for the **CALL-E: Your Code Is Calling** hackathon.
 
 </div>
 
+![The landing page: the shortlist board, and one scripted line the agent says word for word.](.github/readme/landing.jpg)
+
 ---
 
 ## For judges: 90 seconds, no account, no phone rings
@@ -27,7 +29,7 @@ the needs-human routing, the pipeline — is the real code.
 **https://openline-judge.vercel.app** · operator token: `judge-3654db892044`
 
 1. Open **Unlock** (bottom-left) and enter the token. Reading is open to
-   everyone; building scripts and placing calls need the token.
+   everyone; placing calls and uploading resumes need the token.
 2. Open the **Senior AI Engineer** job. Twenty people are shortlisted; two have
    numbers that could not be resolved and say so.
 3. On any row, **Call**, then confirm by name. The script is a fixed template,
@@ -46,6 +48,8 @@ with a live CALL-E key. It is locked; nothing there can be dialed without the
 maintainer's operator token. The demo video shows one real call placed from it.
 
 ---
+
+![The shortlist: match score, stage, Call. After the call, the row shows what it found and offers Interview or Reject.](.github/readme/shortlist.jpg)
 
 ## The problem
 
@@ -81,6 +85,10 @@ answer comes back as a structured field paired with the candidate's own words.
   advances the candidate to Screened; only a person writes an exit.
 - **Jobs close.** A filled or closed posting stops accepting calls, enforced
   immediately before dialing. Reopening requires a written reason.
+
+![What came back: notice period, availability, salary expectation, interest, next step, and every answer with the candidate's own words as evidence.](.github/readme/call-review.jpg)
+
+![The transcript, exactly as spoken. The opening line is the disclosure and the consent question in one breath.](.github/readme/call-transcript.jpg)
 
 ## The safety model
 
@@ -130,6 +138,8 @@ Three facts about CALL-E shape this design:
 3. **Webhooks are unsigned.** Nothing is trusted from a webhook without
    re-fetching through the authenticated API, which is why reconciliation
    re-fetches by id instead.
+
+![New job: title, company, call language, and a brief. "Draft with AI" writes the description and the fact sheet; the recruiter reads both before the job exists.](.github/readme/new-job.jpg)
 
 ## Try it without an account
 
