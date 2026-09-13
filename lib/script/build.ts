@@ -39,6 +39,12 @@ export interface ScriptInput {
   recruiterName: string;
   questions: ScriptQuestion[];
   factSheet: FactSheetEntry[];
+  /**
+   * English name of the language to conduct the call in, e.g. "Tamil". Absent
+   * for English. The questions below stay written in English either way — the
+   * script a recruiter reviews is the script, whatever the agent voices.
+   */
+  speakLanguage?: string;
 }
 
 /** Build the exact instruction CALL-E will act on. Pure and deterministic. */
@@ -50,6 +56,7 @@ export function assembleTask(input: ScriptInput): string {
     recruiterName,
     questions,
     factSheet,
+    speakLanguage,
   } = input;
 
   const questionLines = questions
@@ -61,10 +68,17 @@ export function assembleTask(input: ScriptInput): string {
       ? factSheet.map((f) => `  - ${f.label}: ${f.value}`).join("\n")
       : "  - (No details were provided for this role.)";
 
+  // Placed before the opening line, so the first word is already in the
+  // right language — a call that opens in English and switches a sentence
+  // later loses the one line that says who is calling.
+  const languageLine = speakLanguage
+    ? `\nConduct the whole call in ${speakLanguage} — the opening line, every question, and the close — keeping their meaning exactly. Everything below is written in English; say each line in ${speakLanguage}. Record answers in English.\n`
+    : "";
+
   return `You are calling ${candidateName} about their application for the ${roleTitle} role at ${companyName}.
 
 This is a short basic screen, not an interview. Say the opening line below word for word, then go straight to the questions: no small talk, one or two sentences per turn, and never explain the process unless asked.
-
+${languageLine}
 Open by saying exactly this, then wait for their answer:
 "Hi, is this ${candidateName}? This is an AI assistant calling for ${recruiterName} at ${companyName}. You applied for the ${roleTitle} role, and this is a quick two-minute first screen. OK if I ask a few screening questions?"
 

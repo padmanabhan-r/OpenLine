@@ -46,6 +46,13 @@ export const jobs = pgTable("jobs", {
   /** ISO country used to normalize national-format phone numbers, e.g. "IN". */
   defaultRegion: text("default_region"),
   /**
+   * BCP 47 tag the agent speaks on every call for this job — sent to CALL-E as
+   * the recipient locale, and (for anything but English) written into the task
+   * as an instruction to conduct the call in that language. One of
+   * lib/jobs/language.ts; the questions stay English on the reviewed script.
+   */
+  language: text("language").notNull().default("en-IN"),
+  /**
    * A filled or closed posting stops taking calls — dialling people for a role
    * that no longer exists is the kind of thing a machine will happily do at
    * scale. Records stay readable either way.

@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "language" text DEFAULT 'en-IN' NOT NULL;

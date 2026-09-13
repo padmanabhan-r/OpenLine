@@ -24,7 +24,8 @@ export interface CallePortConfig {
   /**
    * BCP 47 hint that decides how the agent sounds — `en-US` for an American
    * voice, `en-IN` for Indian English, and so on. The only voice control
-   * CALL-E's Calls API exposes; one value for every call.
+   * CALL-E's Calls API exposes. The default for a call; a request may carry
+   * its own (the job's language) and that wins.
    *
    * Deliberately not `region`: that field is the recipient's own country,
    * used for routing and compliance, and already implied by the E.164 number.
@@ -65,6 +66,8 @@ export interface DialRequest {
   metadata?: JsonObject;
   /** Business-stable, so a retried dispatch cannot double-dial. */
   idempotencyKey: string;
+  /** BCP 47 for this call — the job's language. Falls back to the port's. */
+  locale?: string;
 }
 
 export type RefusalReason =
@@ -143,13 +146,14 @@ export function createCallePort(config: CallePortConfig): CallePort {
       }
 
       try {
+        const locale = request.locale ?? config.locale;
         const call = await client().calls.create(
           {
             task: request.task,
             recipients: [
               {
                 phones: [request.phone],
-                ...(config.locale ? { locale: config.locale } : {}),
+                ...(locale ? { locale } : {}),
               },
             ],
             resultSchema: request.resultSchema,

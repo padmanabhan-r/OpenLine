@@ -116,6 +116,18 @@ describe("createCallePort — dialing through the fake CALL-E server", () => {
     expect(recipients[0]).not.toHaveProperty("region");
   });
 
+  it("lets a call carry its own locale — the job's language — over the configured one", async () => {
+    const fake = createFakeCalleFetch();
+    const port = createCallePort({ apiKey: "test", locale: "en-US", fetch: fake });
+
+    await port.dial(dialRequest({ locale: "ta-IN" }));
+
+    const [body] = fake.createdCalls();
+    const recipients = body.recipients as Array<{ locale?: string }>;
+    expect(recipients[0].locale).toBe("ta-IN");
+    expect(recipients[0]).not.toHaveProperty("region");
+  });
+
   it("omits locale entirely when none is configured", async () => {
     const fake = createFakeCalleFetch();
     const port = createCallePort({

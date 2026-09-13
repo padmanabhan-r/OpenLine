@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
 import { assembleTask, type ScriptInput, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
+import { spokenLanguage } from "@/lib/jobs/language";
 
 /**
  * A human edits the questions; the machine reassembles the script.
@@ -94,6 +95,8 @@ export async function applyScriptEdit(input: {
     companyName: row.job.companyName,
     recruiterName: row.job.recruiterName,
     factSheet: row.job.factSheet,
+    // Without this a human edit would silently drop the call language.
+    speakLanguage: spokenLanguage(row.job.language),
   });
 
   const status = prepared.findings.length > 0 ? "refused" : "previewed";

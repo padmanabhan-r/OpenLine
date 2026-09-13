@@ -2,6 +2,7 @@ import TopBar, { Page, Panel } from "@/components/layout/TopBar";
 import Button from "@/components/ui/Button";
 import Field, { FIELD_STYLE } from "@/components/jobs/FormField";
 import JobDraftFields from "@/components/jobs/JobDraftFields";
+import { CALL_LANGUAGES, DEFAULT_CALL_LANGUAGE } from "@/lib/jobs/language";
 import { createJob } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,18 @@ export default function NewJobPage() {
                   <option value="AE">UAE (+971)</option>
                   <option value="AU">Australia (+61)</option>
                   <option value="">None — require full international format</option>
+                </select>
+              </Field>
+              <Field
+                label="Call language"
+                hint="What the agent speaks on every call for this job. The questions stay in English on the script you review."
+              >
+                <select name="language" defaultValue={DEFAULT_CALL_LANGUAGE} style={FIELD_STYLE}>
+                  {CALL_LANGUAGES.map((l) => (
+                    <option key={l.locale} value={l.locale}>
+                      {l.label}
+                    </option>
+                  ))}
                 </select>
               </Field>
             </div>

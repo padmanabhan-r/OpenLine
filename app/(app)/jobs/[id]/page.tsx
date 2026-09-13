@@ -14,6 +14,7 @@ import { jobRef } from "@/lib/jobs/ref";
 import { isExit, isShortlisted } from "@/lib/candidates/stage";
 import JobStatusControl from "@/components/jobs/JobStatusControl";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
+import { languageLabel } from "@/lib/jobs/language";
 import { operatorStatus } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
@@ -147,7 +148,7 @@ export default async function JobPage({
     <>
       <TopBar
         title={job.title}
-        subtitle={`${jobRef(job.id)} · ${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted`}
+        subtitle={`${jobRef(job.id)} · ${job.companyName} · ${applicants.length} applied · ${roster.length} shortlisted · calls in ${languageLabel(job.language)}`}
         actions={
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <JobStatusControl

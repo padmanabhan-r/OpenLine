@@ -5,6 +5,7 @@ import type { Candidate, Job } from "@/lib/db/schema";
 import { assembleTask, type ScriptQuestion } from "@/lib/script/build";
 import { inspectScript } from "@/lib/script/guard";
 import { STAGES, isShortlisted } from "@/lib/candidates/stage";
+import { spokenLanguage } from "@/lib/jobs/language";
 
 /** Only people on the shortlist get a script written for them. */
 const SHORTLISTED_STAGES = STAGES.filter(isShortlisted);
@@ -62,6 +63,7 @@ export function composeScript(job: Job, candidate: Candidate) {
     recruiterName: job.recruiterName,
     questions,
     factSheet: job.factSheet,
+    speakLanguage: spokenLanguage(job.language),
   });
   return { questions, task, guard: inspectScript(task) };
 }

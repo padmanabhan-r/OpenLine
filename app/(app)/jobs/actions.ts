@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 import type { FactSheetEntry } from "@/lib/script/build";
 import { createJobDrafter } from "@/lib/jobs/draft";
+import { DEFAULT_CALL_LANGUAGE, isCallLanguage } from "@/lib/jobs/language";
 import { operatorStatus } from "@/lib/operator";
 
 /**
@@ -36,6 +37,10 @@ export async function createJob(formData: FormData) {
   const companyName = String(formData.get("companyName") ?? "").trim();
   const recruiterName = String(formData.get("recruiterName") ?? "").trim();
   const defaultRegion = String(formData.get("defaultRegion") ?? "").trim() || null;
+  // Only a tag from the curated list reaches the API — a free string here
+  // would be spoken to a real phone.
+  const requestedLanguage = String(formData.get("language") ?? "").trim();
+  const language = isCallLanguage(requestedLanguage) ? requestedLanguage : DEFAULT_CALL_LANGUAGE;
   const description = String(formData.get("description") ?? "").trim();
   const factSheetText = String(formData.get("factSheet") ?? "");
 
@@ -51,6 +56,7 @@ export async function createJob(formData: FormData) {
       companyName,
       recruiterName,
       defaultRegion,
+      language,
       description,
       factSheet: parseFactSheet(factSheetText),
     })

@@ -111,6 +111,19 @@ describe("assembleTask", () => {
     expect(inspectScript(task).ok).toBe(true);
   });
 
+  it("conducts the call in the job's language while the script stays English", () => {
+    const task = assembleTask(input({ speakLanguage: "Tamil" }));
+    expect(task).toContain("Conduct the whole call in Tamil");
+    // The instruction comes before the opening line, so the first word is Tamil.
+    expect(task.indexOf("Conduct the whole call")).toBeLessThan(task.indexOf('"Hi, is this'));
+    expect(task).toContain("What is your notice period?");
+    expect(inspectScript(task).ok).toBe(true);
+  });
+
+  it("says nothing about language for an English call", () => {
+    expect(assembleTask(input())).not.toContain("Conduct the whole call");
+  });
+
   it("names the candidate and the role", () => {
     const task = assembleTask(input());
     expect(task).toContain("Priya");

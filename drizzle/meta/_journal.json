@@ -50,6 +50,13 @@
       "when": 1786640066001,
       "tag": "0006_demonic_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789290751349,
+      "tag": "0007_early_mystique",
+      "breakpoints": true
     }
   ]
 }

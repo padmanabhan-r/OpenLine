@@ -104,7 +104,11 @@ export async function startCall(
   // the UI alone: this is the last point before a real phone rings, and a role
   // that no longer exists is not a role anyone should be called about.
   const [job] = await db
-    .select({ status: jobsTable.status, statusReason: jobsTable.statusReason })
+    .select({
+      status: jobsTable.status,
+      statusReason: jobsTable.statusReason,
+      language: jobsTable.language,
+    })
     .from(jobsTable)
     .where(eq(jobsTable.id, row.jobId))
     .limit(1);
@@ -146,6 +150,7 @@ export async function startCall(
     resultSchema: SCREENING_RESULT_SCHEMA as unknown as Record<string, unknown>,
     idempotencyKey: row.idempotencyKey,
     metadata: { screeningCallId: row.id, jobId: row.jobId },
+    ...(job?.language ? { locale: job.language } : {}),
   });
 
   if (!dial.ok) {
