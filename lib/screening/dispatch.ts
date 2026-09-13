@@ -14,6 +14,7 @@ import { needsHuman, type ScreeningResult } from "@/lib/script/schema";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
 import { checkDialIntent, type DialIntent } from "@/lib/screening/gate";
 import { operatorStatus } from "@/lib/operator";
+import { isCallLanguage, spokenLanguage } from "@/lib/jobs/language";
 
 /**
  * Placing a real call and recording what came back.
@@ -150,7 +151,8 @@ export async function startCall(
     resultSchema: SCREENING_RESULT_SCHEMA as unknown as Record<string, unknown>,
     idempotencyKey: row.idempotencyKey,
     metadata: { screeningCallId: row.id, jobId: row.jobId },
-    ...(job?.language ? { locale: job.language } : {}),
+    // Only a tag from the curated list reaches the API, whatever the row says.
+    ...(job && isCallLanguage(job.language) ? { locale: job.language } : {}),
   });
 
   if (!dial.ok) {
@@ -354,6 +356,23 @@ export async function recordTerminalCall(screeningCallId: string, call: Call) {
     completionConfidence: call.completionConfidence ?? null,
     guardClean: postCallGuard.ok,
   });
+
+  // The transcript guard reads English. A call conducted in Tamil produces
+  // agent turns it cannot inspect, and a clean verdict on unread text would
+  // be a lie — so every non-English call goes to a person, and says why.
+  const [job] = await db
+    .select({ language: jobsTable.language })
+    .from(jobsTable)
+    .innerJoin(screeningCalls, eq(screeningCalls.jobId, jobsTable.id))
+    .where(eq(screeningCalls.id, screeningCallId))
+    .limit(1);
+  const spoken = job ? spokenLanguage(job.language) : undefined;
+  if (spoken) {
+    routing.needsHuman = true;
+    routing.reasons.push(
+      `The call was conducted in ${spoken}. The prohibited-topic check reads English only, so this transcript was not checked — read it.`,
+    );
+  }
 
   await db
     .update(screeningCalls)

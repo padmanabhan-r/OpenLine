@@ -10,6 +10,9 @@
  *
  * A curated list rather than the BCP 47 registry: a malformed tag reaches a
  * real phone, so only tags we have a name for are offered.
+ *
+ * Known limit: the post-call transcript guard reads English only, so a call
+ * in any other language is routed to a human with that reason, every time.
  */
 export const CALL_LANGUAGES = [
   { locale: "en-IN", label: "English (India)" },
