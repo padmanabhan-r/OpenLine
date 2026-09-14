@@ -45,7 +45,7 @@ fake mode: [Run it locally with no calls](#run-it-locally-with-no-calls).
 
 ---
 
-![The shortlist: match score, stage, Call. After the call, the row shows what it found and offers Interview or Reject.](.github/readme/shortlist.jpg)
+![The shortlist: ATS score, stage, Call. After the call, the row shows what it found and offers Interview or Reject.](.github/readme/shortlist.jpg)
 
 ## The problem
 

@@ -303,7 +303,7 @@ export default async function JobPage({
                   <div
                     className="mono"
                     style={{
-                      width: 78,
+                      width: 108,
                       flexShrink: 0,
                       textAlign: "right",
                       whiteSpace: "nowrap",
@@ -314,11 +314,11 @@ export default async function JobPage({
                     }}
                     title={
                       candidate.shortlistedBy === "human"
-                        ? "ATS match score — a person shortlisted them anyway"
-                        : "ATS match score"
+                        ? "ATS score — a person shortlisted them anyway"
+                        : "ATS score"
                     }
                   >
-                    match{" "}
+                    ATS score{" "}
                     {candidate.matchScore != null ? (
                       <span
                         style={{

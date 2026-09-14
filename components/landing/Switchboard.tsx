@@ -333,7 +333,7 @@ export default function Switchboard({
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {r.hasPhone ? `MATCH ${r.score ?? "—"}` : "NO NUMBER ON FILE"}
+                    {r.hasPhone ? `ATS SCORE ${r.score ?? "—"}` : "NO NUMBER ON FILE"}
                   </span>
                 </button>
               </li>

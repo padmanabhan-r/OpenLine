@@ -195,7 +195,7 @@ function Applications({
           <span
             className="mono"
             style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-2)" }}
-            title="ATS match score against this job"
+            title="ATS score against this job"
           >
             {app.matchScore ?? "—"}
           </span>
@@ -236,7 +236,7 @@ function Decision({
             ) : (
               <Badge tone="neutral">Not shortlisted</Badge>
             )}
-            <Badge tone="info">ATS match {screening.matchScore}</Badge>
+            <Badge tone="info">ATS score {screening.matchScore}</Badge>
           </div>
           <p
             style={{
