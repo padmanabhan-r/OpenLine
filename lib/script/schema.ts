@@ -94,12 +94,12 @@ export const SCREENING_RESULT_SCHEMA = {
     availability: {
       type: "string",
       description:
-        "When the candidate said they are available to interview, in their own terms, for example `weekday mornings` or `after 15 September`. Empty string if not discussed.",
+        "When the candidate said they could start the role, in their own words: their answer to the question about when they could start, for example `October` or `after my notice period`. Empty string only if they were not asked or gave no answer.",
     },
     notice_period: {
       type: "string",
       description:
-        "The notice period the candidate stated, for example `2 months` or `immediate`. Empty string if not discussed.",
+        "The notice period the candidate stated when asked, for example `2 months` or `immediate`. Empty string only if they were not asked or gave no answer.",
     },
     salary_expectation: {
       type: "string",
@@ -142,7 +142,7 @@ export const SCREENING_RESULT_SCHEMA = {
         "none",
         "unknown",
       ],
-      description: `What the candidate asked to happen next. Use \`human_callback_requested\` whenever they asked to speak to a person. ${UNKNOWN_NOTE}`,
+      description: `The next step this call points to. Use \`proceed\` when the candidate took part in the screen and wants to continue with the role, even if they asked for nothing specific. Use \`human_callback_requested\` whenever they asked to speak to a person, \`reschedule_requested\` when they asked to be called at another time, and \`none\` only when they declined, withdrew, or the screen did not happen. ${UNKNOWN_NOTE}`,
     },
     call_recap: {
       type: "string",
@@ -151,6 +151,77 @@ export const SCREENING_RESULT_SCHEMA = {
     },
   },
 } as const satisfies JsonObject;
+
+/** A result with its empty headline fields filled, and where each fill came from. */
+export type CompletedResult = ScreeningResult & {
+  filledFrom: Partial<Record<"notice_period" | "availability" | "followup", string>>;
+};
+
+const ASKS_NOTICE = /\bnotice period\b/;
+const ASKS_START = /\b(?:could|can|would)\s+you\s+(?:realistically\s+)?start\b(?!\s+(?:in|at|with|working)\b)|\bstart\s+date\b/;
+
+/**
+ * Fill the headline fields from the answers they came from, for display.
+ *
+ * CALL-E extracts each answer with the candidate's own words, but the
+ * top-level fields are separate extractions, and a live call came back with
+ * the start date empty while the answer to "When could you realistically
+ * start?" said "October". This fills a field only from an answered question
+ * that asks for that field and nothing else, never replaces a field CALL-E
+ * filled, and says which answer it used. The stored record stays CALL-E's.
+ *
+ * Salary is never filled this way. CALL-E is told never to record current
+ * salary in that field, and an empty field can mean it obeyed; the answer
+ * is still shown, with its quote, in the answers list.
+ *
+ * A screen the candidate reached, consented to, and said they are interested
+ * in reads as `proceed` rather than `none`. `unknown`, a request for a person,
+ * a reschedule, a withdrawal, or a missing consent is left as recorded.
+ */
+export function completeResult(
+  result: ScreeningResult,
+  questions: ReadonlyArray<{ id: string; text: string }>,
+): CompletedResult {
+  const textOf = new Map(questions.map((q) => [q.id, q.text.toLowerCase()]));
+  const filledFrom: CompletedResult["filledFrom"] = {};
+
+  const answerTo = (asks: RegExp, notAlso: RegExp) =>
+    result.answers.find((a) => {
+      const text = textOf.get(a.question_id) ?? "";
+      return (
+        (a.answer_status === "answered" || a.answer_status === "partially_answered") &&
+        asks.test(text) &&
+        !notAlso.test(text) &&
+        Boolean(a.answer.trim() || a.evidence.trim())
+      );
+    });
+
+  const fill = (
+    key: "notice_period" | "availability",
+    asks: RegExp,
+    notAlso: RegExp,
+  ): string => {
+    const current = result[key];
+    if (current?.trim()) return current;
+    const found = answerTo(asks, notAlso);
+    if (!found) return "";
+    filledFrom[key] = found.question_id;
+    return (found.answer.trim() || found.evidence.trim()).replace(/\.$/, "");
+  };
+
+  const notice_period = fill("notice_period", ASKS_NOTICE, ASKS_START);
+  const availability = fill("availability", ASKS_START, ASKS_NOTICE);
+
+  const tookPart = result.reached_candidate === "yes" && result.consent_given === "yes";
+  const interested = result.interest_level === "high" || result.interest_level === "medium";
+  let followup = result.followup;
+  if (followup === "none" && tookPart && interested) {
+    followup = "proceed";
+    filledFrom.followup = "the call";
+  }
+
+  return { ...result, notice_period, availability, followup, filledFrom };
+}
 
 /** Runtime shape of a schema-valid screening result. */
 export interface ScreeningResult {

@@ -30,6 +30,14 @@ describe("inspectScript — blocks protected-class questions", () => {
     ["What is your current salary?", "salary_history"],
     ["What is your current CTC?", "salary_history"],
     ["What do you earn at the moment?", "salary_history"],
+    ["What salary are you on at the moment?", "salary_history"],
+    ["What's your salary now?", "salary_history"],
+    ["What is your present salary?", "salary_history"],
+    ["What was your last salary?", "salary_history"],
+    // A lawful clause must not hide the unlawful one joined to it.
+    ["Find out whether they need visa sponsorship and their current salary.", "salary_history"],
+    ["Check whether they require sponsorship and their nationality.", "national_origin"],
+    ["Do you need visa sponsorship, and what is your current salary?", "salary_history"],
   ])("blocks %j as %s", (text, category) => {
     const result = inspectScript(text);
     expect(result.ok).toBe(false);
@@ -104,6 +112,14 @@ describe("inspectScript — permits legitimate questions", () => {
     "Are you able to travel to the Bangalore office twice a month?",
     "Which programming communities are you active in?",
     "Tell me about the team you currently work with.",
+    // Salary words that are not a question about current pay, including the
+    // agent's own line when it lacks a detail.
+    "What salary would you want now?",
+    "Is the salary band OK for you today?",
+    "Have you had any past pay disputes?",
+    "I don't have the salary details right now, so the recruiter will follow up.",
+    "I don't have that salary detail at the moment.",
+    "The salary band is currently $65,000 to $90,000 a year.",
   ])("permits %j", (text) => {
     const result = inspectScript(text);
     expect(result.findings).toEqual([]);

@@ -64,14 +64,17 @@ export interface GuardResult {
 /**
  * Phrasings that are lawful even though they overlap prohibited vocabulary.
  * Matched regions are removed from consideration before prohibitions run.
+ *
+ * Each one ends at the clause, not the sentence: "need visa sponsorship and
+ * their current salary" once hid the salary question behind the lawful half.
  */
 const EXEMPTIONS: RegExp[] = [
   // Right-to-work is a lawful question in every jurisdiction we target;
   // national origin is not.
-  /\b(?:are|were)\s+you\s+(?:legally\s+)?(?:authoris|authoriz)ed\s+to\s+work\b[^?.]*/gi,
-  /\bdo\s+you\s+have\s+(?:the\s+)?(?:legal\s+)?right\s+to\s+work\b[^?.]*/gi,
-  /\b(?:are|will)\s+you\s+(?:be\s+)?(?:legally\s+)?(?:eligible|able)\s+to\s+work\b[^?.]*/gi,
-  /\b(?:require|need|needs)\s+(?:visa\s+)?sponsorship\b[^?.]*/gi,
+  /\b(?:are|were)\s+you\s+(?:legally\s+)?(?:authoris|authoriz)ed\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
+  /\bdo\s+you\s+have\s+(?:the\s+)?(?:legal\s+)?right\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
+  /\b(?:are|will)\s+you\s+(?:be\s+)?(?:legally\s+)?(?:eligible|able)\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
+  /\b(?:require|need|needs)\s+(?:visa\s+)?sponsorship\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
   /\bvisa\s+sponsorship\b/gi,
   // Compensation expectations are forward-looking and lawful. Compensation
   // history is banned in many jurisdictions and is caught below.
@@ -238,6 +241,14 @@ const PROHIBITIONS: Prohibition[] = [
       rx(`\\bwhat\\s+(?:are|is)\\s+${SUBJECT}\\s+(?:currently\\s+)?(?:earning|paid)\\b`),
       /\bpresent\s+ctc\b/gi,
       /\bexisting\s+(?:salary|ctc|package)\b/gi,
+      // Past or present pay under another adjective: "your last salary",
+      // "your present package". "Pay" needs a possessive so "past pay
+      // disputes" stays lawful.
+      /\b(?:present|last|previous|past|prior|former)\s+(?:salary|ctc|compensation|package)\b|\b(?:your|their|his|her)\s+(?:present|last|previous|past|prior|former)\s+pay\b/gi,
+      // "What's your salary now?", "What salary are you on at the moment?"
+      // The possessive keeps the agent's own "I don't have the salary details
+      // right now" from reading as a question about current pay.
+      /\b(?:your|their|his|her)\s+salary\b[^.?!\n]{0,24}?\b(?:now|at\s+the\s+moment|these\s+days|today|currently)\b|\bsalary\s+(?:are|is)\s+(?:you|they|he|she)\s+on\b/gi,
     ],
   },
 ];

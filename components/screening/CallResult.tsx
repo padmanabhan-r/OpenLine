@@ -1,6 +1,6 @@
 import Badge, { type BadgeTone } from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
-import type { ScreeningResult } from "@/lib/script/schema";
+import { completeResult, type ScreeningResult } from "@/lib/script/schema";
 import type { ScriptQuestion } from "@/lib/script/build";
 
 /**
@@ -36,7 +36,24 @@ const INTEREST_TONE: Record<string, BadgeTone> = {
   unknown: "neutral",
 };
 
-function Field({ label, value }: { label: string; value: string }) {
+/** The next step in words a recruiter acts on, not the schema's enum. */
+const NEXT_STEP_LABEL: Record<ScreeningResult["followup"], string> = {
+  proceed: "Ready for your review",
+  human_callback_requested: "Wants a person",
+  reschedule_requested: "Call again later",
+  none: "No next step",
+  unknown: "Unclear",
+};
+
+const NEXT_STEP_TONE: Record<ScreeningResult["followup"], "good" | "warn" | "info" | "neutral"> = {
+  proceed: "good",
+  human_callback_requested: "warn",
+  reschedule_requested: "info",
+  none: "neutral",
+  unknown: "neutral",
+};
+
+function Field({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div>
       <div
@@ -52,18 +69,25 @@ function Field({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div style={{ fontSize: 14, fontWeight: 600 }}>{value || "—"}</div>
+      {note && (
+        <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 3 }}>
+          {note}
+        </div>
+      )}
     </div>
   );
 }
 
 export default function CallResult({
-  result,
+  result: extracted,
   questions,
 }: {
   result: ScreeningResult;
   questions: ScriptQuestion[];
 }) {
   const questionText = new Map(questions.map((q) => [q.id, q.text]));
+  // Display only: the stored record stays exactly as CALL-E returned it.
+  const result = completeResult(extracted, questions);
 
   return (
     <div style={{ display: "grid", gap: 22 }}>
@@ -77,8 +101,16 @@ export default function CallResult({
           borderBottom: "1px solid var(--line-2)",
         }}
       >
-        <Field label="Notice period" value={result.notice_period ?? ""} />
-        <Field label="Availability" value={result.availability ?? ""} />
+        <Field
+          label="Notice period"
+          value={result.notice_period ?? ""}
+          {...(result.filledFrom.notice_period ? { note: `from ${result.filledFrom.notice_period}` } : {})}
+        />
+        <Field
+          label="Can start"
+          value={result.availability ?? ""}
+          {...(result.filledFrom.availability ? { note: `from ${result.filledFrom.availability}` } : {})}
+        />
         <Field label="Salary expectation" value={result.salary_expectation ?? ""} />
         <div>
           <div
@@ -110,13 +142,14 @@ export default function CallResult({
           >
             Next step
           </div>
-          <Badge
-            tone={
-              result.followup === "human_callback_requested" ? "warn" : "neutral"
-            }
-          >
-            {result.followup.replace(/_/g, " ")}
+          <Badge tone={NEXT_STEP_TONE[result.followup] ?? "neutral"}>
+            {NEXT_STEP_LABEL[result.followup] ?? result.followup}
           </Badge>
+          {result.filledFrom.followup && (
+            <div className="mono" style={{ fontSize: 10.5, color: "var(--ink-3)", marginTop: 5 }}>
+              read from the call
+            </div>
+          )}
         </div>
       </div>
 
