@@ -24,33 +24,19 @@ import { normalizePhone } from "@/lib/phone/normalize";
  * Two shortlisted rows are deliberately malformed so the queue shows what
  * happens when a résumé number cannot be resolved.
  *
- * One candidate can be swapped for a real person for the live demo: the
- * maintainer, whose number arrives via OPENLINE_DEMO_PHONE and is never
- * committed. With no demo phone, that row keeps its fictional identity and
- * the whole roster is inert — which is what the fake-mode judge instance
- * wants, and what a reset from inside the app always does.
+ * Nobody real is on this roster, and there is no switch that puts anyone real
+ * on it. A real number reaches OpenLine only when someone types it into Try a
+ * call, which saves nothing, or uploads a resume that carries it.
  */
-
-/** The seeded identity the demo phone and name replace. */
-const DEMO_CANDIDATE_ID = "CAND_0000001";
-
-export interface SeedOptions {
-  demoPhone?: string;
-  demoName?: string;
-}
 
 export interface SeedSummary {
   applicants: number;
   shortlisted: number;
   callable: number;
-  /** The name on the one row that carries a real number, if any. */
-  demoName: string | null;
 }
 
-export async function seedDemo(options: SeedOptions = {}): Promise<SeedSummary> {
+export async function seedDemo(): Promise<SeedSummary> {
   const db = getDb();
-  const demoPhone = options.demoPhone?.trim() || undefined;
-  const demoName = options.demoName?.trim() || undefined;
 
   await db.delete(screeningCalls);
   await db.delete(candidates);
@@ -68,31 +54,17 @@ export async function seedDemo(options: SeedOptions = {}): Promise<SeedSummary> 
     })
     .returning();
 
-  let realRowName: string | null = null;
-
   const rows = APPLICANTS.map((entry) => {
-    const isDemo = entry.candidateId === DEMO_CANDIDATE_ID;
-    const name = isDemo && demoName ? demoName : entry.profile.anonymizedName;
-    const rawPhone = isDemo && demoPhone ? demoPhone : entry.rawPhone;
-    if (isDemo && demoPhone) realRowName = name;
-    const normalized = normalizePhone(rawPhone, DEFAULT_REGION);
-
-    // The stored profile has to agree with the row, or the detail page would
-    // introduce the demo candidate under a name nobody else on the call uses.
-    const profile =
-      isDemo && demoName
-        ? { ...entry, profile: { ...entry.profile, anonymizedName: name } }
-        : entry;
-
+    const normalized = normalizePhone(entry.rawPhone, DEFAULT_REGION);
     return {
       jobId: job.id,
-      name,
-      rawPhone,
+      name: entry.profile.anonymizedName,
+      rawPhone: entry.rawPhone,
       phoneE164: normalized.ok ? normalized.e164 : null,
       phoneRejection: normalized.ok ? null : normalized.reason,
       email: entry.email,
-      summary: summarizeForScript(profile),
-      profile,
+      summary: summarizeForScript(entry),
+      profile: entry,
       // The seed is the ATS's decision; a human moving anyone is recorded as
       // "human" the moment they touch the control.
       stage: entry.screening.shortlisted
@@ -109,6 +81,5 @@ export async function seedDemo(options: SeedOptions = {}): Promise<SeedSummary> 
     applicants: rows.length,
     shortlisted: shortlisted.length,
     callable: shortlisted.filter((r) => r.phoneE164).length,
-    demoName: realRowName,
   };
 }

@@ -3,11 +3,8 @@
  *
  *   pnpm run db:seed
  *
- * The logic lives in lib/db/seed.ts so the fake-mode judge instance can reset
- * itself from inside the app. This wrapper adds the one thing only a local run
- * should do: swap the first shortlisted candidate for the demo number, read
- * from OPENLINE_DEMO_PHONE and never committed. Without it every row is
- * fiction, which is what any public deployment must be seeded with.
+ * The logic lives in lib/db/seed.ts so a fake-mode deployment can reset itself
+ * from inside the app. Every row is fiction.
  *
  * The mock numbers are US fiction-reserved (555-01xx) even though this role is
  * based in India, and that is deliberate. India publishes no reserved range for
@@ -19,18 +16,9 @@ config({ path: ".env" });
 
 import { seedDemo } from "../lib/db/seed";
 
-const DEMO_PHONE = process.env.OPENLINE_DEMO_PHONE?.trim();
-// No default: a real name belongs in the environment next to the real number,
-// never in the tree.
-const DEMO_NAME = process.env.OPENLINE_DEMO_NAME?.trim();
-
 async function main() {
   console.log("Clearing existing demo data…");
-  const summary = await seedDemo(
-    DEMO_PHONE
-      ? { demoPhone: DEMO_PHONE, ...(DEMO_NAME ? { demoName: DEMO_NAME } : {}) }
-      : {},
-  );
+  const summary = await seedDemo();
 
   console.log(
     `Created ${summary.applicants} applicants — ${summary.shortlisted} shortlisted, ` +
@@ -40,17 +28,8 @@ async function main() {
     `Of the shortlist, ${summary.callable} are callable and ` +
       `${summary.shortlisted - summary.callable} need a human to fix the number.`,
   );
-
-  if (summary.demoName) {
-    console.log(
-      `\n${summary.demoName} is set to your demo number — the one candidate who will actually ring.`,
-    );
-    console.log("Everyone else is fictional and cannot connect.");
-  } else {
-    console.log(
-      "\nOPENLINE_DEMO_PHONE is not set, so every number is fiction-reserved and none can connect.",
-    );
-  }
+  console.log("\nEvery number is fiction-reserved; none can connect.");
+  console.log("To hear a real call, open Try a call in the console and enter your own number.");
   console.log("\nSeed complete. Run ./start.sh and open http://localhost:3000");
 }
 

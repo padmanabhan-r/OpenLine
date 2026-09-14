@@ -24,8 +24,23 @@ export async function unlockConsole(formData: FormData) {
     production: process.env.NODE_ENV === "production",
   });
 
+  // Back to wherever the console sent them, but only to a path on this site.
+  const requested = String(formData.get("next") ?? "");
+  // Parsed, not pattern-matched: a browser drops tabs and newlines and reads a
+  // backslash as a slash, so "/\t/evil.com" is another origin. Only a path
+  // that resolves to this origin comes back out.
+  const next = (() => {
+    if (!requested.startsWith("/")) return "/jobs";
+    try {
+      const url = new URL(requested, "http://openline.local");
+      return url.origin === "http://openline.local" ? url.pathname + url.search : "/jobs";
+    } catch {
+      return "/jobs";
+    }
+  })();
+
   if (!verdict.ok || !presented) {
-    redirect("/unlock?wrong=1");
+    redirect(`/unlock?wrong=1&next=${encodeURIComponent(next)}`);
   }
 
   (await cookies()).set(OPERATOR_COOKIE, presented, {
@@ -35,7 +50,7 @@ export async function unlockConsole(formData: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
-  redirect("/jobs");
+  redirect(next);
 }
 
 /**

@@ -8,11 +8,12 @@ import CallAgainButton from "@/components/screening/CallAgainButton";
 import StageDecision from "@/components/candidates/StageDecision";
 import RebuildButton from "@/components/screening/RebuildButton";
 import CallResult from "@/components/screening/CallResult";
+import Transcript from "@/components/screening/Transcript";
 import DialingWatcher from "@/components/screening/DialingWatcher";
 import ScriptEditor from "@/components/screening/ScriptEditor";
 import { getCall } from "@/lib/db/queries";
 import { reconcileCall } from "@/lib/screening/reconcile";
-import { operatorStatus } from "@/lib/operator";
+import { operatorStatus, requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function CallPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requireOperator(`/calls/${id}`);
   let row = await getCall(id);
   if (!row) notFound();
 
@@ -253,53 +255,10 @@ export default async function CallPage({
                   what was actually said
                 </span>
               </div>
-              <div style={{ display: "grid", gap: 10, maxHeight: 520, overflowY: "auto" }}>
-                {call.transcript.map((turn, i) => {
-                  const isAgent = turn.speaker === "bot";
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: isAgent ? "flex-start" : "flex-end",
-                      }}
-                    >
-                      <div
-                        style={{
-                          maxWidth: "76%",
-                          padding: "10px 14px",
-                          borderRadius: 14,
-                          background: isAgent
-                            ? "var(--surface-2)"
-                            : "var(--accent-tint)",
-                          border: `1px solid ${isAgent ? "var(--line-2)" : "color-mix(in srgb, var(--accent) 35%, transparent)"}`,
-                        }}
-                      >
-                        <div
-                          className="mono"
-                          style={{
-                            fontSize: 10,
-                            letterSpacing: ".1em",
-                            textTransform: "uppercase",
-                            color: "var(--ink-3)",
-                            marginBottom: 4,
-                          }}
-                        >
-                          {isAgent ? "OpenLine" : candidate.name.split(" ")[0]}
-                          {turn.offsetSeconds !== null &&
-                            ` · ${Math.floor(turn.offsetSeconds / 60)}:${String(
-                              turn.offsetSeconds % 60,
-                            ).padStart(2, "0")}`}
-                        </div>
-                        <div style={{ fontSize: 14, lineHeight: 1.5 }}>
-                          {turn.text}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <Transcript
+                turns={call.transcript}
+                candidateFirstName={candidate.name.split(" ")[0]}
+              />
             </Panel>
           )}
 

@@ -6,10 +6,12 @@ import { listJobs } from "@/lib/db/queries";
 import { jobRef } from "@/lib/jobs/ref";
 import { JOB_STATUS_LABELS } from "@/lib/jobs/status";
 import Button from "@/components/ui/Button";
+import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
 export default async function JobsPage() {
+  await requireOperator("/jobs");
   let jobs: Awaited<ReturnType<typeof listJobs>> = [];
   let error: string | null = null;
 

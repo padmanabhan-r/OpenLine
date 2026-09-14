@@ -40,3 +40,15 @@ export function spokenLanguage(locale: string): string | undefined {
 export function languageLabel(locale: string): string {
   return CALL_LANGUAGES.find((l) => l.locale === locale)?.label ?? locale;
 }
+
+/**
+ * Why a call in this language needs a person to read it, or null for English.
+ * The post-call transcript guard reads English only, and a clean verdict on
+ * text it never read would be a lie.
+ */
+export function unreadLanguageReason(locale: string): string | null {
+  const spoken = spokenLanguage(locale);
+  return spoken
+    ? `The call was conducted in ${spoken}. The prohibited-topic check reads English only, so this transcript was not checked — read it.`
+    : null;
+}

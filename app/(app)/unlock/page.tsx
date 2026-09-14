@@ -10,16 +10,17 @@ export const dynamic = "force-dynamic";
 /**
  * The one door onto a deployment that can ring a real phone.
  *
- * Anyone can read the console. Placing a call, uploading a resume, or building
- * scripts needs the operator token, which lives only in the deployment's
- * environment and in the httpOnly cookie this page sets.
+ * The console holds applicants' names, resumes, and call transcripts, so
+ * reading it needs the operator token as much as dialing does. The token
+ * lives only in the deployment's environment and in the httpOnly cookie this
+ * page sets.
  */
 export default async function UnlockPage({
   searchParams,
 }: {
-  searchParams: Promise<{ wrong?: string }>;
+  searchParams: Promise<{ wrong?: string; next?: string }>;
 }) {
-  const { wrong } = await searchParams;
+  const { wrong, next } = await searchParams;
   const configured = operatorTokenConfigured();
   const status = await operatorStatus();
   const mode = resolveCalleMode();
@@ -28,7 +29,7 @@ export default async function UnlockPage({
     <>
       <TopBar
         title="Unlock the console"
-        subtitle="Reading is open to everyone. Dialing and uploading need the operator token."
+        subtitle="The console, its calls, and Try a call all need the operator token."
       />
       <Page>
         <Panel>
@@ -81,6 +82,7 @@ export default async function UnlockPage({
               </div>
             ) : (
               <form action={unlockConsole} style={{ display: "grid", gap: 12 }}>
+                <input type="hidden" name="next" value={next ?? ""} />
                 <label style={{ display: "block" }}>
                   <span
                     style={{

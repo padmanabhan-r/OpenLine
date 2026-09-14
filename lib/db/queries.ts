@@ -20,6 +20,7 @@ export async function listJobs() {
       recruiterName: jobs.recruiterName,
       defaultRegion: jobs.defaultRegion,
       status: jobs.status,
+      language: jobs.language,
       createdAt: jobs.createdAt,
       // Both sides of each correlation are qualified by hand, and that is not
       // decoration. Interpolating `${candidates.jobId} = ${jobs.id}` renders

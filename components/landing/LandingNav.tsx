@@ -43,7 +43,7 @@ export default function LandingNav() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-        {/* The hero carries the brass now ("Try the demo"); the console link
+        {/* The hero carries the brass now ("Try a call"); the console link
             steps back so the page has one primary action. */}
         <Link href="/jobs">
           <Button size="sm" variant="ghost">

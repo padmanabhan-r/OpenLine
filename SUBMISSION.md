@@ -67,7 +67,7 @@ has to invent them at submission time:
 `pnpm install` → Neon `DATABASE_URL` → `pnpm run db:migrate` →
 `pnpm run db:seed` → `./start.sh`. Env vars: `DATABASE_URL`, `CALLE_API_KEY`,
 `OPENAI_API_KEY` (optional), `OPENAI_MODEL` (optional),
-`OPENLINE_CALL_LOCALE`, `OPENLINE_DEMO_PHONE`, and the four `R2_*` keys.
+`OPENLINE_CALL_LOCALE`, and the four `R2_*` keys.
 
 ### Usage
 Create or seed a job → upload resume PDFs (parsed and scored against the job
@@ -140,8 +140,8 @@ the callable set entirely. Records are never deleted by any of this.
       to a real person. Use US fiction-reserved `555-01xx`, as the rest of the
       repo does. (The repo's own commit hook flags it, which is how it was
       found.)
-- [ ] **Confirm no real number anywhere in the tree.** `OPENLINE_DEMO_PHONE`
-      is env-only and must stay that way.
+- [x] **No real number anywhere in the tree.** Real numbers are typed into
+      Try a call at call time and never stored.
 - [x] **Deploy** — live at https://openline-calle.vercel.app/ (Vercel, against
       the same Neon and R2). Re-deploy after the final commits so the judges
       see the pipeline stages and job lifecycle.
@@ -190,8 +190,8 @@ Assets already built for this:
 
 Suggested run of show: problem → shortlist → upload a resume and watch it
 parse and score → open a generated script and read the consent line → edit a
-question and watch the guard re-run → **place the one real call to
-`OPENLINE_DEMO_PHONE`** → transcript and structured result → mark the job
+question and watch the guard re-run → **place one real call through Try a
+call** → transcript and structured result → mark the job
 filled and show calling switch off.
 
 The real call is the whole point — a screen recording of a fake one proves

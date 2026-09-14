@@ -12,6 +12,7 @@ import {
   reachabilityWarnings,
   type CandidateProfile,
 } from "@/lib/candidates/profile";
+import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function CandidatePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requireOperator(`/candidates/${id}`);
 
   const row = await getCandidate(id);
   if (!row) notFound();

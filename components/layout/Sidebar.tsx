@@ -10,6 +10,7 @@ const navMain = [
   { href: "/jobs", label: "Jobs", icon: "jobs" },
   { href: "/profiles", label: "Profiles", icon: "people" },
   { href: "/calls", label: "Screening Calls", icon: "phone" },
+  { href: "/try", label: "Try a call", icon: "spark" },
 ];
 
 function NavItem({

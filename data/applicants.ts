@@ -215,10 +215,7 @@ function applicant(input: {
 /**
  * The twenty the recruiter shortlisted, in the ATS's ranked order.
  *
- * The first entry is the maintainer's slot. For the live demo the seed swaps
- * in their real name and number from the environment (OPENLINE_DEMO_NAME and
- * OPENLINE_DEMO_PHONE — never committed); everywhere else, including the
- * public judge instance, the row is as invented as the rest of the file.
+ * Everyone here is invented, and every number is fiction-reserved.
  */
 const SHORTLISTED: ApplicantSeed[] = [
   applicant({

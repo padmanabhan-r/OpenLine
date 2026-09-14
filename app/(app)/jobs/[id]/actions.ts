@@ -93,6 +93,9 @@ export async function setStage(
   candidateId: string,
   stage: string,
 ) {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false as const, reason: operator.reason };
+
   if (!isStage(stage)) return { ok: false as const, reason: "Unknown stage." };
 
   const db = getDb();
@@ -131,6 +134,9 @@ export async function setJobStatus(
   status: string,
   reason: string,
 ) {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false as const, reason: operator.reason };
+
   if (!isJobStatus(status)) return { ok: false as const, reason: "Unknown status." };
 
   const trimmed = reason.trim();

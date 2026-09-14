@@ -74,8 +74,8 @@ The safety model and shortlist throughput are supporting facts, not the pitch.
 
 ## Evidence on Hand
 
-- A live-call demo: a real recorded call to the maintainer's phone
-  (`OPENLINE_DEMO_PHONE`), and the ~3-minute demo video.
+- A live-call demo: a real call placed through Try a call to a number typed
+  in at call time, and the ~3-minute demo video.
 - Real CALL-E transcripts and structured results from test runs exist and can
   be shown.
 - Seeded fixtures: one demo job and 50 applicants (20 shortlisted) in `data/`

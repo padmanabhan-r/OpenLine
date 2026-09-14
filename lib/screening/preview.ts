@@ -54,7 +54,12 @@ function questionsFor(job: Job): ScriptQuestion[] {
  * too — a re-dial speaks the script as it stands today, never a stale clone of
  * what was said last time.
  */
-export function composeScript(job: Job, candidate: Candidate) {
+export function composeScript(
+  job: Job,
+  candidate: Pick<Candidate, "name">,
+  // Try a call picks its own; everything else speaks the job's language.
+  language: string = job.language,
+) {
   const questions = questionsFor(job);
   const task = assembleTask({
     candidateName: candidate.name,
@@ -63,7 +68,7 @@ export function composeScript(job: Job, candidate: Candidate) {
     recruiterName: job.recruiterName,
     questions,
     factSheet: job.factSheet,
-    speakLanguage: spokenLanguage(job.language),
+    speakLanguage: spokenLanguage(language),
   });
   return { questions, task, guard: inspectScript(task) };
 }

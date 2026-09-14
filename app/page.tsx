@@ -21,13 +21,7 @@ import { normalizePhone } from "@/lib/phone/normalize";
 const SHELL = { maxWidth: 1340, margin: "0 auto" } as const;
 
 export default function LandingPage() {
-  // CAND_0000001 is the slot a local seed may put a real number and name on
-  // for the live demo call. The fixture itself is invented, but a published
-  // landing page still shows only the other candidates, so nothing real can
-  // ever land here by accident.
-  const shortlisted = APPLICANTS.filter(
-    (a) => a.screening.shortlisted && a.candidateId !== "CAND_0000001",
-  );
+  const shortlisted = APPLICANTS.filter((a) => a.screening.shortlisted);
 
   const roster = shortlisted.map((a) => ({
     name: a.profile.anonymizedName,
@@ -49,9 +43,7 @@ export default function LandingPage() {
   ).length;
   const machineMinutes = callable * 2;
 
-  // Where the buttons go. The judge instance and the video are set per
-  // deployment; without them the hero points at the console on this host.
-  const demoUrl = process.env.OPENLINE_DEMO_URL?.trim() || "/jobs";
+  // The video is set per deployment; its button stays hidden until it is.
   const videoUrl = process.env.OPENLINE_VIDEO_URL?.trim();
 
   return (
@@ -160,10 +152,10 @@ export default function LandingPage() {
                 animationDelay: "220ms",
               }}
             >
-              {/* The demo is the page's one action: a judge can screen the
-                  whole shortlist against a fake CALL-E without an account. */}
-              <Link href={demoUrl}>
-                <Button>Try the demo</Button>
+              {/* The page's one action: ring your own phone with the real script.
+                  The console asks for the operator token first. */}
+              <Link href="/try">
+                <Button>Try a call</Button>
               </Link>
               {videoUrl && (
                 <a href={videoUrl} target="_blank" rel="noreferrer noopener">

@@ -19,33 +19,29 @@ Built for the **CALL-E: Your Code Is Calling** hackathon.
 
 ---
 
-## For judges: 90 seconds, no account, no phone rings
+## For judges
 
-A public instance runs against an in-process fake of the CALL-E API, so you
-can screen the whole shortlist without credits and without anyone's phone
-ringing. Everything else — the guard, the consent gate, the idempotency key,
-the needs-human routing, the pipeline — is the real code.
+Every call here is real: it rings the phone you enter and spends a CALL-E
+call. The operator token that unlocks the console is in the **testing
+instructions of the Devpost submission**. It is not in this repository.
 
-**https://openline-judge.vercel.app** · operator token: `judge-3654db892044`
+**https://openline-calle.vercel.app**, then **Try a call** in the sidebar.
 
-1. Open **Unlock** (bottom-left) and enter the token. Reading is open to
-   everyone; placing calls and uploading resumes need the token.
-2. Open the **Senior AI Engineer** job. Twenty people are shortlisted; two have
-   numbers that could not be resolved and say so.
-3. On any row, **Call**, then confirm by name. The script is a fixed template,
-   so nothing is built by hand; **Review** shows the exact words, including the
-   AI disclosure and the consent question. Edit a question there — try typing
-   "Are you married?" — and watch the guard block the script.
-4. The row goes dialing and completes in a few
-   seconds with a canned transcript that follows the real script and a
-   schema-valid structured result. One candidate question the fact sheet
-   cannot answer routes the call to a human.
-5. When you are done, **Reset demo data** on the Unlock page puts the
-   shortlist back for the next person.
+1. Enter the operator token when the console asks for it.
+2. **Try a call.** Type your name and your phone number with its country code,
+   pick a language, tick the box, press **Call**, and confirm. Your phone rings
+   within seconds. The agent says it is an AI assistant calling about the role,
+   asks whether it may put a few screening questions to you, asks five, and
+   hangs up. The transcript, the structured answers, and anything flagged for a
+   person appear on the page when the call ends. **Nothing is saved.**
+3. **The full flow**, if you have more time: open the **Senior AI Engineer**
+   job, upload a resume PDF that carries your number, and press **Call** on its
+   row once it lands on the shortlist. That candidate and the call are saved
+   like any applicant, behind the token. **Review** shows the transcript;
+   **Interview** or **Reject** is the recruiter's decision.
 
-The production instance at https://openline-calle.vercel.app is the same code
-with a live CALL-E key. It is locked; nothing there can be dialed without the
-maintainer's operator token. The demo video shows one real call placed from it.
+To see the whole loop with no phone ringing and no account, run it locally in
+fake mode: [Run it locally with no calls](#run-it-locally-with-no-calls).
 
 ---
 
@@ -104,7 +100,7 @@ smoother demo.
 | **OpenLine never rejects anyone** | There is no code path that declines a candidate. An uncertain call becomes a human's problem via `needsHuman`. Shortlisting happens upstream in the ATS and is shown with its reason so a human can argue with it. |
 | **Nothing dials by itself** | No scheduler, no queue, no batch. Every call is a person pressing a button that names the candidate. |
 | **The confirmation is checked on the server** | The button sends the candidate id and the script version the recruiter was looking at. `startCall` refuses if either moved — an edit bumped the version, a stale tab named someone else — and the recruiter reads the new words first. |
-| **A public deployment is locked** | Anyone can read the console. Dialing, uploading resumes, and building scripts need the operator token, entered once at `/unlock` and held in an httpOnly cookie. In production with a live key and no token configured, nothing dials at all. |
+| **A public deployment is locked** | The whole console, reading included, needs the operator token: it holds applicants' names, resumes, and transcripts. Production with a live CALL-E key refuses to dial without a token configured. |
 | **The key goes to one place** | There is no base-URL override. `CALLE_API_KEY` is only ever sent to `https://api.heycall-e.com`, and the fake transport never receives it. |
 
 ## How a call happens
@@ -141,7 +137,7 @@ Three facts about CALL-E shape this design:
 
 ![New job: title, company, call language, and a brief. "Draft with AI" writes the description and the fact sheet; the recruiter reads both before the job exists.](.github/readme/new-job.jpg)
 
-## Try it without an account
+## Run it locally with no calls
 
 ```bash
 pnpm install
@@ -152,7 +148,7 @@ pnpm run db:seed            # demo job + 50 applicants, 20 shortlisted
 ```
 
 In fake mode the SDK runs against `lib/calle/fake-server.ts` instead of the
-network. Build a script, read it, press **Call**, and the row goes dialing →
+network. Press **Call** on a shortlisted row, or use **Try a call**, and it goes dialing →
 completed in a few seconds with a canned transcript that follows the real
 script (disclosure, consent, the five questions, one candidate question the
 fact sheet cannot answer) and a schema-valid structured result. The guard, the
@@ -171,15 +167,16 @@ Same steps, then:
 | `DATABASE_URL` | yes | Neon Postgres connection string |
 | `CALLE_API_KEY` | for real calls | **Calls are live whenever this is set** and `OPENLINE_FAKE_CALLE` is not. They ring real phones and cost money. |
 | `OPENLINE_FAKE_CALLE` | no | `1` to run against the in-process fake. Same as `./start.sh --fake`. |
-| `OPENLINE_OPERATOR_TOKEN` | on any public deployment | Unlocks dialing, uploads and script building. Production with a live key refuses to dial without it. |
+| `OPENLINE_OPERATOR_TOKEN` | on any public deployment | Unlocks the console: reading it, dialing, and uploads. Production with a live key refuses to dial without it. |
 | `OPENLINE_CALL_LOCALE` | no | BCP 47, e.g. `en-US`. Fallback voice locale; each job picks its own call language (English, Hindi, Tamil, Telugu, Kannada, Malayalam). |
-| `OPENLINE_DEMO_PHONE` | for the demo | The one number the seeded roster actually rings. Never committed. |
 | `OPENAI_API_KEY` | for resume upload | Resume parsing and scoring only. Screening questions do not use it. |
 | `OPENAI_MODEL` | no | Defaults to `gpt-4o-mini` |
 | `R2_*` | for resume upload | Without them the rest of the app still works. |
 
-Every other seeded number is US fiction-reserved (`555-01xx`) and cannot
-connect. Test fixtures use the ACMA range Australia reserves for fiction.
+Every seeded number is US fiction-reserved (`555-01xx`) and cannot connect.
+Test fixtures use the ACMA range Australia reserves for fiction. A real number
+enters OpenLine only when someone types it into **Try a call**, which saves
+nothing, or uploads a resume that carries it.
 
 ## Usage
 
@@ -200,6 +197,10 @@ connect. Test fixtures use the ACMA range Australia reserves for fiction.
 - **Calls are live whenever `CALLE_API_KEY` is set** and fake mode is off. One
   click on a confirmed row places one outbound CALL-E call to that candidate's
   number, which rings a real phone and spends one call of credit.
+- **Try a call** places one call to the number typed in and saves nothing: no
+  candidate, no call record. The transcript and result exist only on that
+  page; close it mid-call and they cannot be shown again. CALL-E keeps its own
+  record under the call id.
 - Writes candidate and call records to Neon; stores uploaded PDFs in R2 and
   sends their text to OpenAI for parsing.
 - **There is nothing queued.** Calls are single-shot: no scheduler, no
@@ -227,16 +228,18 @@ connect. Test fixtures use the ACMA range Australia reserves for fiction.
 - The operator token is compared in constant time and stored in an httpOnly
   cookie. It never appears in a URL. The scriptable routes accept it as an
   `x-openline-operator` header.
-- Phone numbers are never rendered on any page; the console shows names and
-  whether a number resolved.
+- Phone numbers are never rendered in full. The console shows whether a
+  number resolved, and Try a call shows the last four digits.
+- The whole console sits behind the operator token, not only dialing, because
+  it holds applicants' names, resumes, and transcripts.
 
 ## How we tested
 
-- `pnpm run verify` runs 126 tests over the pure, safety-bearing logic: phone
+- `pnpm run verify` runs the test suite over the pure, safety-bearing logic: phone
   normalization, the guard, script assembly, the port (against the fake
   server), the fake mode, the dial gates, script edits, and pipeline stages.
-- Live verification used one real number, the maintainer's own, seeded via
-  `OPENLINE_DEMO_PHONE`. What it changed: the original per-candidate,
+- Live verification used real numbers typed in at call time; none is stored
+  in the repository or the seed. What it changed: the original per-candidate,
   model-written questions were cut after a live call turned into a
   fifteen-minute interview with an empty structured result. The fixed
   five-question screen replaced them.

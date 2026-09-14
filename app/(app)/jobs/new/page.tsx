@@ -4,10 +4,12 @@ import Field, { FIELD_STYLE } from "@/components/jobs/FormField";
 import JobDraftFields from "@/components/jobs/JobDraftFields";
 import { CALL_LANGUAGES, DEFAULT_CALL_LANGUAGE } from "@/lib/jobs/language";
 import { createJob } from "../actions";
+import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
-export default function NewJobPage() {
+export default async function NewJobPage() {
+  await requireOperator("/jobs/new");
   return (
     <>
       <TopBar

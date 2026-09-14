@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
 import { applyScriptEdit, type EditOutcome } from "@/lib/screening/edit";
 import type { DialIntent } from "@/lib/screening/gate";
+import { operatorStatus } from "@/lib/operator";
 
 /**
  * Start the call and return immediately.
@@ -60,6 +61,9 @@ export async function saveScriptEdits(
   screeningCallId: string,
   questionTexts: string[],
 ): Promise<EditOutcome> {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false as const, reason: operator.reason };
+
   const outcome = await applyScriptEdit({ screeningCallId, questionTexts });
   revalidatePath(`/calls/${screeningCallId}`);
   revalidatePath("/calls");

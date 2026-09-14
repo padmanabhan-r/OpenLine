@@ -14,7 +14,7 @@ import { needsHuman, type ScreeningResult } from "@/lib/script/schema";
 import { SCREENING_RESULT_SCHEMA } from "@/lib/script/schema";
 import { checkDialIntent, type DialIntent } from "@/lib/screening/gate";
 import { operatorStatus } from "@/lib/operator";
-import { isCallLanguage, spokenLanguage } from "@/lib/jobs/language";
+import { isCallLanguage, unreadLanguageReason } from "@/lib/jobs/language";
 
 /**
  * Placing a real call and recording what came back.
@@ -27,7 +27,7 @@ import { isCallLanguage, spokenLanguage } from "@/lib/jobs/language";
  */
 
 /** Flatten CALL-E's recipient/attempt hierarchy into one ordered transcript. */
-function flattenTranscript(call: Call): InspectableTurn[] {
+export function flattenTranscript(call: Call): InspectableTurn[] {
   return call.recipients.flatMap((recipient) =>
     recipient.attempts.flatMap((attempt) =>
       attempt.transcriptTurns.map((turn) => ({
@@ -47,7 +47,7 @@ function flattenTranscript(call: Call): InspectableTurn[] {
  * CALL-E declining to invent an answer it could not ground — that is a valid
  * outcome, not an error.
  */
-function readResult(call: Call): ScreeningResult | null {
+export function readResult(call: Call): ScreeningResult | null {
   const taskLevel = call.structuredResult as ScreeningResult | null;
   if (taskLevel) return taskLevel;
   const recipientLevel = call.recipients[0]?.structuredResult;
@@ -366,12 +366,10 @@ export async function recordTerminalCall(screeningCallId: string, call: Call) {
     .innerJoin(screeningCalls, eq(screeningCalls.jobId, jobsTable.id))
     .where(eq(screeningCalls.id, screeningCallId))
     .limit(1);
-  const spoken = job ? spokenLanguage(job.language) : undefined;
-  if (spoken) {
+  const languageReason = job ? unreadLanguageReason(job.language) : null;
+  if (languageReason) {
     routing.needsHuman = true;
-    routing.reasons.push(
-      `The call was conducted in ${spoken}. The prohibited-topic check reads English only, so this transcript was not checked — read it.`,
-    );
+    routing.reasons.push(languageReason);
   }
 
   await db

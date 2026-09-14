@@ -33,6 +33,9 @@ function parseFactSheet(text: string): FactSheetEntry[] {
 }
 
 export async function createJob(formData: FormData) {
+  const operator = await operatorStatus();
+  if (!operator.ok) throw new Error(operator.reason);
+
   const title = String(formData.get("title") ?? "").trim();
   const companyName = String(formData.get("companyName") ?? "").trim();
   const recruiterName = String(formData.get("recruiterName") ?? "").trim();

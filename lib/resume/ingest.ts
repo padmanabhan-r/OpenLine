@@ -6,6 +6,7 @@ import { normalizePhone } from "@/lib/phone/normalize";
 import { summarizeForScript } from "@/lib/candidates/profile";
 import { putResume, resumeKey } from "@/lib/storage/r2";
 import { createResumeParser, shouldShortlist, toCandidateProfile } from "./parse";
+import { cleanCandidateName } from "@/lib/screening/try";
 
 /**
  * One uploaded PDF → one candidate row, whatever happens.
@@ -91,6 +92,16 @@ export async function ingestResume(input: {
     return { filename, status: "parse_failed", candidateId: id, reason };
   }
 
+  // The name is written into the task the agent reads, and the applicant wrote
+  // the resume. A "name" that is really an instruction is refused here and
+  // left for a person, never spoken.
+  const cleanName = cleanCandidateName(parsed.name);
+  if (!cleanName.ok) {
+    const reason = "The name on this resume could not be used safely in a call script. A person needs to check it.";
+    const id = await insertFailedRow(job, filename, key, reason);
+    return { filename, status: "parse_failed", candidateId: id, reason };
+  }
+
   // 3. The model's phone claim goes through the same gate as every import —
   //    normalized or refused, never guessed.
   // The job's region is stored as free text; libphonenumber narrows it. An
@@ -113,7 +124,7 @@ export async function ingestResume(input: {
       .insert(candidates)
       .values({
         jobId: job.id,
-        name: parsed.name,
+        name: cleanName.name,
         rawPhone: parsed.phone ?? "",
         phoneE164: normalized?.ok ? normalized.e164 : null,
         phoneRejection: normalized

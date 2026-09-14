@@ -4,6 +4,7 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
 import { listProfiles } from "@/lib/db/queries";
+import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
  * the profile rather than in a column that can only ever show one of them.
  */
 export default async function ProfilesPage() {
+  await requireOperator("/profiles");
   let rows: Awaited<ReturnType<typeof listProfiles>> = [];
   let error: string | null = null;
 

@@ -15,7 +15,7 @@ import { isExit, isShortlisted } from "@/lib/candidates/stage";
 import JobStatusControl from "@/components/jobs/JobStatusControl";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { languageLabel } from "@/lib/jobs/language";
-import { operatorStatus } from "@/lib/operator";
+import { operatorStatus, requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +129,7 @@ export default async function JobPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requireOperator(`/jobs/${id}`);
 
   const job = await getJob(id);
   if (!job) notFound();

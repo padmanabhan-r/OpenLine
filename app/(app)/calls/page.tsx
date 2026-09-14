@@ -7,6 +7,7 @@ import SignalChips from "@/components/screening/SignalChips";
 import { listCalls } from "@/lib/db/queries";
 import { reconcileStaleCalls } from "@/lib/screening/reconcile";
 import type { ScreeningCall } from "@/lib/db/schema";
+import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ function StatusBadge({ call }: { call: ScreeningCall }) {
 }
 
 export default async function CallsPage() {
+  await requireOperator("/calls");
   let rows: Awaited<ReturnType<typeof listCalls>> = [];
   let error: string | null = null;
 
