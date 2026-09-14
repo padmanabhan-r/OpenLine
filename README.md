@@ -1,3 +1,5 @@
+![OpenLine. First-round screens, on autopilot. An AI phone-screening agent built on CALL-E.](.github/readme/cover.jpg)
+
 <div align="center">
 
 # OpenLine
