@@ -9,6 +9,12 @@ import type OpenAI from "openai";
  * adds no topics of its own: a model writing its own "fit" questions turned
  * an earlier version of this screen into an interview. What comes back is
  * shown for review, then assembled and guarded like any human edit.
+ *
+ * The goal is the recruiter's own note of what the call is for. It is stored
+ * and shown, never written into the task CALL-E acts on: in the agent's
+ * instructions, a goal such as "do not mention being an AI" read as an order,
+ * and no wording check could tell those from ordinary goals. The agent is
+ * given the questions, which a person reviewed and the guard inspected.
  */
 export interface ParsedOverride {
   goal: string;
@@ -16,7 +22,7 @@ export interface ParsedOverride {
 }
 
 export const MAX_OVERRIDE_QUESTIONS = 6;
-const MAX_GOAL_LENGTH = 240;
+export const MAX_GOAL_LENGTH = 240;
 
 const INSTRUCTIONS = `You turn a recruiter's notes into a phone-screening goal and questions, and return one JSON object.
 

@@ -135,7 +135,7 @@ export default function ScriptEditor({
           <span style={{ fontSize: 12.5, fontWeight: 600 }}>
             Goal{" "}
             <span style={{ fontWeight: 400, color: "var(--ink-3)" }}>
-              what this call should find out; the agent reads it before the questions
+              for you: what this call is for. The agent is given the questions below, not this line
             </span>
           </span>
           <input

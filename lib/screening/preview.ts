@@ -148,7 +148,7 @@ async function previewOne(
   // version it read, so new words need a new version and a new key.
   if (existing && existing.scriptVersion > 1) {
     const nextVersion = existing.scriptVersion + 1;
-    await db
+    const rebuilt = await db
       .update(screeningCalls)
       .set({
         task,
@@ -168,8 +168,19 @@ async function previewOne(
           eq(screeningCalls.id, existing.id),
           inArray(screeningCalls.status, ["previewed", "refused"]),
           isNull(screeningCalls.calleCallId),
+          // An edit that landed since the read wins; this rebuild does not.
+          eq(screeningCalls.scriptVersion, existing.scriptVersion),
         ),
-      );
+      )
+      .returning({ id: screeningCalls.id });
+    if (rebuilt.length === 0) {
+      return {
+        candidateId: candidate.id,
+        name: candidate.name,
+        status: "skipped",
+        detail: "The script was edited or its call started while rebuilding, so nothing was replaced.",
+      };
+    }
     return {
       candidateId: candidate.id,
       name: candidate.name,

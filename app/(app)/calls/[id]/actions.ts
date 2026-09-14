@@ -9,7 +9,6 @@ import OpenAI from "openai";
 import { operatorStatus } from "@/lib/operator";
 import { getCall } from "@/lib/db/queries";
 import { createOverrideParser } from "@/lib/script/override";
-import { goalProblem } from "@/lib/script/build";
 
 /**
  * Start the call and return immediately.
@@ -112,7 +111,5 @@ export async function draftOverride(
   if (!parsed) {
     return { ok: false, reason: "The model did not return usable questions. Try writing them more plainly." };
   }
-  const problem = parsed.goal ? goalProblem(parsed.goal) : null;
-  if (problem) return { ok: false, reason: `${problem} Rewrite the notes as topics to find out.` };
   return { ok: true, goal: parsed.goal, questions: parsed.questions };
 }

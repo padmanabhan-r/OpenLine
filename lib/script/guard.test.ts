@@ -95,6 +95,19 @@ describe("inspectScript — blocks protected-class questions", () => {
   });
 });
 
+describe("inspectScript — a lawful phrase never hides what is joined to it", () => {
+  it.each([
+    "Find out whether they need visa sponsorship as well as their current salary.",
+    "Do you need visa sponsorship plus your current salary?",
+    "Check whether they require sponsorship along with their nationality.",
+    "Do you need visa sponsorship given your nationality?",
+    "Are you authorised to work in the UK with your nationality?",
+    "Are you authorized to work here or what is your age?",
+  ])("blocks %j", (text) => {
+    expect(inspectScript(text).ok).toBe(false);
+  });
+});
+
 describe("inspectScript — permits legitimate questions", () => {
   it.each([
     // Work authorisation is lawful; nationality is not. This pair is the whole

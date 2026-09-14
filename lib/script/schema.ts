@@ -158,7 +158,7 @@ export type CompletedResult = ScreeningResult & {
 };
 
 const ASKS_NOTICE = /\bnotice period\b/;
-const ASKS_START = /\b(?:could|can|would)\s+you\s+(?:realistically\s+)?start\b(?!\s+(?:in|at|with|working)\b)|\bstart\s+date\b/;
+const ASKS_START = /\b(?:could|can|would)\s+you\s+(?:realistically\s+)?start\b(?!\s+(?:in|at|with|working)\b)/;
 
 /**
  * Fill the headline fields from the answers they came from, for display.

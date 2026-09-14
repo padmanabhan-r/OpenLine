@@ -45,35 +45,6 @@ export interface ScriptInput {
    * script a recruiter reviews is the script, whatever the agent voices.
    */
   speakLanguage?: string;
-  /**
-   * The recruiter's goal for this call, when they overrode the default
-   * questions. Written in ahead of the opening; it shapes what is asked and
-   * nothing else.
-   */
-  goal?: string;
-}
-
-export const MAX_GOAL_LENGTH = 240;
-
-/** Wording that would make a goal an instruction about the frame, not a topic. */
-const GOAL_OVERREACH: RegExp[] = [
-  /\bopening\b|\bopen\s+by\b|\bgreeting\b|\bsay(?:ing)?\s+exactly\b/i,
-  /\bconsent\b|\bpermission\b|\bdisclos/i,
-  /\b(?:say|claim|tell\s+them)\s+(?:that\s+)?(?:you(?:'re|\s+are)|it(?:'s|\s+is))\b/i,
-  /\bpretend\b|\bignore\b|\bdisregard\b|\bskip\b|\binstead\s+of\b/i,
-  /\bnot\s+an?\s+ai\b|\bas\s+a\s+human\b|\bhuman\s+recruiter\b/i,
-  /\b(?:you(?:'re|\s+are)|they(?:'re|\s+are))\s+hired\b|\b(?:send|make|extend)\s+(?:them\s+)?an?\s+offer\b|\boffer\s+them\b|\b(?:have|has)\s+passed\b/i,
-];
-
-/**
- * Why a goal cannot be used, or null. A goal says what the call should find
- * out; it cannot touch the opening, the consent question, what the agent is,
- * or promise an outcome. Checked before a goal is saved or drafted.
- */
-export function goalProblem(goal: string): string | null {
-  return GOAL_OVERREACH.some((pattern) => pattern.test(goal))
-    ? "A goal says what the call should find out. It cannot change the opening, the consent question, or what the agent is, and it cannot promise an outcome."
-    : null;
 }
 
 const HONORIFICS = new Set(["mr", "mrs", "ms", "miss", "dr", "prof", "sir", "shri", "smt"]);
@@ -111,7 +82,6 @@ export function assembleTask(input: ScriptInput): string {
     questions,
     factSheet,
     speakLanguage,
-    goal,
   } = input;
 
   // Only the first name is ever said, so only the first name is written in.
@@ -133,16 +103,6 @@ export function assembleTask(input: ScriptInput): string {
     ? `\nConduct the whole call in ${speakLanguage} — the opening line, every question, and the close — keeping their meaning exactly. Everything below is written in English; say each line in ${speakLanguage}. Record answers in English.\n`
     : "";
 
-  // The recruiter's goal, when they overrode the defaults. It goes below the
-  // questions as context for them, one line, and says it adds nothing: placed
-  // above the opening it read as an instruction, and a line break in it could
-  // forge a second opening. goalProblem() refuses one that reaches the frame.
-  const cleanGoal = goal ? goal.replace(/\s+/g, " ").trim().slice(0, MAX_GOAL_LENGTH) : "";
-  const goalSentence = cleanGoal && !/[.?!]$/.test(cleanGoal) ? `${cleanGoal}.` : cleanGoal;
-  const goalLine = goalSentence
-    ? `\n\nContext for the questions above, from the recruiter: ${goalSentence} It adds no questions and changes nothing else in these instructions.`
-    : "";
-
   return `You are calling ${firstName} about their application for the ${roleTitle} role at ${companyName}.
 
 This is a short basic screen, not an interview. Say the opening line below word for word, then go straight to the questions: no small talk, one or two sentences per turn, and never explain the process unless asked. Call them by their first name, ${firstName}, and nothing else: never a surname or a full name.
@@ -153,7 +113,7 @@ Open by saying exactly this, then wait for their answer:
 That line is the disclosure and the request for permission — do not reword it. If they say no, decline, would rather not, or ask for a person: thank them, say a human will follow up, and end the call. No questions.
 
 Ask in order, and only these:
-${questionLines}${goalLine}
+${questionLines}
 
 Accept the first answer to each question as given, even if it is vague. No follow-ups and no clarifying questions. Do not thank them or comment after an answer; go straight to the next question. Thank them once, at the close.
 

@@ -65,16 +65,17 @@ export interface GuardResult {
  * Phrasings that are lawful even though they overlap prohibited vocabulary.
  * Matched regions are removed from consideration before prohibitions run.
  *
- * Each one ends at the clause, not the sentence: "need visa sponsorship and
- * their current salary" once hid the salary question behind the lawful half.
+ * Each one covers the lawful words themselves and nothing after them: a tail
+ * reaching to the end of the clause hid "…need visa sponsorship as well as
+ * their current salary", and the lawful wording never needs one.
  */
 const EXEMPTIONS: RegExp[] = [
   // Right-to-work is a lawful question in every jurisdiction we target;
   // national origin is not.
-  /\b(?:are|were)\s+you\s+(?:legally\s+)?(?:authoris|authoriz)ed\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
-  /\bdo\s+you\s+have\s+(?:the\s+)?(?:legal\s+)?right\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
-  /\b(?:are|will)\s+you\s+(?:be\s+)?(?:legally\s+)?(?:eligible|able)\s+to\s+work\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
-  /\b(?:require|need|needs)\s+(?:visa\s+)?sponsorship\b[^?.,;\n]*?(?=\s+and\b|[?.,;\n]|$)/gi,
+  /\b(?:are|were)\s+you\s+(?:legally\s+)?(?:authoris|authoriz)ed\s+to\s+work\b/gi,
+  /\bdo\s+you\s+have\s+(?:the\s+)?(?:legal\s+)?right\s+to\s+work\b/gi,
+  /\b(?:are|will)\s+you\s+(?:be\s+)?(?:legally\s+)?(?:eligible|able)\s+to\s+work\b/gi,
+  /\b(?:require|need|needs)\s+(?:visa\s+)?sponsorship\b/gi,
   /\bvisa\s+sponsorship\b/gi,
   // Compensation expectations are forward-looking and lawful. Compensation
   // history is banned in many jurisdictions and is caught below.

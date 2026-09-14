@@ -1,7 +1,8 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
-import { assembleTask, goalProblem, type ScriptInput, type ScriptQuestion } from "@/lib/script/build";
+import { assembleTask, type ScriptInput, type ScriptQuestion } from "@/lib/script/build";
+import { MAX_GOAL_LENGTH } from "@/lib/script/override";
 import { inspectScript, type GuardFinding } from "@/lib/script/guard";
 import { spokenLanguage } from "@/lib/jobs/language";
 
@@ -91,9 +92,11 @@ export async function applyScriptEdit(input: {
     return { ok: false, reason: "A script needs at least one question." };
   }
 
-  const goal = input.goal === undefined ? row.call.goal : input.goal?.trim() || null;
-  const problem = goal ? goalProblem(goal) : null;
-  if (problem) return { ok: false, reason: problem };
+  // Stored and shown, never assembled into the task (see lib/script/override.ts).
+  const goal =
+    input.goal === undefined
+      ? row.call.goal
+      : input.goal?.replace(/\s+/g, " ").trim().slice(0, MAX_GOAL_LENGTH) || null;
 
   const prepared = prepareEditedScript(input.questionTexts, {
     candidateName: row.candidateName,
@@ -103,7 +106,6 @@ export async function applyScriptEdit(input: {
     factSheet: row.job.factSheet,
     // Without this a human edit would silently drop the call language.
     speakLanguage: spokenLanguage(row.job.language),
-    ...(goal ? { goal } : {}),
   });
 
   const status = prepared.findings.length > 0 ? "refused" : "previewed";

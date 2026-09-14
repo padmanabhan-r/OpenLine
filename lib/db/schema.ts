@@ -185,8 +185,9 @@ export const screeningCalls = pgTable(
     questions: jsonb("questions").$type<ScriptQuestion[]>().notNull(),
     /**
      * The recruiter's goal for this call when they overrode the default
-     * questions; assembled into the task ahead of the opening. Null for the
-     * default basic screen.
+     * questions: what the call is for, shown to the recruiter. Never written
+     * into the task; the agent acts on the reviewed questions alone. Null for
+     * the default basic screen.
      */
     goal: text("goal"),
 
