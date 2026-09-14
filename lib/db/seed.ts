@@ -11,6 +11,7 @@ import { summarizeForScript } from "@/lib/candidates/profile";
 import { getDb } from "@/lib/db";
 import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
 import { normalizePhone } from "@/lib/phone/normalize";
+import { DEFAULT_CALL_LANGUAGE } from "@/lib/jobs/language";
 
 /**
  * Seed the demo job and its applicant pool.
@@ -49,6 +50,7 @@ export async function seedDemo(): Promise<SeedSummary> {
       companyName: COMPANY_NAME,
       recruiterName: RECRUITER_NAME,
       defaultRegion: DEFAULT_REGION,
+      language: DEFAULT_CALL_LANGUAGE,
       description: JOB_DESCRIPTION,
       factSheet: JOB_FACT_SHEET,
     })

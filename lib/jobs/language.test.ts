@@ -27,6 +27,10 @@ describe("call languages", () => {
     expect(unreadLanguageReason("ta-IN")).toMatch(/Tamil/);
   });
 
+  it("defaults new jobs to English (US)", () => {
+    expect(DEFAULT_CALL_LANGUAGE).toBe("en-US");
+  });
+
   it("refuses a tag that is not on the list, and keeps the default on it", () => {
     expect(isCallLanguage("fr-FR")).toBe(false);
     expect(CALL_LANGUAGES.some((l) => l.locale === DEFAULT_CALL_LANGUAGE)).toBe(true);

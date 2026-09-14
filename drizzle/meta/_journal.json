@@ -64,6 +64,13 @@
       "when": 1789365718050,
       "tag": "0008_supreme_lethal_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789371122968,
+      "tag": "0009_faulty_wrecker",
+      "breakpoints": true
     }
   ]
 }

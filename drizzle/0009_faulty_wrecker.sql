@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ALTER COLUMN "language" SET DEFAULT 'en-US';

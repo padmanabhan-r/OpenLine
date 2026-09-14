@@ -26,7 +26,7 @@ export const CALL_LANGUAGES = [
 
 export type CallLanguage = (typeof CALL_LANGUAGES)[number]["locale"];
 
-export const DEFAULT_CALL_LANGUAGE: CallLanguage = "en-IN";
+export const DEFAULT_CALL_LANGUAGE: CallLanguage = "en-US";
 
 export function isCallLanguage(value: string): value is CallLanguage {
   return CALL_LANGUAGES.some((l) => l.locale === value);
