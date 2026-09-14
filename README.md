@@ -10,6 +10,7 @@ A recruiting console that phones every shortlisted candidate with an AI
 screener built on [CALL-E](https://www.heycall-e.com/), then hands a human the
 transcript, the structured result, and a confidence score.
 
+[**Demo video**](https://www.youtube.com/watch?v=4x6Yfw48cis) ·
 [**Live demo**](https://openline-calle.vercel.app/) ·
 [Architecture](ARCHITECTURE.md) · [Design system](DESIGN.md)
 
