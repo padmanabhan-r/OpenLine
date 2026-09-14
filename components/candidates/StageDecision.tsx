@@ -20,8 +20,9 @@ const TONE: Record<Stage, "neutral" | "info" | "good" | "warn" | "danger"> = {
 /**
  * Where this person stands, and the one decision a recruiter makes next.
  *
- * The pipeline has seven stages, but a recruiter only ever does three things
- * from a row: put someone on the list, take them to interview, or stop. So
+ * The pipeline has seven stages, but a recruiter only ever does a few things
+ * from a row: put someone on the list or take them off it, take them to
+ * interview, or stop. So
  * that is the whole control — no dropdown of every stage. Everything here is a
  * human's call; OpenLine never moves anyone into an exit stage on its own.
  */
@@ -40,7 +41,7 @@ export default function StageDecision({
   shortlistedBy: "ats" | "human" | null;
   /**
    * Whether there is a finished call to decide on. Before one, a shortlisted
-   * row offers nothing but Call — the decision comes after the evidence.
+   * row offers only Remove: Interview and Reject wait for the evidence.
    */
   callCompleted: boolean;
 }) {
@@ -73,7 +74,13 @@ export default function StageDecision({
       </Button>
     );
   } else if (stage === "shortlisted" && !callCompleted) {
-    controls = null;
+    // Before a call there is nothing to decide on, but a shortlist the
+    // recruiter cannot take someone off is the ATS score deciding for them.
+    controls = (
+      <Button size="sm" variant="ghost" disabled={pending} onClick={() => move("applied")}>
+        Remove
+      </Button>
+    );
   } else if (stage === "interview_scheduled" || stage === "selected") {
     controls = (
       <Button size="sm" variant="ghost" disabled={pending} onClick={() => move("screened")}>
