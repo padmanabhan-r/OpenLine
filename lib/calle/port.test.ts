@@ -173,6 +173,21 @@ describe("createCallePort — dialing through the fake CALL-E server", () => {
   });
 });
 
+describe("fake CALL-E ids", () => {
+  it("gives every call its own id, and the same id for a repeated idempotency key", async () => {
+    const port = createCallePort({ apiKey: "test", fetch: createFakeCalleFetch() });
+
+    const first = await port.dial(dialRequest({ idempotencyKey: "job:cand:v1" }));
+    const second = await port.dial(dialRequest({ idempotencyKey: "job:cand:v2" }));
+    const retried = await port.dial(dialRequest({ idempotencyKey: "job:cand:v1" }));
+
+    expect(first.ok && second.ok && retried.ok).toBe(true);
+    if (!first.ok || !second.ok || !retried.ok) return;
+    expect(first.call.id).not.toBe(second.call.id);
+    expect(retried.call.id).toBe(first.call.id);
+  });
+});
+
 describe("fetchCall — re-fetch used by the reconciler", () => {
   it("reads a call back by id", async () => {
     const port = createCallePort({

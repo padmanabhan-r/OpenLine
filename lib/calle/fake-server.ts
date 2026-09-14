@@ -68,6 +68,11 @@ export function createFakeCalleFetch(
   // Remembered so a later GET (the waiter, the reconciler) reads back the
   // same task the create request carried, as the real API would.
   const tasks = new Map<string, { task: string; phone: string }>();
+  // Real CALL-E gives every call its own id and collapses a repeated create
+  // with the same idempotency key onto the call it already made. The fake
+  // does both: a single fixed id collided with the unique index on stored
+  // call ids the second time a fake call was recorded.
+  const idsByKey = new Map<string, string>();
 
   const buildCallTask = (id: string, task: string, phone: string) => ({
     id,
@@ -140,8 +145,11 @@ export function createFakeCalleFetch(
         "+10000000000";
 
       const task = String(body.task ?? "");
-      tasks.set("call_fake_1", { task, phone });
-      return json(buildCallTask("call_fake_1", task, phone), 201);
+      const key = lastIdempotencyKey;
+      const id = (key && idsByKey.get(key)) || `call_fake_${crypto.randomUUID()}`;
+      if (key) idsByKey.set(key, id);
+      tasks.set(id, { task, phone });
+      return json(buildCallTask(id, task, phone), 201);
     }
 
     const getCall = pathname.match(/^\/v1\/calls\/([^/]+)$/);
