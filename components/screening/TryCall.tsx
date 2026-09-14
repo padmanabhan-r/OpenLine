@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type CSSProperties, type FormEvent } from "react";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
@@ -53,6 +53,9 @@ export default function TryCall({ jobs, simulated }: { jobs: TryJob[]; simulated
   const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState(job?.language ?? DEFAULT_CALL_LANGUAGE);
   const [attested, setAttested] = useState(false);
+  // Hidden by default: this page gets screen-shared and recorded, and a number
+  // on camera cannot be taken back.
+  const [showNumber, setShowNumber] = useState(false);
   const [stage, setStage] = useState<Stage>({ kind: "form" });
   const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
@@ -216,18 +219,41 @@ export default function TryCall({ jobs, simulated }: { jobs: TryJob[]; simulated
                 style={FIELD_STYLE}
               />
             </Field>
-            <Field label="Phone number" hint="With the country code, starting with +.">
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={confirming}
-                required
-                type="tel"
-                inputMode="tel"
-                autoComplete="off"
-                placeholder="+1 415 555 0100"
-                style={FIELD_STYLE}
-              />
+            <Field
+              label="Phone number"
+              hint="With the country code, starting with +. Hidden as you type, so it stays off a shared screen."
+            >
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={confirming}
+                  required
+                  type="text"
+                  inputMode="tel"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="Phone number"
+                  placeholder="+1 415 555 0100"
+                  style={{
+                    ...FIELD_STYLE,
+                    flex: 1,
+                    minWidth: 0,
+                    ...(showNumber
+                      ? {}
+                      : ({ WebkitTextSecurity: "disc" } as unknown as CSSProperties)),
+                  }}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowNumber((v) => !v)}
+                  aria-pressed={showNumber}
+                >
+                  {showNumber ? "Hide" : "Show"}
+                </Button>
+              </div>
             </Field>
           </div>
 
