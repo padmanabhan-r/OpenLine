@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
  * Cloudflare R2, holding the original resume PDFs.
@@ -65,6 +65,13 @@ export async function putResume(
       ContentType: contentType,
     }),
   );
+}
+
+/** The stored original, for scoring the same resume against another job. */
+export async function getResume(key: string): Promise<Uint8Array> {
+  const object = await getR2().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
+  if (!object.Body) throw new Error("The stored resume is empty.");
+  return object.Body.transformToByteArray();
 }
 
 /**

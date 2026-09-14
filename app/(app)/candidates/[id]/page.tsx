@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import TopBar, { Page, Panel } from "@/components/layout/TopBar";
@@ -10,7 +11,8 @@ import ConfirmDelete from "@/components/ui/ConfirmDelete";
 import { deleteProfile } from "@/app/(app)/profiles/actions";
 import { isShortlisted } from "@/lib/candidates/stage";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
-import { getCandidate, listApplicationsForCandidate } from "@/lib/db/queries";
+import { getCandidate, listApplicationsForCandidate, listJobs } from "@/lib/db/queries";
+import AddToJob from "@/components/candidates/AddToJob";
 import { jobRef } from "@/lib/jobs/ref";
 import {
   daysSinceActive,
@@ -42,9 +44,13 @@ export default async function CandidatePage({
 
   // Every role this person is in play for — the job-scoped facts that used to
   // sit in the profiles list, where only one of them could ever be shown.
-  const applications = await listApplicationsForCandidate(id);
+  const [applications, allJobs] = await Promise.all([
+    listApplicationsForCandidate(id),
+    listJobs(),
+  ]);
 
   const { candidate, job, calls } = row;
+  const otherJobs = allJobs.filter((j) => !applications.some((a) => a.jobId === j.id));
   const record = candidate.profile;
 
   // The same one control as the shortlist row, so a recruiter reading the
@@ -132,6 +138,13 @@ export default async function CandidatePage({
             candidateName={candidate.name}
             applications={applications}
             currentCandidateId={candidate.id}
+            addToJob={
+              <AddToJob
+                candidateId={candidate.id}
+                jobs={otherJobs}
+                hasResume={Boolean(candidate.resumeKey) && candidate.parseStatus === "parsed"}
+              />
+            }
           />
 
           {calls.length > 0 && (
@@ -197,26 +210,41 @@ function Applications({
   applications,
   currentCandidateId,
   candidateName,
+  addToJob,
 }: {
   applications: Awaited<ReturnType<typeof listApplicationsForCandidate>>;
   currentCandidateId: string;
   candidateName: string;
+  addToJob: ReactNode;
 }) {
   if (applications.length === 0) return null;
 
   return (
     <Panel padded={false}>
-      <div style={{ padding: "16px 22px", borderBottom: "1px solid var(--line-2)" }}>
-        <h2 style={{ fontSize: 15, fontWeight: 700 }}>
-          Applications{" "}
-          <span style={{ color: "var(--ink-3)", fontWeight: 500 }}>
-            ({applications.length})
-          </span>
-        </h2>
-        <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 4 }}>
-          Shortlisting is per job. The score is the ATS ranking against that
-          posting; you can overrule it either way.
-        </p>
+      <div
+        style={{
+          padding: "16px 22px",
+          borderBottom: "1px solid var(--line-2)",
+          display: "flex",
+          gap: 16,
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h2 style={{ fontSize: 15, fontWeight: 700 }}>
+            Applications{" "}
+            <span style={{ color: "var(--ink-3)", fontWeight: 500 }}>
+              ({applications.length})
+            </span>
+          </h2>
+          <p style={{ fontSize: 12.5, color: "var(--ink-3)", marginTop: 4 }}>
+            Shortlisting is per job. The score is the ATS ranking against that
+            posting; you can overrule it either way.
+          </p>
+        </div>
+        {addToJob}
       </div>
 
       {applications.map((app) => (
@@ -289,7 +317,11 @@ function Decision({
             ) : (
               <Badge tone="neutral">Not shortlisted</Badge>
             )}
-            <Badge tone="info">ATS score {screening.matchScore}</Badge>
+            {screening.matchScore != null ? (
+              <Badge tone="info">ATS score {screening.matchScore}</Badge>
+            ) : (
+              <Badge tone="neutral">Not scored for this job</Badge>
+            )}
           </div>
           <p
             style={{

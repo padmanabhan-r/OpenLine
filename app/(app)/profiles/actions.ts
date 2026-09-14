@@ -4,10 +4,54 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { candidates, screeningCalls } from "@/lib/db/schema";
+import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
 import { listApplicationsForCandidate } from "@/lib/db/queries";
+import { addExistingToJob } from "@/lib/resume/ingest";
 import { deleteResumes } from "@/lib/storage/r2";
 import { operatorStatus } from "@/lib/operator";
+
+/**
+ * Add a person already in the system to another job, without a new upload.
+ * Scoring, when there is a resume to score, happens in `addExistingToJob`.
+ */
+export async function addProfileToJob(candidateId: string, jobId: string) {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false as const, reason: operator.reason };
+  if (!UUID.test(candidateId) || !UUID.test(jobId)) {
+    return { ok: false as const, reason: "Pick a job." };
+  }
+
+  const db = getDb();
+  const [[source], [job]] = await Promise.all([
+    db.select().from(candidates).where(eq(candidates.id, candidateId)).limit(1),
+    db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1),
+  ]);
+  if (!source) return { ok: false as const, reason: "No such profile." };
+  if (!job) return { ok: false as const, reason: "That job no longer exists." };
+
+  const applied = await listApplicationsForCandidate(candidateId);
+  if (applied.some((a) => a.jobId === jobId)) {
+    return { ok: false as const, reason: `Already on ${job.title}.` };
+  }
+
+  const outcome = await addExistingToJob({ job, source });
+
+  revalidatePath(`/jobs/${jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/profiles");
+  revalidatePath(`/candidates/${candidateId}`);
+
+  if (outcome.status !== "created") return { ok: false as const, reason: outcome.reason };
+  return {
+    ok: true as const,
+    message:
+      outcome.matchScore == null
+        ? `Added to ${job.title}, unscored. Shortlist them from the job page.`
+        : `Added to ${job.title}. ATS score ${outcome.matchScore}, ${outcome.shortlisted ? "shortlisted" : "in the pool"}.`,
+  };
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Delete a person: every application they made, the calls placed about each,

@@ -135,7 +135,8 @@ export interface PlatformSignals {
 export interface ScreeningDecision {
   appliedDate: string;
   shortlisted: boolean;
-  matchScore: number;
+  /** Null when a profile was added to a job it was never scored against. */
+  matchScore: number | null;
   note: string;
 }
 

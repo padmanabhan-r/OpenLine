@@ -4,7 +4,7 @@ import { candidates, type Job } from "@/lib/db/schema";
 import type { CountryCode } from "libphonenumber-js";
 import { normalizePhone } from "@/lib/phone/normalize";
 import { summarizeForScript } from "@/lib/candidates/profile";
-import { putResume, resumeKey } from "@/lib/storage/r2";
+import { getResume, putResume, resumeKey } from "@/lib/storage/r2";
 import { createResumeParser, shouldShortlist, toCandidateProfile } from "./parse";
 import { cleanCandidateName } from "@/lib/screening/try";
 
@@ -20,7 +20,7 @@ import { cleanCandidateName } from "@/lib/screening/try";
  */
 
 export type IngestOutcome = { filename: string } & (
-  | { status: "created"; candidateId: string; name: string; shortlisted: boolean; matchScore: number }
+  | { status: "created"; candidateId: string; name: string; shortlisted: boolean; matchScore: number | null }
   | { status: "parse_failed"; candidateId: string; reason: string }
   | { status: "duplicate"; reason: string }
   | { status: "rejected"; reason: string }
@@ -163,6 +163,85 @@ export async function ingestResume(input: {
         status: "duplicate",
         reason: `A candidate with this phone number already exists on this job.`,
       };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Put someone already in the system onto another job, without a new upload.
+ *
+ * A score belongs to one job, so it is never copied. When the original PDF is
+ * on file it goes through the upload path again for this job: a fresh score,
+ * the same shortlist threshold, and this job's own copy of the file, so
+ * deleting the first job cannot take the second one's resume with it. A seeded
+ * profile has no PDF to score, so it joins the pool unscored and a person
+ * decides whether to shortlist.
+ */
+export async function addExistingToJob(input: {
+  job: Job;
+  source: typeof candidates.$inferSelect;
+}): Promise<IngestOutcome> {
+  const { job, source } = input;
+
+  if (source.resumeKey && source.parseStatus === "parsed") {
+    // Keys are `resumes/<job>/<uuid>-<name>`; the uuid and its dash are 37 characters.
+    const filename = source.resumeKey.split("/").pop()?.slice(37) || "resume.pdf";
+    let bytes: Uint8Array;
+    try {
+      bytes = await getResume(source.resumeKey);
+    } catch (error) {
+      return {
+        filename,
+        status: "rejected",
+        reason: `Could not read the stored resume: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+    return ingestResume({ job, filename, bytes });
+  }
+
+  if (!source.profile) {
+    return { filename: source.name, status: "rejected", reason: "This profile has no record to copy." };
+  }
+
+  const profile = {
+    ...source.profile,
+    screening: {
+      appliedDate: new Date().toISOString().slice(0, 10),
+      shortlisted: false,
+      matchScore: null,
+      note: `Added from an existing profile. Not scored against ${job.title}, so a person decides whether to shortlist.`,
+    },
+  };
+
+  try {
+    const [row] = await getDb()
+      .insert(candidates)
+      .values({
+        jobId: job.id,
+        name: source.name,
+        rawPhone: source.rawPhone,
+        phoneE164: source.phoneE164,
+        phoneRejection: source.phoneRejection,
+        email: source.email,
+        summary: source.summary,
+        profile,
+        stage: "applied" as const,
+        shortlistedBy: null,
+        source: source.source,
+      })
+      .returning({ id: candidates.id });
+    return {
+      filename: source.name,
+      status: "created",
+      candidateId: row.id,
+      name: source.name,
+      shortlisted: false,
+      matchScore: null,
+    };
+  } catch (error) {
+    if (mentionsPhoneUnique(error)) {
+      return { filename: source.name, status: "duplicate", reason: "This person is already on that job." };
     }
     throw error;
   }
