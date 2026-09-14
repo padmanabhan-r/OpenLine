@@ -1,4 +1,7 @@
+import Link from "next/link";
 import TopBar, { Page, Panel } from "@/components/layout/TopBar";
+import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 import TryCall from "@/components/screening/TryCall";
 import { resolveCalleMode } from "@/lib/calle/port";
 import { listJobs } from "@/lib/db/queries";
@@ -48,7 +51,40 @@ export default async function TryPage() {
             </p>
           </Panel>
         ) : (
-          <TryCall jobs={jobs} simulated={mode === "fake"} />
+          <div style={{ display: "grid", gap: 16 }}>
+            {/* Said first and said big: a judge who only ever sees this page
+                would otherwise think the product is a phone form. */}
+            <Panel>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <Icon
+                  name="alert"
+                  size={22}
+                  style={{ color: "var(--amber)", flexShrink: 0, marginTop: 2 }}
+                />
+                <div style={{ display: "grid", gap: 8, maxWidth: 680 }}>
+                  <p style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.3 }}>
+                    This is a quick test call, not the recruiting workflow.
+                  </p>
+                  <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.6 }}>
+                    It rings one number with the real script so you can hear the agent, and
+                    it keeps nothing. The real workflow starts from a job: upload a
+                    candidate&apos;s resume PDF, OpenLine scores it and shortlists it, you
+                    press Call on the shortlist, and the transcript and answers are saved
+                    for you to decide Interview or Reject.
+                  </p>
+                  <div style={{ marginTop: 4 }}>
+                    <Link href={jobs.length === 1 ? `/jobs/${jobs[0].id}` : "/jobs"}>
+                      <Button size="sm" variant="soft">
+                        {jobs.length === 1 ? `Upload a resume to ${jobs[0].title}` : "Go to jobs"}
+                        <Icon name="arrow-right" size={14} />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Panel>
+            <TryCall jobs={jobs} simulated={mode === "fake"} />
+          </div>
         )}
       </Page>
     </>

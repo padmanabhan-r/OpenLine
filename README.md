@@ -28,7 +28,7 @@ instructions of the Devpost submission**. It is not in this repository.
 **https://openline-calle.vercel.app**, then **Try a call** in the sidebar.
 
 1. Enter the operator token when the console asks for it.
-2. **Try a call.** Type your name and your phone number with its country code,
+2. **Try a call**, the quick test. Type your first name and your phone number with its country code,
    pick a language, tick the box, press **Call**, and confirm. Your phone rings
    within seconds. The agent says it is an AI assistant calling about the role,
    asks whether it may put a few screening questions to you, asks five, and
