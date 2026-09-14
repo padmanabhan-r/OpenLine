@@ -61,7 +61,7 @@ export default async function NewJobPage() {
                 <input name="companyName" required placeholder="Northwind Payments" style={FIELD_STYLE} />
               </Field>
               <Field label="Recruiter name" hint="The agent names this person on every call.">
-                <input name="recruiterName" required placeholder="Sam Oyelaran" style={FIELD_STYLE} />
+                <input name="recruiterName" required placeholder="John Doe" style={FIELD_STYLE} />
               </Field>
               <Field
                 label="Phone region"

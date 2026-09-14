@@ -19,7 +19,7 @@ import type { FactSheetEntry } from "@/lib/script/build";
 
 export const JOB_TITLE = "Senior AI Engineer";
 export const COMPANY_NAME = "Northwind Payments";
-export const RECRUITER_NAME = "Sam Oyelaran";
+export const RECRUITER_NAME = "John Doe";
 /** Applications arrive with Indian national-format numbers; this resolves them. */
 export const DEFAULT_REGION = "IN";
 

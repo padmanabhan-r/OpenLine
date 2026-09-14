@@ -5,7 +5,7 @@ const SCRIPT_INPUT = {
   candidateName: "Priya Sharma",
   roleTitle: "Senior AI Engineer",
   companyName: "Northwind Payments",
-  recruiterName: "Sam Oyelaran",
+  recruiterName: "John Doe",
   factSheet: [{ label: "Salary band", value: "$65,000–$90,000 a year" }],
 };
 
