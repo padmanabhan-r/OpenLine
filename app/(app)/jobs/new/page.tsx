@@ -8,18 +8,52 @@ import { requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
+function SectionHeading({ title, note }: { title: string; note: string }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <h2 style={{ fontSize: 15, fontWeight: 700 }}>{title}</h2>
+      <p
+        style={{
+          fontSize: 12.5,
+          color: "var(--ink-3)",
+          marginTop: 4,
+          maxWidth: 620,
+          lineHeight: 1.5,
+        }}
+      >
+        {note}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * A new job in three parts that look like three parts: the role, an optional
+ * AI draft, and the posting itself. The draft only ever fills the posting;
+ * nothing is saved until Create job.
+ */
 export default async function NewJobPage() {
   await requireOperator("/jobs/new");
   return (
     <>
       <TopBar
         title="New job"
-        subtitle="Title, company, a brief — the draft does the rest, and you read it before it exists."
+        subtitle="Describe the role, draft the posting from a brief or type it yourself, and read it before you save."
       />
       <Page>
-        <Panel>
-          <form action={createJob} style={{ display: "grid", gap: 18, maxWidth: 680 }}>
-            <div style={{ display: "grid", gap: 18, gridTemplateColumns: "1fr 1fr" }}>
+        <form action={createJob} style={{ display: "grid", gap: 16, maxWidth: 780 }}>
+          <Panel>
+            <SectionHeading
+              title="The role"
+              note="Who is hiring, and how every call for this job sounds."
+            />
+            <div
+              style={{
+                display: "grid",
+                gap: 18,
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              }}
+            >
               <Field label="Job title">
                 <input name="title" required placeholder="Senior AI Engineer" style={FIELD_STYLE} />
               </Field>
@@ -56,16 +90,19 @@ export default async function NewJobPage() {
                 </select>
               </Field>
             </div>
+          </Panel>
 
-            <JobDraftFields />
+          <JobDraftFields />
 
-            <div>
-              <Button size="lg" type="submit">
-                Create job
-              </Button>
-            </div>
-          </form>
-        </Panel>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <Button size="lg" type="submit">
+              Create job
+            </Button>
+            <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+              Nothing is saved until you press Create job.
+            </span>
+          </div>
+        </form>
       </Page>
     </>
   );
