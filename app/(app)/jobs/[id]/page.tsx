@@ -13,6 +13,8 @@ import { getJob, listJobCandidates } from "@/lib/db/queries";
 import { jobRef } from "@/lib/jobs/ref";
 import { isExit, isShortlisted } from "@/lib/candidates/stage";
 import JobStatusControl from "@/components/jobs/JobStatusControl";
+import ConfirmDelete from "@/components/ui/ConfirmDelete";
+import { deleteJob } from "./actions";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { languageLabel } from "@/lib/jobs/language";
 import { operatorStatus, requireOperator } from "@/lib/operator";
@@ -166,6 +168,12 @@ export default async function JobPage({
               statusReason={job.statusReason}
             />
             <ResumeUpload jobId={job.id} />
+            <ConfirmDelete
+              label="Delete"
+              confirmLabel="Delete job"
+              consequence={`Removes ${applicants.length} ${applicants.length === 1 ? "applicant" : "applicants"}, their calls and resumes.`}
+              action={deleteJob.bind(null, job.id)}
+            />
           </div>
         }
       />

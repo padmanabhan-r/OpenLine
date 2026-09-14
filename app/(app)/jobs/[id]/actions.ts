@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { previewCandidate } from "@/lib/screening/preview";
 import { finishCall, startCall, startNewAttempt } from "@/lib/screening/dispatch";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { deleteResumes } from "@/lib/storage/r2";
 import { getDb } from "@/lib/db";
 import { candidates, jobs, screeningCalls } from "@/lib/db/schema";
 import { isShortlisted, isStage } from "@/lib/candidates/stage";
@@ -123,6 +125,39 @@ export async function setStage(
   revalidatePath(`/candidates/${candidateId}`);
   revalidatePath("/profiles");
   return { ok: true as const, stage };
+}
+
+/**
+ * Delete a job with its applicants, their calls, and their resume PDFs.
+ *
+ * Refused while a call is on the line: CALL-E has no way to list calls, so
+ * deleting the row that holds a live call's id would lose that call for good.
+ */
+export async function deleteJob(jobId: string) {
+  const operator = await operatorStatus();
+  if (!operator.ok) return { ok: false as const, reason: operator.reason };
+
+  const db = getDb();
+  const [live] = await db
+    .select({ id: screeningCalls.id })
+    .from(screeningCalls)
+    .where(and(eq(screeningCalls.jobId, jobId), eq(screeningCalls.status, "dialing")))
+    .limit(1);
+  if (live) return { ok: false as const, reason: "A call is still on the line. Try again when it ends." };
+
+  const files = await db
+    .select({ key: candidates.resumeKey })
+    .from(candidates)
+    .where(and(eq(candidates.jobId, jobId), isNotNull(candidates.resumeKey)));
+
+  // Candidates and screening calls go with it (on delete cascade).
+  await db.delete(jobs).where(eq(jobs.id, jobId));
+  await deleteResumes(files.flatMap((f) => (f.key ? [f.key] : [])));
+
+  revalidatePath("/jobs");
+  revalidatePath("/profiles");
+  revalidatePath("/calls");
+  redirect("/jobs");
 }
 
 /**

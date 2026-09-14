@@ -6,6 +6,8 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import StageDecision from "@/components/candidates/StageDecision";
 import RowActions from "@/components/screening/RowActions";
+import ConfirmDelete from "@/components/ui/ConfirmDelete";
+import { deleteProfile } from "@/app/(app)/profiles/actions";
 import { isShortlisted } from "@/lib/candidates/stage";
 import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { getCandidate, listApplicationsForCandidate } from "@/lib/db/queries";
@@ -98,6 +100,12 @@ export default async function CandidatePage({
             >
               Back to shortlist
             </Link>
+            <ConfirmDelete
+              label="Delete"
+              confirmLabel={`Delete ${candidate.name.split(" ")[0]}`}
+              consequence={`Removes ${applications.length === 1 ? "their application" : `all ${applications.length} applications`}, calls and resume.`}
+              action={deleteProfile.bind(null, candidate.id)}
+            />
           </div>
         }
       />

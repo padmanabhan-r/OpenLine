@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
  * Cloudflare R2, holding the original resume PDFs.
@@ -65,6 +65,19 @@ export async function putResume(
       ContentType: contentType,
     }),
   );
+}
+
+/**
+ * Remove stored resumes once their rows are gone. Best effort: the rows are
+ * already deleted, so a failure here leaves an orphaned file, not a broken page.
+ */
+export async function deleteResumes(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  const results = await Promise.allSettled(
+    keys.map((key) => getR2().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }))),
+  );
+  const failed = results.filter((r) => r.status === "rejected").length;
+  if (failed > 0) console.error(`[r2] ${failed} of ${keys.length} resume deletes failed`);
 }
 
 /** Public URL for a stored resume, when R2_PUBLIC_BASE_URL is configured. */
