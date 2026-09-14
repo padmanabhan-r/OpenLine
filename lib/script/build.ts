@@ -47,6 +47,31 @@ export interface ScriptInput {
   speakLanguage?: string;
 }
 
+const HONORIFICS = new Set(["mr", "mrs", "ms", "miss", "dr", "prof", "sir", "shri", "smt"]);
+/** "K.", "S.K.", or a lone letter: an initial, never what someone is called. */
+const INITIALS = /^(\p{L}\.)+\p{L}?$|^\p{L}$/u;
+
+/**
+ * The name a person is called by on the phone. A machine reading out a full
+ * name sounds like a form, so the task only ever carries this one word.
+ *
+ * Skips honorifics and initials ("Dr. K. Rao" is Rao, and many Indian names
+ * lead with an initial), handles surname-first "Rao, Priya", and softens an
+ * all-caps name so a voice does not spell it out.
+ */
+export function firstNameOf(fullName: string): string {
+  let words = fullName.trim().split(/\s+/).filter(Boolean);
+  if (words.length > 1 && words[0].endsWith(",")) words = words.slice(1);
+  const bare = (w: string) => w.replace(/[.,;:]+$/, "");
+  const called =
+    words.find((w) => !HONORIFICS.has(bare(w).toLowerCase()) && !INITIALS.test(w) && bare(w).length > 1) ??
+    words[words.length - 1] ??
+    "";
+  const name = bare(called);
+  const shouting = name.length > 1 && name === name.toUpperCase() && name !== name.toLowerCase();
+  return shouting ? name[0] + name.slice(1).toLowerCase() : name;
+}
+
 /** Build the exact instruction CALL-E will act on. Pure and deterministic. */
 export function assembleTask(input: ScriptInput): string {
   const {
@@ -58,6 +83,9 @@ export function assembleTask(input: ScriptInput): string {
     factSheet,
     speakLanguage,
   } = input;
+
+  // Only the first name is ever said, so only the first name is written in.
+  const firstName = firstNameOf(candidateName);
 
   const questionLines = questions
     .map((q) => `  - [${q.id}] ${q.text}`)
@@ -75,19 +103,19 @@ export function assembleTask(input: ScriptInput): string {
     ? `\nConduct the whole call in ${speakLanguage} — the opening line, every question, and the close — keeping their meaning exactly. Everything below is written in English; say each line in ${speakLanguage}. Record answers in English.\n`
     : "";
 
-  return `You are calling ${candidateName} about their application for the ${roleTitle} role at ${companyName}.
+  return `You are calling ${firstName} about their application for the ${roleTitle} role at ${companyName}.
 
-This is a short basic screen, not an interview. Say the opening line below word for word, then go straight to the questions: no small talk, one or two sentences per turn, and never explain the process unless asked.
+This is a short basic screen, not an interview. Say the opening line below word for word, then go straight to the questions: no small talk, one or two sentences per turn, and never explain the process unless asked. Call them by their first name, ${firstName}, and nothing else: never a surname or a full name.
 ${languageLine}
 Open by saying exactly this, then wait for their answer:
-"Hi, is this ${candidateName}? This is an AI assistant calling for ${recruiterName} at ${companyName}. You applied for the ${roleTitle} role, and this is a quick two-minute first screen. OK if I ask a few screening questions?"
+"Hi, is this ${firstName}? This is an AI assistant calling for ${recruiterName} at ${companyName}. You applied for the ${roleTitle} role, and this is a quick two-minute first screen. OK if I ask a few screening questions?"
 
 That line is the disclosure and the request for permission — do not reword it. If they say no, decline, would rather not, or ask for a person: thank them, say a human will follow up, and end the call. No questions.
 
 Ask in order, and only these:
 ${questionLines}
 
-Accept the first answer to each question as given, even if it is vague. No follow-ups, no clarifying questions, no comment beyond a brief acknowledgement.
+Accept the first answer to each question as given, even if it is vague. No follow-ups and no clarifying questions. Do not thank them or comment after an answer; go straight to the next question. Thank them once, at the close.
 
 If they ask you something, answer only from:
 ${factLines}

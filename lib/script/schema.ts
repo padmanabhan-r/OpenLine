@@ -104,7 +104,7 @@ export const SCREENING_RESULT_SCHEMA = {
     salary_expectation: {
       type: "string",
       description:
-        "The salary expectation the candidate stated, in their own words, for example `around 60 lakh` or `open to discussion`. Empty string if not stated. Never record their current salary.",
+        "The salary expectation the candidate stated, in their own words, for example `around $80,000 a year` or `open to discussion`. Empty string if not stated. Never record their current salary.",
     },
     candidate_questions: {
       type: "array",

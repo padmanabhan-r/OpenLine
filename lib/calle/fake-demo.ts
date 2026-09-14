@@ -52,7 +52,7 @@ export const FAKE_SCREENING: FakeCalleOptions = {
       {
         offset_seconds: 43,
         speaker: "user",
-        text: "Somewhere around fifty-five lakh, but I'm open to discussion. Is the role remote, and how big is the team?",
+        text: "Somewhere around eighty thousand dollars, but I'm open to discussion. Is the role remote, and how big is the team?",
       },
       {
         offset_seconds: 50,
@@ -98,13 +98,13 @@ export const FAKE_SCREENING: FakeCalleOptions = {
       {
         question_id: "q5",
         answer_status: "answered",
-        answer: "Around 55 lakh, open to discussion.",
-        evidence: "Somewhere around fifty-five lakh, but I'm open to discussion.",
+        answer: "Around $80,000, open to discussion.",
+        evidence: "Somewhere around eighty thousand dollars, but I'm open to discussion.",
       },
     ],
     availability: "early November",
     notice_period: "60 days",
-    salary_expectation: "around 55 lakh, open to discussion",
+    salary_expectation: "around $80,000, open to discussion",
     candidate_questions: [
       { question: "Is the role remote?", was_answered: "yes" },
       { question: "How big is the team?", was_answered: "no" },

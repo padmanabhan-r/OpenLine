@@ -521,7 +521,10 @@ function Signals({ candidate }: { candidate: CandidateProfile }) {
         ["Preferred work mode", s.preferredWorkMode],
         [
           "Salary expectation",
-          `₹${s.expectedSalaryRangeInrLpa.min}–${s.expectedSalaryRangeInrLpa.max} LPA`,
+          // A profile stored before salaries moved to USD has no such field.
+          s.expectedSalaryRangeUsdK
+            ? `$${s.expectedSalaryRangeUsdK.min}k–$${s.expectedSalaryRangeUsdK.max}k a year`
+            : "Not stated",
         ],
       ],
     },

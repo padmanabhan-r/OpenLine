@@ -6,7 +6,7 @@ const SCRIPT_INPUT = {
   roleTitle: "Senior AI Engineer",
   companyName: "Northwind Payments",
   recruiterName: "Sam Oyelaran",
-  factSheet: [{ label: "Salary band", value: "₹55–75 lakh" }],
+  factSheet: [{ label: "Salary band", value: "$65,000–$90,000 a year" }],
 };
 
 describe("prepareEditedScript", () => {

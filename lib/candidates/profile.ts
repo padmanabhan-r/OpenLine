@@ -111,7 +111,8 @@ export interface PlatformSignals {
   connectionCount: number;
   endorsementsReceived: number;
   noticePeriodDays: number;
-  expectedSalaryRangeInrLpa: { min: number; max: number };
+  /** US dollars a year, in thousands: { min: 66, max: 90 } is $66k–$90k. */
+  expectedSalaryRangeUsdK: { min: number; max: number };
   preferredWorkMode: WorkMode;
   willingToRelocate: boolean;
   githubActivityScore: number;

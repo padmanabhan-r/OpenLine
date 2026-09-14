@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { firstNameOf } from "@/lib/script/build";
 
 export interface BoardRow {
   name: string;
@@ -34,7 +35,7 @@ export default function Switchboard({
   );
   const [selected, setSelected] = useState(firstDialable);
   const chosen = rows[selected];
-  const firstName = (chosen?.name ?? "").split(" ")[0];
+  const firstName = firstNameOf(chosen?.name ?? "");
   const lines = [
     // The one scripted line from assembleTask, split at its natural pause:
     // disclosure first, then the role and the request for permission.

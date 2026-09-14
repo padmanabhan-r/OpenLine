@@ -54,7 +54,7 @@ export default function JobDraftFields() {
             onChange={(e) => setBrief(e.target.value)}
             rows={4}
             placeholder={
-              "Senior ML engineer for our fraud team in Bangalore, hybrid two days a week. Owns the retrieval and evaluation for a triage assistant. ₹55–75 lakh. Two technical rounds after this screen."
+              "Senior ML engineer for our fraud team in Bangalore, hybrid two days a week. Owns the retrieval and evaluation for a triage assistant. $65,000–$90,000 a year. Two technical rounds after this screen."
             }
             style={{ ...FIELD_STYLE, resize: "vertical", lineHeight: 1.6 }}
           />
@@ -100,7 +100,7 @@ export default function JobDraftFields() {
           rows={6}
           value={factSheet}
           onChange={(e) => setFactSheet(e.target.value)}
-          placeholder={"Salary band: ₹55–75 lakh per annum\nLocation policy: Hybrid — two days a week in office\nInterview process: This call, then two technical rounds"}
+          placeholder={"Salary band: $65,000–$90,000 a year\nLocation policy: Hybrid — two days a week in office\nInterview process: This call, then two technical rounds"}
           style={{ ...FIELD_STYLE, resize: "vertical", lineHeight: 1.7 }}
         />
       </Field>

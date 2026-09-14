@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assembleTask, type ScriptInput } from "./build";
+import { assembleTask, firstNameOf, type ScriptInput } from "./build";
 import { inspectScript } from "./guard";
 
 const input = (overrides: Partial<ScriptInput> = {}): ScriptInput => ({
@@ -12,7 +12,7 @@ const input = (overrides: Partial<ScriptInput> = {}): ScriptInput => ({
     { id: "q2", text: "Which parts of the payments stack have you owned?" },
   ],
   factSheet: [
-    { label: "Salary band", value: "₹45–60 lakh per annum" },
+    { label: "Salary band", value: "$55,000–$70,000 a year" },
     { label: "Location policy", value: "Hybrid, two days a week in Bangalore" },
   ],
   ...overrides,
@@ -56,7 +56,7 @@ describe("assembleTask", () => {
 
   it("inlines the job fact sheet, since the agent cannot look anything up mid-call", () => {
     const task = assembleTask(input());
-    expect(task).toContain("₹45–60 lakh per annum");
+    expect(task).toContain("$55,000–$70,000 a year");
     expect(task).toContain("Hybrid, two days a week in Bangalore");
   });
 
@@ -64,6 +64,34 @@ describe("assembleTask", () => {
     expect(assembleTask(input())).toContain(
       '"Hi, is this Priya? This is an AI assistant calling for Sam at Northwind. You applied for the Senior Backend Engineer role, and this is a quick two-minute first screen. OK if I ask a few screening questions?"',
     );
+  });
+
+  it("says only the first name, never the surname", () => {
+    const task = assembleTask(input({ candidateName: "Priya Sharma" }));
+    expect(task).toContain('"Hi, is this Priya? This is an AI assistant');
+    expect(task).toMatch(/first name, Priya, and nothing else/);
+    expect(task).not.toContain("Sharma");
+  });
+
+  it("skips an honorific when it picks the first name", () => {
+    expect(firstNameOf("Dr. Priya Sharma")).toBe("Priya");
+    expect(firstNameOf("Priya")).toBe("Priya");
+  });
+
+  it("skips initials, reads surname-first names, and softens capitals", () => {
+    expect(firstNameOf("K. Rao")).toBe("Rao");
+    expect(firstNameOf("S.K. Rao")).toBe("Rao");
+    expect(firstNameOf("Dr. K. Rao")).toBe("Rao");
+    expect(firstNameOf("Rao, Priya")).toBe("Priya");
+    expect(firstNameOf("PRIYA SHARMA")).toBe("Priya");
+    expect(assembleTask(input({ candidateName: "K. Rao" }))).toContain('"Hi, is this Rao?');
+  });
+
+  it("does not thank them after every answer, only once at the close", () => {
+    const task = assembleTask(input()).toLowerCase();
+    expect(task).toMatch(/do not thank them or comment after an answer/);
+    expect(task).toMatch(/thank them once, at the close/);
+    expect(task).not.toContain("brief acknowledgement");
   });
 
   it("accepts the first answer and never follows up", () => {

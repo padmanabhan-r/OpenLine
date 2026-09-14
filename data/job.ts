@@ -71,14 +71,14 @@ WHO THIS ISN'T FOR
 
 TEAM AND LOGISTICS
 
-Eight engineers total; you would be the fourth on the applied AI squad, reporting to the Head of Engineering. Hybrid, two days a week in the Bangalore office; we do not track which days. The band is ₹55–75 lakh depending on experience, and we can buy out up to 30 days of notice.
+Eight engineers total; you would be the fourth on the applied AI squad, reporting to the Head of Engineering. Hybrid, two days a week in the Bangalore office; we do not track which days. The band is $65,000–$90,000 a year depending on experience, and we can buy out up to 30 days of notice.
 
 Three interview stages after this screening call: a technical conversation, a system design session with the team, and a conversation with the Head of Engineering. We aim to decide within three weeks.`;
 
 export const JOB_FACT_SHEET: FactSheetEntry[] = [
   {
     label: "Salary band",
-    value: "₹55–75 lakh per annum, depending on experience",
+    value: "$65,000–$90,000 a year, depending on experience",
   },
   {
     label: "Location policy",
