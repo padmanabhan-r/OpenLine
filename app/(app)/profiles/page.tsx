@@ -84,7 +84,7 @@ export default async function ProfilesPage() {
                   </div>
 
                   {/* Per-job facts live on the profile. All this row claims is
-                      how many roles this person is in play for. */}
+                      how many roles this person is shortlisted for. */}
                   <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>
                     {row.applicationCount === 1
                       ? "1 application"
@@ -93,7 +93,8 @@ export default async function ProfilesPage() {
 
                   {row.shortlistedCount > 0 && (
                     <Badge tone="good">
-                      In play for {row.shortlistedCount}
+                      Shortlisted for {row.shortlistedCount}{" "}
+                      {row.shortlistedCount === 1 ? "role" : "roles"}
                     </Badge>
                   )}
 
