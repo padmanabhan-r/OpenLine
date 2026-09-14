@@ -15,6 +15,7 @@
  * in any other language is routed to a human with that reason, every time.
  */
 export const CALL_LANGUAGES = [
+  { locale: "en-US", label: "English (US)" },
   { locale: "en-IN", label: "English (India)" },
   { locale: "hi-IN", label: "Hindi", spoken: "Hindi" },
   { locale: "ta-IN", label: "Tamil", spoken: "Tamil" },
