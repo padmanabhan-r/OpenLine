@@ -264,3 +264,17 @@ button, input, textarea, select { font-family: inherit; }
   border-radius: 3px;
   padding: 1px 2px;
 }
+
+/*
+ * The one modal surface: a native <dialog>, so Escape, focus, and the inert
+ * page behind it come from the browser rather than from code. Only the
+ * backdrop has to be styled here; the panel itself uses tokens inline.
+ */
+.ol-dialog::backdrop {
+  background: rgba(10, 8, 5, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ol-dialog[open] { animation: fadeUp .22s cubic-bezier(.2,.7,.3,1) both; }
+}

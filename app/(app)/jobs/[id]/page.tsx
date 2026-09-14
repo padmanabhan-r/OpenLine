@@ -138,7 +138,15 @@ export default async function JobPage({
   // Whether this browser may dial. The server checks again in startCall; this
   // only decides whether the button is worth offering.
   const operator = await operatorStatus();
-  const roster = applicants.filter((r) => isShortlisted(r.candidate.stage));
+  // Highest ATS score first: the recruiter works the list top down, so the
+  // strongest fit is the first call. Unscored rows sink; ties go by name.
+  const roster = applicants
+    .filter((r) => isShortlisted(r.candidate.stage))
+    .sort(
+      (a, b) =>
+        (b.candidate.matchScore ?? -1) - (a.candidate.matchScore ?? -1) ||
+        a.candidate.name.localeCompare(b.candidate.name),
+    );
   const pool = applicants.filter((r) => r.candidate.stage === "applied");
   // Rejected or withdrew: off the list, still on the record, one click back.
   const exited = applicants.filter((r) => isExit(r.candidate.stage));
@@ -204,7 +212,7 @@ export default async function JobPage({
               eyebrow="The queue"
               title="Shortlisted"
               count={roster.length}
-              explanation="The only people OpenLine will call. Call each one, read what came back, then decide — the words the agent says are fixed and readable on Review before anything dials."
+              explanation="The only people OpenLine will call. Call each one, read what came back, then decide — the words the agent says are fixed and readable on Review before anything dials. Highest ATS score first."
               note={
                 <>
                   {callable.length > 0 && (
@@ -349,9 +357,12 @@ export default async function JobPage({
                     />
                   </div>
 
+                  {/* Grows with what it holds: a confirm naming a long first
+                      name is wider than a lone Call, and a fixed width let it
+                      spill over the Review link beside it. */}
                   <div
                     style={{
-                      width: 210,
+                      minWidth: 210,
                       flexShrink: 0,
                       display: "flex",
                       justifyContent: "flex-end",

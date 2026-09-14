@@ -32,6 +32,7 @@ export async function buildScriptFor(jobId: string, candidateId: string) {
     .orderBy(desc(screeningCalls.createdAt))
     .limit(1);
   revalidatePath(`/jobs/${jobId}`);
+  revalidatePath(`/candidates/${candidateId}`);
   revalidatePath("/calls");
   return { ...outcome, screeningCallId: row?.id ?? null, scriptVersion: row?.scriptVersion ?? null };
 }
@@ -51,6 +52,7 @@ export async function callFromRow(
 
   revalidatePath(`/jobs/${jobId}`);
   revalidatePath(`/calls/${screeningCallId}`);
+  revalidatePath(`/candidates/${intent.candidateId}`);
   revalidatePath("/calls");
   return outcome;
 }
@@ -77,6 +79,7 @@ export async function callAgainFromRow(jobId: string, screeningCallId: string) {
   }
 
   revalidatePath(`/jobs/${jobId}`);
+  revalidatePath(`/candidates/${attempt.intent.candidateId}`);
   revalidatePath("/calls");
   return outcome;
 }

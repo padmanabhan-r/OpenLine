@@ -20,7 +20,7 @@ import { cleanCandidateName } from "@/lib/screening/try";
  */
 
 export type IngestOutcome = { filename: string } & (
-  | { status: "created"; candidateId: string; shortlisted: boolean; matchScore: number }
+  | { status: "created"; candidateId: string; name: string; shortlisted: boolean; matchScore: number }
   | { status: "parse_failed"; candidateId: string; reason: string }
   | { status: "duplicate"; reason: string }
   | { status: "rejected"; reason: string }
@@ -149,6 +149,7 @@ export async function ingestResume(input: {
       filename,
       status: "created",
       candidateId: row.id,
+      name: cleanName.name,
       shortlisted: shouldShortlist(parsed.matchScore),
       matchScore: parsed.matchScore,
     };

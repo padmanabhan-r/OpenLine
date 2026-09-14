@@ -5,6 +5,9 @@ import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import StageDecision from "@/components/candidates/StageDecision";
+import RowActions from "@/components/screening/RowActions";
+import { isShortlisted } from "@/lib/candidates/stage";
+import { acceptsCalls, closedReason } from "@/lib/jobs/status";
 import { getCandidate, listApplicationsForCandidate } from "@/lib/db/queries";
 import { jobRef } from "@/lib/jobs/ref";
 import {
@@ -12,7 +15,7 @@ import {
   reachabilityWarnings,
   type CandidateProfile,
 } from "@/lib/candidates/profile";
-import { requireOperator } from "@/lib/operator";
+import { operatorStatus, requireOperator } from "@/lib/operator";
 
 export const dynamic = "force-dynamic";
 
@@ -42,18 +45,60 @@ export default async function CandidatePage({
   const { candidate, job, calls } = row;
   const record = candidate.profile;
 
+  // The same one control as the shortlist row, so a recruiter reading the
+  // profile can call from here. When they cannot, the reason is on screen.
+  const operator = await operatorStatus();
+  const latestCall = calls[0] ?? null;
+  const dialDisabledReason = !operator.ok
+    ? "Unlock the console to dial."
+    : !acceptsCalls(job.status)
+      ? closedReason(job.status, job.statusReason)
+      : !isShortlisted(candidate.stage)
+        ? "Shortlist them first. Only the shortlist is called."
+        : candidate.phoneE164
+          ? null
+          : "No usable phone number on file.";
+
   return (
     <>
       <TopBar
         title={candidate.name}
         subtitle={`Applied for ${job.title} at ${job.companyName}`}
         actions={
-          <Link
-            href={`/jobs/${job.id}`}
-            style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
-          >
-            Back to shortlist
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <RowActions
+              jobId={job.id}
+              candidateId={candidate.id}
+              candidateName={candidate.name}
+              call={
+                latestCall
+                  ? {
+                      id: latestCall.id,
+                      status: latestCall.status,
+                      blocked:
+                        latestCall.guardFindings.length > 0 ||
+                        latestCall.status === "refused",
+                      scriptVersion: latestCall.scriptVersion,
+                    }
+                  : null
+              }
+              dialDisabledReason={dialDisabledReason}
+            />
+            {latestCall && (
+              <Link
+                href={`/calls/${latestCall.id}`}
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+              >
+                Review call
+              </Link>
+            )}
+            <Link
+              href={`/jobs/${job.id}`}
+              style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-2)" }}
+            >
+              Back to shortlist
+            </Link>
+          </div>
         }
       />
       <Page>

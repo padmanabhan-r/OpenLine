@@ -62,7 +62,15 @@ export default function RowActions({
     const again = confirming === "again";
     const target = call ?? prepared;
     return (
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+          gap: 6,
+          alignItems: "center",
+        }}
+      >
         <Button size="sm" variant="ghost" disabled={pending} onClick={() => setConfirming(null)}>
           Cancel
         </Button>
@@ -87,10 +95,23 @@ export default function RowActions({
           }}
         >
           <Icon name={pending ? "clock" : "phone"} size={14} />
-          {pending && !target ? "Preparing…" : pending ? "Starting…" : `Call ${firstName}`}
+          {/* The confirm names the person; a very long first name is cut
+              short rather than pushed into the next column. */}
+          <span
+            style={{
+              maxWidth: 150,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {pending && !target ? "Preparing…" : pending ? "Starting…" : `Call ${firstName}`}
+          </span>
         </Button>
         {error && (
-          <span style={{ fontSize: 11.5, color: "var(--danger)" }}>{error}</span>
+          <span style={{ flexBasis: "100%", textAlign: "right", fontSize: 11.5, color: "var(--danger)" }}>
+            {error}
+          </span>
         )}
       </div>
     );
