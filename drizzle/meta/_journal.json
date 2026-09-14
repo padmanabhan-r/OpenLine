@@ -57,6 +57,13 @@
       "when": 1789290751349,
       "tag": "0007_early_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789365718050,
+      "tag": "0008_supreme_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

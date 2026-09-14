@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { candidates as candidatesTable, jobs as jobsTable, screeningCalls } from "@/lib/db/schema";
 import type { Candidate, Job } from "@/lib/db/schema";
@@ -110,6 +110,7 @@ async function previewOne(
       id: screeningCalls.id,
       status: screeningCalls.status,
       idempotencyKey: screeningCalls.idempotencyKey,
+      scriptVersion: screeningCalls.scriptVersion,
     })
     .from(screeningCalls)
     .where(
@@ -142,6 +143,41 @@ async function previewOne(
         .map((f) => f.category)
         .join(", ")}`
     : null;
+  // A script a person edited (version above 1) is replaced only by a
+  // deliberate rebuild, and never under the same version: a confirm names the
+  // version it read, so new words need a new version and a new key.
+  if (existing && existing.scriptVersion > 1) {
+    const nextVersion = existing.scriptVersion + 1;
+    await db
+      .update(screeningCalls)
+      .set({
+        task,
+        questions,
+        goal: null,
+        status: refused ? "refused" : "previewed",
+        guardFindings: guard.findings,
+        refusalReason: refused ? "guard_violation" : null,
+        refusalDetail,
+        needsHuman: refused,
+        needsHumanReasons: refusalDetail ? [refusalDetail] : [],
+        scriptVersion: nextVersion,
+        idempotencyKey: `${job.id}:${candidate.id}:v${nextVersion}`,
+      })
+      .where(
+        and(
+          eq(screeningCalls.id, existing.id),
+          inArray(screeningCalls.status, ["previewed", "refused"]),
+          isNull(screeningCalls.calleCallId),
+        ),
+      );
+    return {
+      candidateId: candidate.id,
+      name: candidate.name,
+      status: refused ? "refused" : "previewed",
+      ...(refusalDetail ? { detail: refusalDetail } : {}),
+    };
+  }
+
   const idempotencyKey =
     existing?.idempotencyKey ?? `${job.id}:${candidate.id}:v1`;
 
@@ -154,6 +190,8 @@ async function previewOne(
       status: refused ? "refused" : "previewed",
       task,
       questions,
+      // The default template carries no recruiter goal.
+      goal: null,
       guardFindings: guard.findings,
       refusalReason: refused ? "guard_violation" : null,
       refusalDetail,
@@ -165,6 +203,8 @@ async function previewOne(
       set: {
         task,
         questions,
+        // Rebuilding from the defaults drops an override's goal with its questions.
+        goal: null,
         status: refused ? "refused" : "previewed",
         guardFindings: guard.findings,
         refusalReason: refused ? "guard_violation" : null,

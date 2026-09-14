@@ -279,11 +279,14 @@ export default async function CallPage({
             <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 10, maxWidth: 640 }}>
               Edit freely — the disclosure, consent gate, and boundaries are
               reassembled around your questions and cannot be edited out. Every
-              save is re-checked against the prohibited-topic guard.
+              save is re-checked against the prohibited-topic guard. Override
+              defaults lets you write what this call should find out, and AI
+              drafts a goal and questions for you to review.
             </p>
             <ScriptEditor
               screeningCallId={call.id}
               questions={call.questions}
+              goal={call.goal ?? null}
               editable={editableScript}
               {...(editableScript
                 ? {}

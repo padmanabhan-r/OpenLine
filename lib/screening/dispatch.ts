@@ -279,8 +279,9 @@ export async function startNewAttempt(
   if (task !== row.task) {
     return {
       ok: false,
-      reason:
-        "The script has changed since this candidate was last called. A fresh script is ready on their row — read it, then place the call.",
+      reason: row.goal
+        ? "Call again starts from the default questions, so this call's override goal and questions were not carried over. A fresh default script is ready on their row: read it, re-apply the override if you still want it, then place the call."
+        : "The script has changed since this candidate was last called. A fresh script is ready on their row — read it, then place the call.",
     };
   }
 
@@ -345,6 +346,8 @@ export async function recordTerminalCall(screeningCallId: string, call: Call) {
   const db = getDb();
 
   const transcript = flattenTranscript(call);
+  // Stored exactly as CALL-E extracted it. Empty headline fields are filled
+  // from their answers only on screen (CallResult), and marked as such.
   const result = readResult(call);
 
   // The agent may have improvised on the line, so the guard runs again over

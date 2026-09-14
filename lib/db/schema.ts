@@ -183,6 +183,12 @@ export const screeningCalls = pgTable(
     /** The exact words that were, or would have been, spoken. */
     task: text("task").notNull(),
     questions: jsonb("questions").$type<ScriptQuestion[]>().notNull(),
+    /**
+     * The recruiter's goal for this call when they overrode the default
+     * questions; assembled into the task ahead of the opening. Null for the
+     * default basic screen.
+     */
+    goal: text("goal"),
 
     /** Set when the port refused to dial. */
     refusalReason: text("refusal_reason").$type<RefusalReason>(),

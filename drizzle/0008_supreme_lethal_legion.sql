@@ -1,0 +1,1 @@
+ALTER TABLE "screening_calls" ADD COLUMN "goal" text;
