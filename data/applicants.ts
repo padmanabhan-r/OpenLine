@@ -306,9 +306,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000002",
-    name: "Arjun Mehta",
+    name: "Lucas Moreau",
     rawPhone: "+1 415 555 0114",
-    email: "arjun.mehta@example.com",
+    email: "lucas.moreau@example.com",
     headline: "Staff Engineer, ML Platform | Real-time inference at scale",
     summary:
       "Eight years, currently staff engineer on an ML platform team. I built the model-serving layer our entire ML org deploys through — about sixty models, forty thousand requests a second at peak — and led the migration from nightly batch scoring to real-time inference. My instinct is to look at the p99 before the accuracy number, which is either a strength or a bias depending on the problem.",
@@ -383,9 +383,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000003",
-    name: "Vikram Desai",
+    name: "Kenji Watanabe",
     rawPhone: "+1 415 555 0119",
-    email: "vikram.desai@example.com",
+    email: "kenji.watanabe@example.com",
     headline: "Search & Relevance Engineer | Hybrid retrieval, ranking evaluation",
     summary:
       "Nine years in search and relevance. I have rebuilt the same system three times at three companies: lexical retrieval, then dense retrieval bolted alongside it, then a properly fused hybrid with a learned reranker. I have strong opinions about when dense retrieval is a downgrade, and I can point at the offline-to-online correlation study that gave me each one.",
@@ -538,9 +538,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000005",
-    name: "Karan Bhatia",
+    name: "Chinedu Obi",
     rawPhone: "+1 415 555 0122",
-    email: "karan.bhatia@example.com",
+    email: "chinedu.obi@example.com",
     headline: "Senior ML Engineer, Risk | Payments fraud, model monitoring",
     summary:
       "Eight years in payments risk. I have built the boring, essential parts: the feature pipeline behind a real-time fraud scorer, the monitoring that catches drift before the chargeback numbers do, and most recently an LLM layer that writes the case summary a human reviewer reads. I know what a false positive costs a merchant, which turns out to matter more than model choice.",
@@ -617,9 +617,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000006",
-    name: "Sana Qureshi",
+    name: "Layla Nasser",
     rawPhone: "+1 415 555 0127",
-    email: "sana.qureshi@example.com",
+    email: "layla.nasser@example.com",
     headline: "Machine Learning Engineer | Transaction classification, PyTorch",
     summary:
       "Four years, all at one payments processor. I own the transaction-classification models behind the fraud queue — the ones that decide what a charge actually is before anything else reasons about it. Heavy feature engineering, careful about label noise, and I have spent enough time with the review team to know which errors they forgive and which they do not.",
@@ -761,9 +761,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000008",
-    name: "Zoya Rahman",
+    name: "Sofia Rossi",
     rawPhone: "+1 415 555 0136",
-    email: "zoya.rahman@example.com",
+    email: "sofia.rossi@example.com",
     headline: "Infrastructure Engineer | Vector search, embedding pipelines",
     summary:
       "Seven years, most of them close to the storage layer. I run the vector and hybrid search infrastructure a dozen product teams build on — index lifecycle, embedding backfills over billions of vectors, and the quota system that stops one team's reindex from degrading everyone else's latency. I am not the person who picks the embedding model; I am the person who has to re-embed the corpus when someone else does.",
@@ -991,9 +991,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000011",
-    name: "Priya Sundaram",
+    name: "Mei Lin Chen",
     rawPhone: "+1 415 555 0141",
-    email: "priya.sundaram@example.com",
+    email: "meilin.chen@example.com",
     headline: "ML Engineer, Fintech | Model monitoring, drift, production ownership",
     summary:
       "Six years in fintech ML. Most of my work is on the second half of the model lifecycle — monitoring, drift detection, retraining triggers, and the incident process for when a model quietly stops working. I got here because I was on call when one did, for eleven weeks, without anyone noticing.",
@@ -1066,9 +1066,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000012",
-    name: "Ishaan Kapoor",
+    name: "Mateo García",
     rawPhone: "+1 415 555 0145",
-    email: "ishaan.kapoor@example.com",
+    email: "mateo.garcia@example.com",
     headline: "AI Engineer | Open-source eval tooling, agent systems",
     summary:
       "Six years. I maintain a moderately popular open-source library for evaluating LLM pipelines — about 4,000 stars, used by more teams than I expected — and my day job is building the agent systems I then complain about in the issue tracker. Most of what I know about evaluation came from watching people misuse my own library.",
@@ -1294,9 +1294,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000015",
-    name: "Harish Menon",
+    name: "Tomasz Kowalski",
     rawPhone: "+1 415 555 0155",
-    email: "harish.menon@example.com",
+    email: "tomasz.kowalski@example.com",
     headline: "Lead Data Scientist, Banking | Fraud rules to ML, model governance",
     summary:
       "Nine years in banking risk. I led the programme that moved our card-fraud detection off a rules engine and onto ML, which was one part modelling and nine parts convincing risk, compliance, and audit that a model they cannot read line by line is safe. I write model documentation that regulators accept, which is unglamorous and, in this industry, the actual bottleneck.",
@@ -1372,9 +1372,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000016",
-    name: "Devika Menon",
+    name: "Amara Nwosu",
     rawPhone: "+1 415 555 0158",
-    email: "devika.menon@example.com",
+    email: "amara.nwosu@example.com",
     headline: "AI Engineer | Multi-agent systems, developer tooling",
     summary:
       "Five years, the last two on agent systems in developer tooling. I have built the thing everyone builds — an agent that reads a codebase and proposes changes — and learned that the difficulty is entirely in the verification loop, not the generation. Currently interested in domains where a wrong answer has a cost, because in developer tooling it mostly just wastes a minute.",
@@ -1599,9 +1599,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000019",
-    name: "Rahul Nair",
+    name: "Ethan Brooks",
     rawPhone: "phone on request",
-    email: "rahul.nair@example.com",
+    email: "ethan.brooks@example.com",
     headline: "ML Engineer, Risk | Applied fraud models and analyst tooling",
     summary:
       "Six years of applied ML for fraud and risk, plus the tooling that lets analysts label, audit, and argue with model decisions. I care about the audit trail as much as the model — if a reviewer cannot reconstruct why something was flagged six months later, the model is a liability.",
@@ -1674,9 +1674,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000020",
-    name: "Ananya Bose",
+    name: "Yuna Park",
     rawPhone: "12345",
-    email: "ananya.bose@example.com",
+    email: "yuna.park@example.com",
     headline: "NLP Engineer | Document extraction for card issuing",
     summary:
       "Six years of NLP and document extraction for a card-issuing platform — KYC documents, statements, and dispute correspondence. Transformer fine-tuning, and a lot of unglamorous work on the long tail of document formats that nobody's benchmark contains.",
@@ -1762,9 +1762,9 @@ const SHORTLISTED: ApplicantSeed[] = [
 const NOT_SHORTLISTED: ApplicantSeed[] = [
   applicant({
     id: "CAND_0000021",
-    name: "Saanvi Sethi",
+    name: "Isabela Santos",
     rawPhone: "+1 415 555 0162",
-    email: "saanvi.sethi@example.com",
+    email: "isabela.santos@example.com",
     headline: "Marketing Manager | AI · Machine Learning · LLM · Generative AI · Python",
     summary:
       "Twelve years in marketing and operations, most recently leading a content team. Deeply interested in AI and its applications to business — I use ChatGPT, Claude, Midjourney and a dozen other tools daily, have completed several online certifications in generative AI, and have written extensively about the space. Looking for roles where I can apply AI to real business problems.",
@@ -1834,9 +1834,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000022",
-    name: "Dr. Ritvik Shanbhag",
+    name: "Dr. Henrik Lindqvist",
     rawPhone: "+1 415 555 0163",
-    email: "ritvik.shanbhag@example.com",
+    email: "henrik.lindqvist@example.com",
     headline: "Research Scientist | Retrieval, dense representations, 14 publications",
     summary:
       "Research scientist working on dense retrieval and representation learning. Fourteen publications including three at SIGIR and two at NeurIPS, and a widely cited paper on hard negative mining for dense retrievers. My work is theoretical and empirical rather than production — I build and benchmark, and other teams take it from there.",
@@ -1967,9 +1967,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000024",
-    name: "Aarav Tandon",
+    name: "Noah Fischer",
     rawPhone: "+1 415 555 0165",
-    email: "aarav.tandon@example.com",
+    email: "noah.fischer@example.com",
     headline: "Machine Learning Engineer | 2 years, LLM applications",
     summary:
       "Two years out of university, building LLM features at a startup. I have shipped a document Q&A product and a summarisation feature, and I read everything I can. Applying above my level knowingly — I would rather be told no than not ask.",
@@ -2110,9 +2110,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000026",
-    name: "Kabir Anand",
+    name: "Hamza Yilmaz",
     rawPhone: "+1 415 555 0167",
-    email: "kabir.anand@example.com",
+    email: "hamza.yilmaz@example.com",
     headline: "AI Engineer | LangChain, RAG, vector databases, OpenAI",
     summary:
       "Building with LLMs for the past year and completely absorbed by it. I have shipped four RAG applications, written a popular tutorial series on agent frameworks, and I know the LangChain and LlamaIndex ecosystems inside out. Before that I was a full-stack developer for five years.",
@@ -2178,9 +2178,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000027",
-    name: "Ritika Chowdhury",
+    name: "Grace Mensah",
     rawPhone: "+1 415 555 0168",
-    email: "ritika.chowdhury@example.com",
+    email: "grace.mensah@example.com",
     headline: "Engineering Manager | ML teams, hiring, delivery",
     summary:
       "Eleven years, the last four managing. I run a team of nine ML engineers across two products, and I am good at it — hiring, growth plans, roadmap negotiation, and shielding the team from the rest of the company. I miss building and am exploring whether going back is realistic.",
@@ -2383,9 +2383,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000030",
-    name: "Vivek Ramaswamy",
+    name: "David Cohen",
     rawPhone: "+1 415 555 0171",
-    email: "vivek.ramaswamy@example.com",
+    email: "david.cohen@example.com",
     headline: "Staff SRE | Kubernetes, observability, incident response",
     summary:
       "Ten years in reliability engineering. I run the platform a hundred and forty services deploy onto, and the incident process around it. Interested in ML infrastructure as a next step, though I have not worked on it directly.",
@@ -2450,9 +2450,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000031",
-    name: "Pooja Deshmukh",
+    name: "Chloé Dubois",
     rawPhone: "+1 415 555 0172",
-    email: "pooja.deshmukh@example.com",
+    email: "chloe.dubois@example.com",
     headline: "QA Automation Lead | Test frameworks, CI, release quality",
     summary:
       "Nine years in quality engineering, currently leading automation for a fintech platform. I have built test frameworks in three languages and I am increasingly interested in how you test non-deterministic systems, which is a genuinely unsolved problem.",
@@ -2581,9 +2581,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000033",
-    name: "Rohan Kapadia",
+    name: "Andrei Popescu",
     rawPhone: "+1 415 555 0174",
-    email: "rohan.kapadia@example.com",
+    email: "andrei.popescu@example.com",
     headline: "Director of AI | Building and scaling ML organisations",
     summary:
       "Sixteen years, currently director of AI over three teams and twenty-eight people. I set technical strategy, own the AI budget, and represent the function to the board. Looking for a role with a larger remit or an earlier-stage company where I can build the function from scratch.",
@@ -2723,9 +2723,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000035",
-    name: "Gaurav Sinha",
+    name: "Wei Zhang",
     rawPhone: "+1 415 555 0176",
-    email: "gaurav.sinha@example.com",
+    email: "wei.zhang@example.com",
     headline: "Machine Learning Engineer | Recommendations",
     summary:
       "Seven years building recommendation systems for media and e-commerce. Collaborative filtering, content-based retrieval, and the ranking layer on top.",
@@ -2856,9 +2856,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000037",
-    name: "Nikhil Verma",
+    name: "Samuel Adeyemi",
     rawPhone: "+1 415 555 0178",
-    email: "nikhil.verma@example.com",
+    email: "samuel.adeyemi@example.com",
     headline: "MLOps Engineer | Pipelines, deployment, monitoring",
     summary:
       "Seven years building the deployment path for other people's models. Kubeflow, MLflow, model registries, and the CI/CD that gets a trained artefact into production safely. Batch scoring mostly; I have not worked on LLM or retrieval systems.",
@@ -2923,9 +2923,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000038",
-    name: "Sneha Pillai",
+    name: "Hannah Schmidt",
     rawPhone: "+1 415 555 0179",
-    email: "sneha.pillai@example.com",
+    email: "hannah.schmidt@example.com",
     headline: "Bioinformatics Scientist | Genomics, ML for sequence data",
     summary:
       "Nine years applying machine learning to genomic data — variant classification, expression analysis, and sequence models. Deep in the domain, and the domain is not this one.",
@@ -3139,9 +3139,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000041",
-    name: "Yash Chandra",
+    name: "Diego Alvarez",
     rawPhone: "+1 415 555 0182",
-    email: "yash.chandra@example.com",
+    email: "diego.alvarez@example.com",
     headline: "Blockchain Engineer | Solidity, protocol design",
     summary:
       "Six years in blockchain — smart contracts, protocol design, and a payments-adjacent settlement layer. Interested in AI and have been building agent projects on my own time.",
@@ -3204,9 +3204,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000042",
-    name: "Divya Krishnan",
+    name: "Aiko Tanaka",
     rawPhone: "+1 415 555 0183",
-    email: "divya.krishnan@example.com",
+    email: "aiko.tanaka@example.com",
     headline: "Data Scientist | Experimentation, causal inference",
     summary:
       "Seven years in data science, mostly experimentation and causal inference for a consumer product. I design experiments, run the analysis, and argue with product managers about what the result actually means. Very little of my work has ever been deployed as a service.",
@@ -3337,9 +3337,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000044",
-    name: "Shruti Bansal",
+    name: "Olivia Bennett",
     rawPhone: "+1 415 555 0185",
-    email: "shruti.bansal@example.com",
+    email: "olivia.bennett@example.com",
     headline: "Prompt Engineer & AI Content Strategist",
     summary:
       "Four years turning language models into usable products — prompt design, output quality, and the guidelines that keep a brand voice consistent across generated content. I work with engineers rather than as one.",
@@ -3467,9 +3467,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000046",
-    name: "Rhea Malhotra",
+    name: "Fatima Al-Sayed",
     rawPhone: "+1 415 555 0187",
-    email: "rhea.malhotra@example.com",
+    email: "fatima.alsayed@example.com",
     headline: "Mobile Engineer | Android, Kotlin, on-device ML",
     summary:
       "Seven years of Android engineering, with the last two touching on-device ML — running quantised models locally for a photo product, and the memory and battery work that makes that survivable.",
@@ -3532,9 +3532,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000047",
-    name: "Abhinav Rao",
+    name: "Minh Nguyen",
     rawPhone: "+1 415 555 0188",
-    email: "abhinav.rao@example.com",
+    email: "minh.nguyen@example.com",
     headline: "Data Scientist | Notebooks to insight, ML modelling",
     summary:
       "Six years of data science across three companies. I build models — churn, propensity, forecasting — and hand them to an engineering team to deploy. I would like to own the deployment too, which is why I am applying here.",
@@ -3666,9 +3666,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000049",
-    name: "Anjali Reddy",
+    name: "Zanele Dlamini",
     rawPhone: "+1 415 555 0190",
-    email: "anjali.reddy@example.com",
+    email: "zanele.dlamini@example.com",
     headline: "Game Developer | Unity, gameplay systems, procedural generation",
     summary:
       "Nine years in games. Gameplay systems, procedural content generation, and the AI behaviour work that shares a name with machine learning and almost nothing else.",
@@ -3731,9 +3731,9 @@ const NOT_SHORTLISTED: ApplicantSeed[] = [
 
   applicant({
     id: "CAND_0000050",
-    name: "Tanmay Gokhale",
+    name: "Jonas Berg",
     rawPhone: "+1 415 555 0191",
-    email: "tanmay.gokhale@example.com",
+    email: "jonas.berg@example.com",
     headline: "Recent graduate | Kaggle competitions, ML research projects",
     summary:
       "Graduated eight months ago. Two Kaggle competition medals, a fine-tuning project that got some attention online, and an internship at a startup where I built a document search prototype. I know I am under-qualified for a senior role and I applied because I would rather be considered and rejected than not considered.",
